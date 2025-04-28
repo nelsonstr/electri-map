@@ -1,0 +1,14 @@
+# Ban sensitive information
+**/*secret*.*
+**/*.key
+**/*.pem
+**/credentials.*
+**/*.env*
+
+# Ban large files/directories
+**/node_modules/**
+**/.git/**
+**/dist/**
+**/build/**
+**/*.log
+**/*.lock 
