@@ -215,7 +215,7 @@ function QuickReportControl() {
 
     setLoading(true)
     try {
-      // Reverse-geocode to get city and country for storage
+      // Get city and country before storage
       const locationInfo = await getLocationInfo(currentPosition[0], currentPosition[1])
 
       const { error } = await supabase.from("locations").insert({
@@ -350,7 +350,22 @@ type Location = {
   country?: string
 }
 
-
+// Reverse-geocode coordinates to nearest city and country using Nominatim
+const getLocationInfo = async (latitude: number, longitude: number) => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+    )
+    if (!response.ok) throw new Error(`Reverse geocode failed: ${response.status}`)
+    const data = await response.json()
+    const address = data.address || {}
+    const city = address.city || address.town || address.village || address.county || 'Unknown location'
+    const country = address.country || 'Unknown region'
+    return { city, country }
+  } catch {
+    return { city: 'Unknown location', country: 'Unknown region' }
+  }
+}
 
 export default function ElectricityMap() {
   const [locations, setLocations] = useState<Location[]>([])
@@ -415,8 +430,6 @@ export default function ElectricityMap() {
             const newLocation = payload.new as Location
             if (new Date(newLocation.created_at).getTime() >= threshold.getTime()) {
               const info = await getLocationInfo(newLocation.latitude, newLocation.longitude)
-              console.log(info)
-              debugger
               const enriched = { ...newLocation, ...info }
               setLocations((prev) => [...prev, enriched])
             }
