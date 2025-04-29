@@ -12,12 +12,7 @@ export default function Header() {
           <span className="font-bold text-xl">ElectriMap</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Link href="/statistics">
-            <Button variant="ghost" className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Statistics</span>
-            </Button>
-          </Link>
+
           <Link href="/about">
             <Button variant="ghost">About</Button>
           </Link>

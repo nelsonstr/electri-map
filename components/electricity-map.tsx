@@ -163,11 +163,10 @@ function SearchControl() {
 
   return (
     <div
-      className="leaflet-top leaflet-left"
-      style={{ zIndex: 1000, width: "300px", maxWidth: "calc(100% - 20px)", margin: "10px" }}
+      style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1000, width: "300px", maxWidth: "calc(100% - 20px)" }}
     >
       <div className="leaflet-control">
-        <form onSubmit={handleSearch} className="flex gap-2">
+        {/* <form onSubmit={handleSearch} className="flex gap-3">
           <div className="relative flex-1">
             <Input
               type="text"
@@ -186,7 +185,7 @@ function SearchControl() {
               {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
           </div>
-        </form>
+        </form> */}
       </div>
     </div>
   )
@@ -229,6 +228,9 @@ function QuickReportControl() {
         title: "Status reported successfully",
         description: "Thank you for contributing to the electricity status map!",
       })
+
+      // Reload page to fetch new data immediately
+      window.location.reload()
 
       setOpen(false)
       setHasElectricity(null)
@@ -486,7 +488,7 @@ export default function ElectricityMap() {
       {/* Show loader until position is available */}
       {!position && <div>Loading map...</div>}
       {position && (
-        <MapContainer center={[15, 0]} zoom={2} style={{ height: "100%", width: "100%" }}>
+        <MapContainer center={position} zoom={10} style={{ height: "100%", width: "100%" }}>
           <RecenterMap position={position} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
