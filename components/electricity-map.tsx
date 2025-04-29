@@ -215,11 +215,16 @@ function QuickReportControl() {
 
     setLoading(true)
     try {
+      // Reverse-geocode to get city and country for storage
+      const locationInfo = await getLocationInfo(currentPosition[0], currentPosition[1])
+
       const { error } = await supabase.from("locations").insert({
         latitude: currentPosition[0],
         longitude: currentPosition[1],
         has_electricity: hasElectricity,
         comment: comment || null,
+        city: locationInfo.city,
+        country: locationInfo.country,
       })
 
       if (error) throw error
@@ -229,8 +234,8 @@ function QuickReportControl() {
         description: "Thank you for contributing to the electricity status map!",
       })
 
-      // Reload page to fetch new data immediately
-      window.location.reload()
+      // No page reload; realtime subscription will append new report
+      // debugger removed
 
       setOpen(false)
       setHasElectricity(null)
@@ -345,47 +350,7 @@ type Location = {
   country?: string
 }
 
-// Reverse-geocode coordinates to nearest city and country using Nominatim
-const getLocationInfo = async (latitude: number, longitude: number) => {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
-    )
-    if (!response.ok) {
-      throw new Error(`Reverse geocode failed: ${response.status}`)
-    }
-    const data = await response.json()
-    const address = data.address || {}
-    const city = address.city || address.town || address.village || address.county || 'Unknown location'
-    const country = address.country || 'Unknown region'
-    return { city, country }
-  } catch (error) {
-    console.error('Error fetching location info:', error)
-    return { city: 'Unknown location', country: 'Unknown region' }
-  }
-}
 
-// Helper to fetch country bounds from Nominatim for a given coordinate
-async function fetchCountryBounds(latitude: number, longitude: number): Promise<[[number, number], [number, number]]> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=3&addressdetails=1`
-    )
-    if (!res.ok) {
-      throw new Error(`Bounds lookup failed: ${res.status}`)
-    }
-    const data = await res.json()
-    const bbox = data.boundingbox as [string, string, string, string]
-    const south = parseFloat(bbox[0])
-    const north = parseFloat(bbox[1])
-    const west = parseFloat(bbox[2])
-    const east = parseFloat(bbox[3])
-    return [[south, west], [north, east]]
-  } catch (err) {
-    console.error('Error fetching country bounds:', err)
-    throw err
-  }
-}
 
 export default function ElectricityMap() {
   const [locations, setLocations] = useState<Location[]>([])
@@ -445,12 +410,15 @@ export default function ElectricityMap() {
           schema: "public",
           table: "locations",
         },
-        (payload) => {
+        async (payload) => {
           if (payload.eventType === "INSERT") {
             const newLocation = payload.new as Location
-            // Only include new reports if within last 24h
             if (new Date(newLocation.created_at).getTime() >= threshold.getTime()) {
-              setLocations((prev) => [...prev, newLocation])
+              const info = await getLocationInfo(newLocation.latitude, newLocation.longitude)
+              console.log(info)
+              debugger
+              const enriched = { ...newLocation, ...info }
+              setLocations((prev) => [...prev, enriched])
             }
           }
         }

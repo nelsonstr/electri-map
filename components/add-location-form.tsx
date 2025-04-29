@@ -47,6 +47,25 @@ export default function AddLocationForm() {
     },
   })
 
+// Reverse-geocode coordinates to nearest city and country using Nominatim
+const getLocationInfo = async (latitude: number, longitude: number) => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+    )
+    if (!response.ok) {
+      throw new Error(`Reverse geocode failed: ${response.status}`)
+    }
+    const data = await response.json()
+    const address = data.address || {}
+    const city = address.city || address.town || address.village || address.county || 'Unknown location'
+    const country = address.country || 'Unknown region'
+    return { city, country }
+  } catch (error) {
+    console.error('Error fetching location info:', error)
+    return { city: 'Unknown location', country: 'Unknown region' }
+  }
+}
   // Auto-detect user location on mount
   useEffect(() => {
     if (navigator.geolocation) {
@@ -79,11 +98,15 @@ export default function AddLocationForm() {
     setLoading(true)
 
     try {
+      const locationInfo = await getLocationInfo(values.latitude, values.longitude)
+
       const { error } = await supabase.from("locations").insert({
         latitude: values.latitude,
         longitude: values.longitude,
         has_electricity: values.has_electricity,
         comment: values.comment || null,
+        city: locationInfo.city,
+        country: locationInfo.country,
       })
 
       if (error) throw error
