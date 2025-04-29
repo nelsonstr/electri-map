@@ -11,7 +11,9 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Electricity Status Map",
   description: "Track and share electricity availability in your area",
-    generator: 'v0.dev'
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

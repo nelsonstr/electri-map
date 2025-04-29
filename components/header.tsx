@@ -12,11 +12,11 @@ export default function Header() {
           <span className="font-bold text-xl">ElectriMap</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Link href="/about">
-            <Button variant="ghost">About</Button>
-          </Link>
           <Link href="/blog">
             <Button variant="ghost">Blog</Button>
+          </Link>
+          <Link href="/about">
+            <Button variant="ghost">About</Button>
           </Link>
           <ModeToggle />
         </div>
