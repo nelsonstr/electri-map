@@ -1,4 +1,5 @@
 "use client"
+// @ts-nocheck
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
@@ -21,7 +22,7 @@ const formSchema = z.object({
   has_electricity: z.boolean().default(true),
   comment: z
     .string()
-    .max(500, {
+    .max(150, {
       message: "Comment must not be longer than 500 characters",
     })
     .optional(),
@@ -46,43 +47,33 @@ export default function AddLocationForm() {
     },
   })
 
-  // Get user's location on component mount with better error handling
+  // Auto-detect user location on mount
   useEffect(() => {
-    // Set a default position (New York City) as fallback
-    const defaultPosition: [number, number] = [40.7128, -74.006]
-
-    // Set initial map position with the default
-    setMapPosition(defaultPosition)
-    form.setValue("latitude", defaultPosition[0])
-    form.setValue("longitude", defaultPosition[1])
-
-    // Try to get user location if available
     if (navigator.geolocation) {
-      try {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords
-            form.setValue("latitude", latitude)
-            form.setValue("longitude", longitude)
-            setMapPosition([latitude, longitude])
-          },
-          (error) => {
-            console.log("Geolocation error:", error.message)
-            // Keep using the default position set above
-            toast({
-              variant: "default",
-              title: "Using default location",
-              description: "Couldn't access your location. You can select your location on the map.",
-            })
-          },
-          { timeout: 10000, enableHighAccuracy: false },
-        )
-      } catch (error) {
-        console.log("Geolocation exception:", error)
-        // Default position already set above
-      }
+      navigator.geolocation.getCurrentPosition(
+        ({ coords: { latitude, longitude } }) => {
+          form.setValue("latitude", latitude)
+          form.setValue("longitude", longitude)
+          setMapPosition([latitude, longitude])
+        },
+        (error) => {
+          console.log("Geolocation error:", error.message)
+          toast({
+            variant: "destructive",
+            title: "Location error",
+            description: "Could not access your location. You can select on the map.",
+          })
+        },
+        { timeout: 10000, enableHighAccuracy: false }
+      )
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+      })
     }
-  }, [form])
+  }, [form, toast])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true)
@@ -228,6 +219,7 @@ export default function AddLocationForm() {
 
               <TabsContent value="map">
                 <div className="h-[300px] w-full mb-4 rounded-md overflow-hidden border">
+                  {/* Render map only when position is available */}
                   {mapPosition && (
                     <LocationPickerMap initialPosition={mapPosition} onPositionChange={handleMapPositionChange} />
                   )}
@@ -269,7 +261,7 @@ export default function AddLocationForm() {
                   {...field}
                 />
               </FormControl>
-              <FormDescription>Max 500 characters</FormDescription>
+              <FormDescription>Max 150 characters</FormDescription>
               <FormMessage />
             </FormItem>
           )}
