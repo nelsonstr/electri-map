@@ -56,7 +56,7 @@ const posts = [
 export default function BlogPage() {
     return (
         <main className="prose prose-lg mx-auto p-8">
-            <h1>Blog: Power Outage Best Practices</h1>
+            <h1>Power Outage Best Practices</h1>
             <p>Insights and tips to keep you safe and prepared when the lights go out.</p>
 
             <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
