@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useEffect, useState, useRef } from "react"
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus } from "lucide-react"
@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import L from "leaflet"
+import * as L from "leaflet"
 
 // Fix Leaflet icon issues
 const DefaultIcon = (hasElectricity: boolean) => {
@@ -52,7 +52,7 @@ function LocationControl() {
     try {
       map.locate({
         setView: true,
-        maxZoom: 16,
+        maxZoom: 8,
         timeout: 10000,
         enableHighAccuracy: false,
       })
@@ -85,6 +85,10 @@ function LocationControl() {
       alert("Location services are not available. Please use the search or navigate manually.")
     }
   }
+
+  useEffect(() => {
+    handleLocate()
+  }, [])
 
   return (
     <div className="leaflet-top leaflet-right" style={{ zIndex: 1000 }}>
@@ -329,24 +333,45 @@ type Location = {
   country?: string
 }
 
-// Create a server-side API route for geocoding to avoid CORS issues
+// Reverse-geocode coordinates to nearest city and country using Nominatim
 const getLocationInfo = async (latitude: number, longitude: number) => {
   try {
-    // Format coordinates to reduce the number of unique requests
-    const lat = Number.parseFloat(latitude.toFixed(3))
-    const lng = Number.parseFloat(longitude.toFixed(3))
-
-    // Use a simple coordinate-based naming when geocoding fails
-    return {
-      city: `Area ${lat.toFixed(3)}`,
-      country: `Region ${lng.toFixed(3)}`,
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+    )
+    if (!response.ok) {
+      throw new Error(`Reverse geocode failed: ${response.status}`)
     }
+    const data = await response.json()
+    const address = data.address || {}
+    const city = address.city || address.town || address.village || address.county || 'Unknown location'
+    const country = address.country || 'Unknown region'
+    return { city, country }
   } catch (error) {
-    console.error("Error in getLocationInfo:", error)
-    return {
-      city: "Unknown Area",
-      country: "Unknown Region",
+    console.error('Error fetching location info:', error)
+    return { city: 'Unknown location', country: 'Unknown region' }
+  }
+}
+
+// Helper to fetch country bounds from Nominatim for a given coordinate
+async function fetchCountryBounds(latitude: number, longitude: number): Promise<[[number, number], [number, number]]> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=3&addressdetails=1`
+    )
+    if (!res.ok) {
+      throw new Error(`Bounds lookup failed: ${res.status}`)
     }
+    const data = await res.json()
+    const bbox = data.boundingbox as [string, string, string, string]
+    const south = parseFloat(bbox[0])
+    const north = parseFloat(bbox[1])
+    const west = parseFloat(bbox[2])
+    const east = parseFloat(bbox[3])
+    return [[south, west], [north, east]]
+  } catch (err) {
+    console.error('Error fetching country bounds:', err)
+    throw err
   }
 }
 
@@ -355,10 +380,9 @@ export default function ElectricityMap() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [position, setPosition] = useState<[number, number]>([0, 0])
-  const [countryBounds, setCountryBounds] = useState<L.LatLngBounds | null>(null)
+  const [countryBounds, setCountryBounds] = useState<any>(null)
   const router = useRouter()
   const supabase = createClient()
-  const mapRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
     // Default position (world view)
@@ -372,11 +396,6 @@ export default function ElectricityMap() {
           (position) => {
             const { latitude, longitude } = position.coords
             setPosition([latitude, longitude])
-
-            // Set a simple zoom level instead of trying to get country bounds
-            if (mapRef.current) {
-              mapRef.current.setView([latitude, longitude], 10)
-            }
           },
           (error) => {
             console.log("Geolocation error:", error.message)
@@ -390,25 +409,19 @@ export default function ElectricityMap() {
       }
     }
 
-    // Fetch locations from Supabase
+    // Fetch locations from last 24 hours from Supabase
+    const threshold = new Date(Date.now() - 24 * 60 * 60 * 1000)
     const fetchLocations = async () => {
       try {
-        const { data, error } = await supabase.from("locations").select("*").order("created_at", { ascending: false })
+        const { data, error } = await supabase
+          .from("locations")
+          .select("*")
+          .gte("created_at", threshold.toISOString())
+          .order("created_at", { ascending: true })
 
         if (error) throw error
 
-        // Add location info without relying on external geocoding API
-        const enhancedLocations = await Promise.all(
-          (data || []).map(async (location) => {
-            const locationInfo = await getLocationInfo(location.latitude, location.longitude)
-            return {
-              ...location,
-              ...locationInfo,
-            }
-          }),
-        )
-
-        setLocations(enhancedLocations)
+        setLocations((data || []) as Location[])
         setLoading(false)
       } catch (err) {
         console.error("Error fetching locations:", err)
@@ -429,20 +442,15 @@ export default function ElectricityMap() {
           schema: "public",
           table: "locations",
         },
-        async (payload) => {
+        (payload) => {
           if (payload.eventType === "INSERT") {
             const newLocation = payload.new as Location
-
-            // Add location info without external API
-            const locationInfo = await getLocationInfo(newLocation.latitude, newLocation.longitude)
-            const enhancedLocation = {
-              ...newLocation,
-              ...locationInfo,
+            // Only include new reports if within last 24h
+            if (new Date(newLocation.created_at).getTime() >= threshold.getTime()) {
+              setLocations((prev) => [...prev, newLocation])
             }
-
-            setLocations((prev) => [enhancedLocation, ...prev])
           }
-        },
+        }
       )
       .subscribe()
 
@@ -450,21 +458,6 @@ export default function ElectricityMap() {
       supabase.removeChannel(channel)
     }
   }, [])
-
-  // Function to handle map reference
-  const handleMapCreated = (map: L.Map) => {
-    mapRef.current = map
-  }
-
-  // Map events component
-  const MapEvents = () => {
-    const map = useMapEvents({
-      load: () => {
-        handleMapCreated(map)
-      },
-    })
-    return null
-  }
 
   if (error) {
     return (
@@ -489,17 +482,13 @@ export default function ElectricityMap() {
           border: none;
         }
       `}</style>
-      <MapContainer
-        center={position[0] !== 0 ? position : [15, 0]}
-        zoom={position[0] !== 0 ? 10 : 2}
-        style={{ height: "100%", width: "100%" }}
-      >
+      {/* @ts-ignore: allow center and zoom props for MapContainer */}
+      <MapContainer center={position} zoom={position[0] ? 10 : 2} style={{ height: "100%", width: "100%" }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <MapEvents />
         <LocationControl />
         <SearchControl />
         <QuickReportControl />

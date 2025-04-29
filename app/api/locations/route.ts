@@ -18,6 +18,23 @@ export async function GET() {
   }
 }
 
+// Helper to reverse-geocode coordinates to city and country
+async function fetchLocationInfo(latitude: number, longitude: number): Promise<{ city: string; country: string }> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+    )
+    const json = await res.json()
+    const address = json.address || {}
+    const city = address.city || address.town || address.village || address.county || 'Unknown location'
+    const country = address.country || 'Unknown region'
+    return { city, country }
+  } catch (err) {
+    console.error('Error reverse-geocoding:', err)
+    return { city: 'Unknown location', country: 'Unknown region' }
+  }
+}
+
 export async function POST(request: Request) {
   const supabase = createClient()
 
@@ -47,7 +64,10 @@ export async function POST(request: Request) {
       throw error
     }
 
-    return NextResponse.json(data[0])
+    // Reverse-geocode inserted record for city and country
+    const inserted = data[0]
+    const { city, country } = await fetchLocationInfo(inserted.latitude, inserted.longitude)
+    return NextResponse.json({ ...inserted, city, country })
   } catch (error) {
     console.error("Error creating location:", error)
     return NextResponse.json({ error: "Failed to create location" }, { status: 500 })

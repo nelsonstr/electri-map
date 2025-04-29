@@ -20,18 +20,6 @@ type Location = {
   country?: string
 }
 
-// Create a simple function to generate location names from coordinates
-const getLocationInfo = (latitude: number, longitude: number) => {
-  // Format coordinates to reduce the number of unique requests
-  const lat = Number.parseFloat(latitude.toFixed(3))
-  const lng = Number.parseFloat(longitude.toFixed(3))
-
-  return {
-    city: `Area ${lat.toFixed(3)}`,
-    country: `Region ${lng.toFixed(3)}`,
-  }
-}
-
 export default function LocationsList() {
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,16 +34,11 @@ export default function LocationsList() {
 
         if (error) throw error
 
-        // Add location info without relying on external geocoding API
-        const enhancedLocations = (data || []).map((location) => {
-          const locationInfo = getLocationInfo(location.latitude, location.longitude)
-          return {
-            ...location,
-            ...locationInfo,
-          }
-        })
-
-        setLocations(enhancedLocations)
+        // Data already includes city and country from database
+        const locationsData = (data || []) as Location[]
+        // Sort by created_at descending (most recent first)
+        locationsData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        setLocations(locationsData)
         setLoading(false)
       } catch (err) {
         console.error("Error fetching locations:", err)
@@ -79,15 +62,8 @@ export default function LocationsList() {
         (payload) => {
           if (payload.eventType === "INSERT") {
             const newLocation = payload.new as Location
-
-            // Add location info without external API
-            const locationInfo = getLocationInfo(newLocation.latitude, newLocation.longitude)
-            const enhancedLocation = {
-              ...newLocation,
-              ...locationInfo,
-            }
-
-            setLocations((prev) => [enhancedLocation, ...prev])
+            // New record includes city and country
+            setLocations((prev) => [newLocation, ...prev])
           }
         },
       )
