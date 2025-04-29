@@ -88,7 +88,7 @@ export default function PostPage({ params: { slug } }: { params: { slug: string 
             <div className="flex flex-col lg:flex-row lg:gap-12 items-start">
                 <div className="lg:w-1/2">
                     <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg">
-                        <Image src={post.image} alt={post.title} fill className="object-cover" />
+                        {/* <Image src={post.image} alt={post.title} fill className="object-cover" /> */}
                     </div>
                 </div>
                 <div className="lg:w-1/2 space-y-6 text-lg leading-relaxed">
