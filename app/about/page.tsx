@@ -4,7 +4,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-2">About ElectriMap</h1>
+              <h1 className="text-4xl font-bold text-center mb-2">About PowerCheck</h1>
         <p className="text-center text-muted-foreground mb-8">
           Helping communities track and share electricity availability
         </p>
@@ -16,7 +16,7 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <p>
-                ElectriMap was created to help communities during power outages and emergencies. By providing real-time
+                              PowerCheck was created to help communities during power outages and emergencies. By providing real-time
                 information about electricity availability, we aim to help people make informed decisions and support
                 each other during difficult times.
               </p>
@@ -54,22 +54,37 @@ export default function AboutPage() {
           <Card>
             <CardHeader>
               <CardTitle>Get Involved</CardTitle>
-              <CardDescription>Help us improve ElectriMap and support your community</CardDescription>
+                          <CardDescription>Help us improve PowerCheck and support your community</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="mb-4">
-                ElectriMap is a community-driven project. The more people contribute, the more valuable it becomes for
+                              PowerCheck is a community-driven project. The more people contribute, the more valuable it becomes for
                 everyone. Here's how you can help:
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Report your electricity status regularly, especially during outages</li>
-                <li>Share ElectriMap with friends, family, and neighbors</li>
+                              <li>Share PowerCheck with friends, family, and neighbors</li>
                 <li>Provide feedback to help us improve the platform</li>
                 <li>Volunteer your skills if you're a developer, designer, or community organizer</li>
               </ul>
             </CardContent>
           </Card>
         </div>
+              <div className="mt-12">
+                  <Card>
+                      <CardHeader>
+                          <CardTitle>Future updates</CardTitle>
+                          <CardDescription>share your ideas and suggestions</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                          <ul className="list-disc pl-5 space-y-2">
+                              <li>Report your any service (gas, water, internet, etc.) outages</li>
+                              <li>Planned maintenance</li>
+                              <li>Sync with sensors</li>
+                          </ul>
+                      </CardContent>
+                  </Card>
+              </div>
       </div>
     </main>
   )

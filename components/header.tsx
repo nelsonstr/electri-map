@@ -9,7 +9,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Zap className="h-6 w-6 text-yellow-500" />
-          <span className="font-bold text-xl">ElectriMap</span>
+          <span className="font-bold text-xl">PowerCheck</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/blog">

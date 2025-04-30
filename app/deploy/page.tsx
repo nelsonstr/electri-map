@@ -7,7 +7,7 @@ export default function DeployPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center mb-2">Deploy on Vercel</h1>
       <p className="text-center text-muted-foreground mb-8">
-        Follow these steps to deploy your ElectriMap application on Vercel
+        Follow these steps to deploy your PowerCheck application on Vercel
       </p>
 
       <Card className="mb-8">
