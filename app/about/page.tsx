@@ -73,8 +73,8 @@ export default function AboutPage() {
               <div className="mt-12">
                   <Card>
                       <CardHeader>
-                          <CardTitle>Future updates</CardTitle>
-                          <CardDescription>share your ideas and suggestions</CardDescription>
+              <CardTitle>Future Updates</CardTitle>
+              <CardDescription>Share your features and suggestions</CardDescription>
                       </CardHeader>
                       <CardContent>
                           <ul className="list-disc pl-5 space-y-2">

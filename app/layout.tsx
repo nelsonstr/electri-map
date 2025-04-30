@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "PowerCheck Map",
   description: "Track and share power availability in your area",
   icons: {
-    icon: '/x2.png',
+    icon: '/ico2.png',
   },
 }
 
