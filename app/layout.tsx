@@ -9,8 +9,8 @@ import Footer from "@/components/footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "PowerCheck Map",
-  description: "Track and share power availability in your area",
+  title: "services-status.xyz",
+  description: "Real-time crowdsourced reporting of services, utilities, and infrastructure status in your area",
   icons: {
     icon: '/ico2.png',
   },

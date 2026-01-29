@@ -2,8 +2,8 @@ import React from "react"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-    title: "Privacy Policy - Electricity Status Map",
-    description: "Privacy policy for Electricity Status Map. We value your privacy and comply with GDPR and US regulations.",
+    title: "Privacy Policy - services-status.xyz",
+    description: "Privacy policy for services-status.xyz. We value your privacy and comply with GDPR and US regulations.",
 }
 
 export default function PrivacyPage() {

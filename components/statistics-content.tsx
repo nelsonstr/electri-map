@@ -226,7 +226,7 @@ export default function StatisticsContent() {
           <Card>
             <CardHeader>
               <CardTitle>Electricity Status Timeline</CardTitle>
-              <CardDescription>Changes in electricity status over time</CardDescription>
+              <CardDescription>Changes in service status over time</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-12 text-muted-foreground">

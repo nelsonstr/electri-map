@@ -4,8 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 
 export const metadata: Metadata = {
-    title: "Blog - Best Practices During Power Outages",
-    description: "Learn good practices to stay safe and prepared when electricity fails.",
+    title: "Blog - Service Outage Best Practices",
+    description: "Learn good practices to stay safe and prepared during utility and infrastructure service outages.",
 }
 
 const posts = [
@@ -56,8 +56,8 @@ const posts = [
 export default function BlogPage() {
     return (
         <main className="prose prose-lg mx-auto p-8">
-            <h1>Power Outage Best Practices</h1>
-            <p>Insights and tips to keep you safe and prepared when the lights go out.</p>
+            <h1>Service Outage Best Practices</h1>
+            <p>Insights and tips to keep you safe and prepared during utility and infrastructure service outages.</p>
 
             <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post) => (

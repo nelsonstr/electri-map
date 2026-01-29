@@ -141,7 +141,7 @@ export default function AddLocationForm() {
 
       toast({
         title: "Status reported successfully",
-        description: "Thank you for contributing to the electricity status map!",
+        description: "Thank you for contributing to the services status map!",
       })
 
       form.reset({
@@ -204,7 +204,7 @@ export default function AddLocationForm() {
                 <h3 className={`font-semibold ${form.watch("has_electricity") ? "text-emerald-700 dark:text-emerald-400" : "text-slate-900 dark:text-slate-100"}`}>
                   Service Working
                 </h3>
-                <p className="text-xs text-muted-foreground">Electricity is available in my area</p>
+                <p className="text-xs text-muted-foreground">Service is available and working</p>
               </div>
             </div>
           </div>
@@ -229,7 +229,7 @@ export default function AddLocationForm() {
                 <h3 className={`font-semibold ${!form.watch("has_electricity") ? "text-rose-700 dark:text-rose-400" : "text-slate-900 dark:text-slate-100"}`}>
                   Report Issue
                 </h3>
-                <p className="text-xs text-muted-foreground">Power outage or service disruption</p>
+                <p className="text-xs text-muted-foreground">Service outage or disruption</p>
               </div>
             </div>
           </div>

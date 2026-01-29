@@ -12,8 +12,8 @@ export default function ElectricityApp() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-2">Electricity Status Map</h1>
-        <p className="text-center text-muted-foreground mb-8">Track and share electricity availability in your area</p>
+        <h1 className="text-4xl font-bold text-center mb-2">Services Status Map</h1>
+        <p className="text-center text-muted-foreground mb-8">Track and share infrastructure and service status in your area</p>
 
         <Tabs defaultValue="map" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -25,7 +25,7 @@ export default function ElectricityApp() {
             <Card>
               <CardHeader>
                 <CardTitle>Live Map</CardTitle>
-                <CardDescription>View electricity status across different locations</CardDescription>
+                <CardDescription>View service status across different locations</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="h-[500px] w-full relative">
@@ -45,7 +45,7 @@ export default function ElectricityApp() {
             <Card>
               <CardHeader>
                 <CardTitle>Report Your Status</CardTitle>
-                <CardDescription>Share your current electricity status to help others</CardDescription>
+                <CardDescription>Report service and infrastructure status in your area</CardDescription>
               </CardHeader>
               <CardContent>
                 <AddLocationForm />
@@ -57,7 +57,7 @@ export default function ElectricityApp() {
             <Card>
               <CardHeader>
                 <CardTitle>All Locations</CardTitle>
-                <CardDescription>View all reported electricity statuses</CardDescription>
+                <CardDescription>View all reported service statuses</CardDescription>
               </CardHeader>
               <CardContent>
                 <Suspense

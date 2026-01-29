@@ -248,7 +248,7 @@ function QuickReportControl() {
 
       toast({
         title: "Status reported successfully",
-        description: "Thank you for contributing to the electricity status map!",
+        description: "Thank you for contributing to the services status map!",
       })
 
       // No page reload; realtime subscription will append new report
@@ -281,7 +281,7 @@ function QuickReportControl() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Quick Report</DialogTitle>
-            <DialogDescription>Report electricity status at the current map location</DialogDescription>
+            <DialogDescription>Report service status at the current map location</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -361,7 +361,7 @@ function QuickReportControl() {
 
             <div>
               <Textarea
-                placeholder="Add any additional information about the electricity status... (optional)"
+                placeholder="Add any additional information about the service status... (optional)"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="resize-none"
