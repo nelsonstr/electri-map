@@ -145,8 +145,8 @@ export default function AddLocationForm() {
       })
 
       form.reset({
-        has_electricity: false,
-        service_type: "electrical",
+        has_electricity: values.has_electricity,
+        service_type: values.service_type,
         comment: "",
         latitude: values.latitude,
         longitude: values.longitude,
