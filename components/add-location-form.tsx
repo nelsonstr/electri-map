@@ -92,9 +92,35 @@ export default function AddLocationForm() {
   }, [form, toast])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true)
-
+    // Rate limiting: Check if user has submitted more than 2 times in the last 3 minutes
+    const RATE_LIMIT_KEY = 'location_submissions'
+    const MAX_SUBMISSIONS = 2
+    const TIME_WINDOW_MS = 3 * 60 * 1000 // 3 minutes in milliseconds
+    
     try {
+      const now = Date.now()
+      const submissionsJSON = localStorage.getItem(RATE_LIMIT_KEY)
+      const submissions: number[] = submissionsJSON ? JSON.parse(submissionsJSON) : []
+      
+      // Filter out submissions older than 3 minutes
+      const recentSubmissions = submissions.filter(timestamp => now - timestamp < TIME_WINDOW_MS)
+      
+      // Check if user has exceeded the rate limit
+      if (recentSubmissions.length >= MAX_SUBMISSIONS) {
+        const oldestSubmission = Math.min(...recentSubmissions)
+        const waitTimeMs = TIME_WINDOW_MS - (now - oldestSubmission)
+        const waitMinutes = Math.ceil(waitTimeMs / 60000)
+        
+        toast({
+          variant: "destructive",
+          title: "Rate limit exceeded",
+          description: `You can only submit ${MAX_SUBMISSIONS} reports every 3 minutes. Please wait ${waitMinutes} minute${waitMinutes > 1 ? 's' : ''} before submitting again.`,
+        })
+        return
+      }
+      
+      setLoading(true)
+      
       const locationInfo = await getLocationInfo(values.latitude, values.longitude)
 
       const { error } = await supabase.from("locations").insert({
@@ -108,6 +134,10 @@ export default function AddLocationForm() {
       })
 
       if (error) throw error
+      
+      // Record successful submission timestamp
+      recentSubmissions.push(now)
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(recentSubmissions))
 
       toast({
         title: "Status reported successfully",
