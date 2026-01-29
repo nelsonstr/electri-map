@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, MapPin, Zap, ZapOff } from "lucide-react"
+import { Loader2, MapPin, Zap, ZapOff, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -20,6 +20,7 @@ const LocationPickerMap = dynamic(() => import("./location-picker-map"), { ssr: 
 
 const formSchema = z.object({
   has_electricity: z.boolean().default(true),
+  service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block"]).default("electrical"),
   comment: z
     .string()
     .max(150, {
@@ -41,6 +42,7 @@ export default function AddLocationForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       has_electricity: true,
+      service_type: "electrical",
       comment: "",
       latitude: 0,
       longitude: 0,
@@ -104,6 +106,7 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
         latitude: values.latitude,
         longitude: values.longitude,
         has_electricity: values.has_electricity,
+        service_type: values.service_type,
         comment: values.comment || null,
         city: locationInfo.city,
         country: locationInfo.country,
@@ -118,6 +121,7 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
 
       form.reset({
         has_electricity: true,
+        service_type: "electrical",
         comment: "",
         latitude: values.latitude,
         longitude: values.longitude,
@@ -154,7 +158,7 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
           >
             <div className="flex flex-col items-center">
               <Zap className="h-8 w-8 mb-2" />
-              <span>I have electricity</span>
+              <span>Service Working</span>
             </div>
           </Button>
 
@@ -166,9 +170,61 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
           >
             <div className="flex flex-col items-center">
               <ZapOff className="h-8 w-8 mb-2" />
-              <span>No electricity</span>
+              <span>Report Issue</span>
             </div>
           </Button>
+        </div>
+
+        {/* Service Type Selection */}
+        <div className="space-y-3">
+          <FormLabel>Service Type</FormLabel>
+          <div className="grid grid-cols-3 gap-2">
+             <Button
+                type="button"
+                variant={form.watch("service_type") === "electrical" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "electrical")}
+              >
+                <Zap className="h-5 w-5" />
+                <span className="text-xs">Electrical</span>
+              </Button>
+              <Button
+                type="button"
+                variant={form.watch("service_type") === "communication" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "communication")}
+              >
+                <Wifi className="h-5 w-5" />
+                <span className="text-xs">Internet</span>
+              </Button>
+               <Button
+                type="button"
+                variant={form.watch("service_type") === "water" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "water")}
+              >
+                <Droplets className="h-5 w-5" />
+                <span className="text-xs">Water</span>
+              </Button>
+               <Button
+                type="button"
+                variant={form.watch("service_type") === "mobile" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "mobile")}
+              >
+                <Smartphone className="h-5 w-5" />
+                <span className="text-xs">Mobile</span>
+              </Button>
+               <Button
+                type="button"
+                variant={form.watch("service_type") === "road-block" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "road-block")}
+              >
+                <AlertTriangle className="h-5 w-5" />
+                <span className="text-xs">Road Block</span>
+              </Button>
+          </div>
         </div>
 
         {/* Location Selection */}

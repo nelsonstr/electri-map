@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus } from "lucide-react"
+import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
@@ -27,15 +27,30 @@ import { Textarea } from "@/components/ui/textarea"
 import * as L from "leaflet"
 
 // Fix Leaflet icon issues
-const DefaultIcon = (hasElectricity: boolean) => {
+const DefaultIcon = (hasElectricity: boolean, serviceType: string = "electrical") => {
+  let iconSvg = ""
+  let bgColor = hasElectricity ? "bg-green-500" : "bg-red-500"
+  
+  // Custom icons based on service type
+  if (serviceType === "communication") {
+     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>'
+  } else if (serviceType === "water") {
+     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88a6 6 0 0 1-8.49 8.49A6 6 0 0 1 5.26 9.53L12 2.69z"></path></svg>'
+  } else if (serviceType === "mobile") {
+     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>'
+  } else if (serviceType === "road-block") {
+     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+  } else {
+     // Default electrical
+     iconSvg = hasElectricity 
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path><path d="M2 2l20 20"></path></svg>'
+  }
+
   return L.divIcon({
     className: "custom-div-icon",
-    html: `<div class="marker-pin ${hasElectricity ? "bg-green-500" : "bg-red-500"} w-6 h-6 rounded-full flex items-center justify-center text-white">
-      ${
-        hasElectricity
-          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>'
-          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path><path d="M2 2l20 20"></path></svg>'
-      }
+    html: `<div class="marker-pin ${bgColor} w-6 h-6 rounded-full flex items-center justify-center text-white">
+      ${iconSvg}
     </div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 15],
@@ -196,6 +211,7 @@ function QuickReportControl() {
   const map = useMap()
   const [open, setOpen] = useState(false)
   const [hasElectricity, setHasElectricity] = useState<boolean | null>(null)
+  const [serviceType, setServiceType] = useState<string>("electrical")
   const [comment, setComment] = useState("")
   const [loading, setLoading] = useState(false)
   const [currentPosition, setCurrentPosition] = useState<[number, number] | null>(null)
@@ -222,6 +238,7 @@ function QuickReportControl() {
         latitude: currentPosition[0],
         longitude: currentPosition[1],
         has_electricity: hasElectricity,
+        service_type: serviceType,
         comment: comment || null,
         city: locationInfo.city,
         country: locationInfo.country,
@@ -239,6 +256,7 @@ function QuickReportControl() {
 
       setOpen(false)
       setHasElectricity(null)
+      setServiceType("electrical")
       setComment("")
     } catch (error) {
       console.error("Error submitting report:", error)
@@ -276,7 +294,7 @@ function QuickReportControl() {
               >
                 <div className="flex flex-col items-center">
                   <Zap className="h-6 w-6 mb-1" />
-                  <span>Has Electricity</span>
+                  <span>Service Working</span>
                 </div>
               </Button>
 
@@ -288,9 +306,57 @@ function QuickReportControl() {
               >
                 <div className="flex flex-col items-center">
                   <ZapOff className="h-6 w-6 mb-1" />
-                  <span>No Electricity</span>
+                  <span>Report Issue</span>
                 </div>
               </Button>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1">
+               <Button
+                  type="button"
+                  variant={serviceType === "electrical" ? "default" : "outline"}
+                  className="h-14 p-1 flex flex-col gap-1"
+                  onClick={() => setServiceType("electrical")}
+                  title="Electrical"
+                >
+                  <Zap className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={serviceType === "communication" ? "default" : "outline"}
+                  className="h-14 p-1 flex flex-col gap-1"
+                  onClick={() => setServiceType("communication")}
+                  title="Communication"
+                >
+                  <Wifi className="h-4 w-4" />
+                </Button>
+                 <Button
+                  type="button"
+                  variant={serviceType === "water" ? "default" : "outline"}
+                  className="h-14 p-1 flex flex-col gap-1"
+                  onClick={() => setServiceType("water")}
+                  title="Water"
+                >
+                  <Droplets className="h-4 w-4" />
+                </Button>
+                 <Button
+                  type="button"
+                  variant={serviceType === "mobile" ? "default" : "outline"}
+                  className="h-14 p-1 flex flex-col gap-1"
+                  onClick={() => setServiceType("mobile")}
+                  title="Mobile"
+                >
+                  <Smartphone className="h-4 w-4" />
+                </Button>
+                 <Button
+                  type="button"
+                  variant={serviceType === "road-block" ? "default" : "outline"}
+                  className="h-14 p-1 flex flex-col gap-1"
+                  onClick={() => setServiceType("road-block")}
+                  title="Road Block"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                </Button>
             </div>
 
             <div>
@@ -348,6 +414,7 @@ type Location = {
   created_at: string
   city?: string
   country?: string
+  service_type?: string
 }
 
 // Reverse-geocode coordinates to nearest city and country using Nominatim
@@ -484,18 +551,23 @@ export default function ElectricityMap() {
             <Marker
               key={location.id}
               position={[location.latitude, location.longitude]}
-              icon={DefaultIcon(location.has_electricity)}
+              icon={DefaultIcon(location.has_electricity, location.service_type)}
             >
               <Popup>
                 <div className="p-1">
                   <div className="flex items-center gap-2 mb-2">
                     {location.has_electricity ? (
                       <Badge className="bg-green-500">
-                        <Zap className="h-3 w-3 mr-1" /> Has Electricity
+                         Working
                       </Badge>
                     ) : (
                       <Badge variant="destructive">
-                        <ZapOff className="h-3 w-3 mr-1" /> No Electricity
+                         Issue Reported
+                      </Badge>
+                    )}
+                    {location.service_type && (
+                      <Badge variant="outline" className="ml-1 capitalize">
+                        {location.service_type}
                       </Badge>
                     )}
                   </div>
