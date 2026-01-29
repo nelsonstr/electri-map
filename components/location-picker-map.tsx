@@ -18,15 +18,19 @@ const DefaultIcon = L.icon({
 interface LocationPickerMapProps {
   initialPosition: [number, number]
   onPositionChange: (position: [number, number]) => void
+  zoom?: number
+  showMarker?: boolean
 }
 
 // Draggable marker component
 function DraggableMarker({
   position,
   setPosition,
+  zoom = 13
 }: {
   position: [number, number]
   setPosition: (position: [number, number]) => void
+  zoom?: number
 }) {
   const map = useMapEvents({
     click(e) {
@@ -40,11 +44,17 @@ function DraggableMarker({
 
   useEffect(() => {
     try {
-      map.setView(position, map.getZoom())
+      // If zoom is provided and different, update it
+      const currentZoom = map.getZoom()
+      if (zoom && currentZoom !== zoom) {
+         map.setView(position, zoom)
+      } else {
+         map.setView(position)
+      }
     } catch (error) {
       console.error("Error setting map view:", error)
     }
-  }, [position, map])
+  }, [position, map, zoom])
 
   return (
     <Marker
@@ -62,7 +72,7 @@ function DraggableMarker({
   )
 }
 
-export default function LocationPickerMap({ initialPosition, onPositionChange }: LocationPickerMapProps) {
+export default function LocationPickerMap({ initialPosition, onPositionChange, zoom = 13, showMarker = true }: LocationPickerMapProps) {
   const [position, setPosition] = useState<[number, number]>(initialPosition)
 
   useEffect(() => {
@@ -77,12 +87,12 @@ export default function LocationPickerMap({ initialPosition, onPositionChange }:
           width: 100%;
         }
       `}</style>
-      <MapContainer center={position} zoom={13} style={{ height: "100%", width: "100%" }}>
+      <MapContainer center={position} zoom={zoom} style={{ height: "100%", width: "100%" }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <DraggableMarker position={position} setPosition={setPosition} />
+        {showMarker && <DraggableMarker position={position} setPosition={setPosition} zoom={zoom} />}
       </MapContainer>
     </>
   )

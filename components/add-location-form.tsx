@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, MapPin, Zap, ZapOff, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
+import { Loader2, MapPin, Zap, ZapOff, Wifi, Droplets, Smartphone, AlertTriangle, Flame } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -20,7 +20,7 @@ const LocationPickerMap = dynamic(() => import("./location-picker-map"), { ssr: 
 
 const formSchema = z.object({
   has_electricity: z.boolean().default(false),
-  service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block"]).default("electrical"),
+  service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block", "gas"]).default("electrical"),
   comment: z
     .string()
     .max(150, {
@@ -145,7 +145,8 @@ export default function AddLocationForm() {
     communication: Wifi,
     water: Droplets,
     mobile: Smartphone,
-    "road-block": AlertTriangle
+    "road-block": AlertTriangle,
+    gas: Flame
   }
 
   return (
@@ -209,8 +210,8 @@ export default function AddLocationForm() {
           <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
             Service Category
           </FormLabel>
-          <div className="grid grid-cols-5 gap-3">
-            {(["electrical", "communication", "water", "mobile", "road-block"] as const).map((type) => {
+          <div className="grid grid-cols-3 gap-3">
+            {(["electrical", "communication", "water", "mobile", "road-block", "gas"] as const).map((type) => {
               const Icon = serviceTypeIcons[type]
               const isSelected = form.watch("service_type") === type
               const isActive = form.watch("has_electricity")
@@ -262,56 +263,67 @@ export default function AddLocationForm() {
             </div>
           </div>
 
-          <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-            {locationMethod === "auto" ? (
-              <div className="p-8 flex flex-col items-center justify-center text-center min-h-[200px] animate-in fade-in zoom-in-95 duration-300">
-                <div className="bg-blue-500/10 p-4 rounded-full mb-4">
-                  <MapPin className="h-8 w-8 text-blue-500" />
-                </div>
-                <h4 className="font-semibold mb-1">Using Current Location</h4>
-                {mapPosition ? (
-                   <p className="text-sm text-muted-foreground font-mono bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-full mt-2">
-                     {mapPosition[0].toFixed(6)}, {mapPosition[1].toFixed(6)}
-                   </p>
-                ) : (
-                  <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Detecting coordinates...
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 h-[300px]">
+            {/* Map is always visible now */}
+            <div className="absolute inset-0 z-0">
+               {mapPosition && (
+                 <LocationPickerMap 
+                    initialPosition={mapPosition} 
+                    onPositionChange={handleMapPositionChange} 
+                    zoom={locationMethod === "auto" ? 18 : 13}
+                    showMarker={locationMethod !== "auto"}
+                 />
+               )}
+            </div>
+
+            {/* Overlay for Auto-Detect Mode */}
+            {locationMethod === "auto" && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center animate-in fade-in duration-300 pointer-events-none">
+                <div className="bg-white/85 dark:bg-slate-900/85 p-6 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-800/50 max-w-sm mx-4 transform transition-all pointer-events-auto">
+                  <div className="bg-blue-500/10 p-3 rounded-full mb-3 w-fit mx-auto">
+                    <MapPin className="h-6 w-6 text-blue-500" />
                   </div>
-                )}
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mt-4 text-xs"
-                  onClick={() => {
-                     setMapPosition(null);
-                     if (navigator.geolocation) {
-                       navigator.geolocation.getCurrentPosition(
-                         ({ coords: { latitude, longitude } }) => {
-                           form.setValue("latitude", latitude)
-                           form.setValue("longitude", longitude)
-                           setMapPosition([latitude, longitude])
-                           toast({ title: "Location updated" })
-                         }
-                       )
-                     }
-                  }}
-                >
-                  Refresh Location
-                </Button>
-              </div>
-            ) : (
-              <div className="relative group animate-in fade-in zoom-in-95 duration-300">
-                <div className="h-[300px] w-full bg-slate-200 dark:bg-slate-800">
-                  {mapPosition && (
-                    <LocationPickerMap initialPosition={mapPosition} onPositionChange={handleMapPositionChange} />
+                  <h4 className="font-semibold mb-1">Using Current Location</h4>
+                  {mapPosition ? (
+                     <p className="text-xs text-muted-foreground font-mono bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded-md mt-1 mb-3">
+                       {mapPosition[0].toFixed(6)}, {mapPosition[1].toFixed(6)}
+                     </p>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2 mt-2 mb-3 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Detecting coordinates...
+                    </div>
                   )}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs w-full"
+                    onClick={() => {
+                       setMapPosition(null);
+                       if (navigator.geolocation) {
+                         navigator.geolocation.getCurrentPosition(
+                           ({ coords: { latitude, longitude } }) => {
+                             form.setValue("latitude", latitude)
+                             form.setValue("longitude", longitude)
+                             setMapPosition([latitude, longitude])
+                             toast({ title: "Location updated" })
+                           }
+                         )
+                       }
+                    }}
+                  >
+                    Refresh Location
+                  </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Hint for Map Mode */}
+            {locationMethod === "map" && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-black/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border text-xs font-medium z-[400] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                   Drag marker to adjust
                 </div>
-              </div>
             )}
           </div>
         </div>

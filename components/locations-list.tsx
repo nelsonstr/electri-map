@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { formatDistanceToNow } from "date-fns"
 import { Badge } from "@/components/ui/badge"
-import { Zap, ZapOff, Loader2, MapPin, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
+import { Zap, ZapOff, Loader2, MapPin, Wifi, Droplets, Smartphone, AlertTriangle, Flame } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
@@ -151,6 +151,7 @@ export default function LocationsList() {
                          case 'communication': return <Wifi className="h-3 w-3 mr-1" />
                          case 'mobile': return <Smartphone className="h-3 w-3 mr-1" />
                          case 'road-block': return <AlertTriangle className="h-3 w-3 mr-1" />
+                         case 'gas': return <Flame className="h-3 w-3 mr-1" />
                          default: return isWorking ? <Zap className="h-3 w-3 mr-1" /> : <ZapOff className="h-3 w-3 mr-1" />
                        }
                     }
@@ -163,6 +164,7 @@ export default function LocationsList() {
                         case 'communication': return "Internet/Comm Issue"
                         case 'mobile': return "Mobile Network Issue"
                         case 'road-block': return "Road Blockage"
+                        case 'gas': return "Gas Issue"
                         default: return "Power Outage"
                       }
                     }
