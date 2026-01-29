@@ -19,7 +19,7 @@ import dynamic from "next/dynamic"
 const LocationPickerMap = dynamic(() => import("./location-picker-map"), { ssr: false })
 
 const formSchema = z.object({
-  has_electricity: z.boolean().default(true),
+  has_electricity: z.boolean().default(false),
   service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block"]).default("electrical"),
   comment: z
     .string()
@@ -41,7 +41,7 @@ export default function AddLocationForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      has_electricity: true,
+      has_electricity: false,
       service_type: "electrical",
       comment: "",
       latitude: 0,
@@ -49,25 +49,26 @@ export default function AddLocationForm() {
     },
   })
 
-// Reverse-geocode coordinates to nearest city and country using Nominatim
-const getLocationInfo = async (latitude: number, longitude: number) => {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
-    )
-    if (!response.ok) {
-      throw new Error(`Reverse geocode failed: ${response.status}`)
+  // Reverse-geocode coordinates to nearest city and country using Nominatim
+  const getLocationInfo = async (latitude: number, longitude: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+      )
+      if (!response.ok) {
+        throw new Error(`Reverse geocode failed: ${response.status}`)
+      }
+      const data = await response.json()
+      const address = data.address || {}
+      const city = address.city || address.town || address.village || address.county || 'Unknown location'
+      const country = address.country || 'Unknown region'
+      return { city, country }
+    } catch (error) {
+      console.error('Error fetching location info:', error)
+      return { city: 'Unknown location', country: 'Unknown region' }
     }
-    const data = await response.json()
-    const address = data.address || {}
-    const city = address.city || address.town || address.village || address.county || 'Unknown location'
-    const country = address.country || 'Unknown region'
-    return { city, country }
-  } catch (error) {
-    console.error('Error fetching location info:', error)
-    return { city: 'Unknown location', country: 'Unknown region' }
   }
-}
+
   // Auto-detect user location on mount
   useEffect(() => {
     if (navigator.geolocation) {
@@ -87,12 +88,6 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
         },
         { timeout: 10000, enableHighAccuracy: false }
       )
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Geolocation not supported",
-        description: "Your browser does not support geolocation.",
-      })
     }
   }, [form, toast])
 
@@ -120,7 +115,7 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
       })
 
       form.reset({
-        has_electricity: true,
+        has_electricity: false,
         service_type: "electrical",
         comment: "",
         latitude: values.latitude,
@@ -145,186 +140,181 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
     setMapPosition(position)
   }
 
+  const serviceTypeIcons = {
+    electrical: Zap,
+    communication: Wifi,
+    water: Droplets,
+    mobile: Smartphone,
+    "road-block": AlertTriangle
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Electricity Status Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            type="button"
-            variant={form.watch("has_electricity") ? "default" : "outline"}
-            className={`h-24 ${form.watch("has_electricity") ? "bg-green-500 hover:bg-green-600" : ""}`}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Status Cards */}
+        <div className="grid grid-cols-2 gap-6">
+          <div
             onClick={() => form.setValue("has_electricity", true)}
+            className={`
+              cursor-pointer relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ease-out
+              ${form.watch("has_electricity")
+                ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.3)]" 
+                : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-emerald-200 dark:hover:border-emerald-900"}
+            `}
           >
-            <div className="flex flex-col items-center">
-              <Zap className="h-8 w-8 mb-2" />
-              <span>Service Working</span>
+            <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
+              <div className={`
+                p-3 rounded-full transition-colors duration-300
+                ${form.watch("has_electricity") ? "bg-emerald-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}
+              `}>
+                <Zap className="h-8 w-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className={`font-semibold ${form.watch("has_electricity") ? "text-emerald-700 dark:text-emerald-400" : "text-slate-900 dark:text-slate-100"}`}>
+                  Service Working
+                </h3>
+                <p className="text-xs text-muted-foreground">Electricity is available in my area</p>
+              </div>
             </div>
-          </Button>
+          </div>
 
-          <Button
-            type="button"
-            variant={!form.watch("has_electricity") ? "destructive" : "outline"}
-            className="h-24"
+          <div
             onClick={() => form.setValue("has_electricity", false)}
+            className={`
+              cursor-pointer relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ease-out
+              ${!form.watch("has_electricity")
+                ? "border-rose-500 bg-rose-500/10 shadow-[0_0_20px_rgba(244,63,94,0.3)]" 
+                : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-200 dark:hover:border-rose-900"}
+            `}
           >
-            <div className="flex flex-col items-center">
-              <ZapOff className="h-8 w-8 mb-2" />
-              <span>Report Issue</span>
+            <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
+               <div className={`
+                p-3 rounded-full transition-colors duration-300
+                ${!form.watch("has_electricity") ? "bg-rose-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}
+              `}>
+                <ZapOff className="h-8 w-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className={`font-semibold ${!form.watch("has_electricity") ? "text-rose-700 dark:text-rose-400" : "text-slate-900 dark:text-slate-100"}`}>
+                  Report Issue
+                </h3>
+                <p className="text-xs text-muted-foreground">Power outage or service disruption</p>
+              </div>
             </div>
-          </Button>
+          </div>
         </div>
 
         {/* Service Type Selection */}
-        <div className="space-y-3">
-          <FormLabel>Service Type</FormLabel>
-          <div className="grid grid-cols-3 gap-2">
-             <Button
-                type="button"
-                variant={form.watch("service_type") === "electrical" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "electrical")}
-              >
-                <Zap className="h-5 w-5" />
-                <span className="text-xs">Electrical</span>
-              </Button>
-              <Button
-                type="button"
-                variant={form.watch("service_type") === "communication" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "communication")}
-              >
-                <Wifi className="h-5 w-5" />
-                <span className="text-xs">Internet</span>
-              </Button>
-               <Button
-                type="button"
-                variant={form.watch("service_type") === "water" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "water")}
-              >
-                <Droplets className="h-5 w-5" />
-                <span className="text-xs">Water</span>
-              </Button>
-               <Button
-                type="button"
-                variant={form.watch("service_type") === "mobile" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "mobile")}
-              >
-                <Smartphone className="h-5 w-5" />
-                <span className="text-xs">Mobile</span>
-              </Button>
-               <Button
-                type="button"
-                variant={form.watch("service_type") === "road-block" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "road-block")}
-              >
-                <AlertTriangle className="h-5 w-5" />
-                <span className="text-xs">Road Block</span>
-              </Button>
+        <div className="space-y-4">
+          <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
+            Service Category
+          </FormLabel>
+          <div className="grid grid-cols-5 gap-3">
+            {(["electrical", "communication", "water", "mobile", "road-block"] as const).map((type) => {
+              const Icon = serviceTypeIcons[type]
+              const isSelected = form.watch("service_type") === type
+              const isActive = form.watch("has_electricity")
+              
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => form.setValue("service_type", type)}
+                  className={`
+                    group flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200
+                    ${isSelected 
+                      ? isActive 
+                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-medium shadow-sm"
+                        : "border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-medium shadow-sm"
+                      : "border-transparent bg-slate-50 dark:bg-slate-900 text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800"
+                    }
+                  `}
+                >
+                  <Icon className={`h-6 w-6 mb-2 transition-transform duration-200 ${isSelected ? "scale-110" : "group-hover:scale-110"}`} />
+                  <span className="text-[10px] capitalize leading-tight">{type.replace("-", " ")}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* Location Selection */}
-        <Card>
-          <CardContent className="p-4">
-            <Tabs defaultValue="map" onValueChange={(value) => setLocationMethod(value as "auto" | "map")}>
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="auto">Use My Location</TabsTrigger>
-                <TabsTrigger value="map">Select on Map</TabsTrigger>
-              </TabsList>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
+              Location
+            </FormLabel>
+            <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+              <button
+                 type="button"
+                 onClick={() => setLocationMethod("auto")}
+                 className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${locationMethod === "auto" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Auto-Detect
+              </button>
+              <button
+                 type="button"
+                 onClick={() => setLocationMethod("map")}
+                 className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${locationMethod === "map" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Select on Map
+              </button>
+            </div>
+          </div>
 
-              <TabsContent value="auto" className="space-y-4">
-                <div className="flex items-center justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      if (navigator.geolocation) {
-                        try {
-                          navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                              const { latitude, longitude } = position.coords
-                              form.setValue("latitude", latitude)
-                              form.setValue("longitude", longitude)
-                              setMapPosition([latitude, longitude])
-                              toast({
-                                title: "Location updated",
-                                description: "Your current location has been detected.",
-                              })
-                            },
-                            (error) => {
-                              console.log("Geolocation error:", error.message)
-                              toast({
-                                variant: "destructive",
-                                title: "Location error",
-                                description: "Could not get your location. Please use the map selection method.",
-                              })
-                            },
-                            { timeout: 10000, enableHighAccuracy: false },
-                          )
-                        } catch (error) {
-                          console.log("Geolocation exception:", error)
-                          toast({
-                            variant: "destructive",
-                            title: "Location error",
-                            description: "Could not access location services. Please use the map selection method.",
-                          })
-                        }
-                      } else {
-                        toast({
-                          variant: "destructive",
-                          title: "Location not supported",
-                          description:
-                            "Your browser does not support geolocation. Please use the map selection method.",
-                        })
-                      }
-                    }}
-                    className="w-full py-6"
-                  >
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Detect My Current Location
-                  </Button>
+          <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            {locationMethod === "auto" ? (
+              <div className="p-8 flex flex-col items-center justify-center text-center min-h-[200px] animate-in fade-in zoom-in-95 duration-300">
+                <div className="bg-blue-500/10 p-4 rounded-full mb-4">
+                  <MapPin className="h-8 w-8 text-blue-500" />
                 </div>
-
-                {mapPosition && (
-                  <div className="text-center text-sm text-muted-foreground">
-                    Location detected: {mapPosition[0].toFixed(6)}, {mapPosition[1].toFixed(6)}
+                <h4 className="font-semibold mb-1">Using Current Location</h4>
+                {mapPosition ? (
+                   <p className="text-sm text-muted-foreground font-mono bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-full mt-2">
+                     {mapPosition[0].toFixed(6)}, {mapPosition[1].toFixed(6)}
+                   </p>
+                ) : (
+                  <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Detecting coordinates...
                   </div>
                 )}
-              </TabsContent>
-
-              <TabsContent value="map">
-                <div className="h-[300px] w-full mb-4 rounded-md overflow-hidden border">
-                  {/* Render map only when position is available */}
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-4 text-xs"
+                  onClick={() => {
+                     setMapPosition(null);
+                     if (navigator.geolocation) {
+                       navigator.geolocation.getCurrentPosition(
+                         ({ coords: { latitude, longitude } }) => {
+                           form.setValue("latitude", latitude)
+                           form.setValue("longitude", longitude)
+                           setMapPosition([latitude, longitude])
+                           toast({ title: "Location updated" })
+                         }
+                       )
+                     }
+                  }}
+                >
+                  Refresh Location
+                </Button>
+              </div>
+            ) : (
+              <div className="relative group animate-in fade-in zoom-in-95 duration-300">
+                <div className="h-[300px] w-full bg-slate-200 dark:bg-slate-800">
                   {mapPosition && (
                     <LocationPickerMap initialPosition={mapPosition} onPositionChange={handleMapPositionChange} />
                   )}
                 </div>
-                <div className="text-center text-sm text-muted-foreground">Drag the marker to your exact location</div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <div className="text-center text-sm text-muted-foreground mt-2">
-          If location detection doesn't work, you can manually select your location on the map.
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-black/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border text-xs font-medium z-[400] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                  Drag marker to adjust
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-
-        {/* Hidden form fields for latitude and longitude */}
-        <FormField
-          control={form.control}
-          name="latitude"
-          render={({ field }) => <input type="hidden" {...field} value={field.value} />}
-        />
-
-        <FormField
-          control={form.control}
-          name="longitude"
-          render={({ field }) => <input type="hidden" {...field} value={field.value} />}
-        />
 
         {/* Comment field */}
         <FormField
@@ -332,30 +322,38 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
           name="comment"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Comment (Optional)</FormLabel>
+              <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">Additional Details</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Add any additional information about the electricity status in your area..."
-                  className="resize-none"
+                  placeholder="Describe the issue or situation..."
+                  className="resize-none min-h-[100px] rounded-xl border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 focus:ring-slate-400/20"
                   {...field}
                 />
               </FormControl>
-              <FormDescription>Max 150 characters</FormDescription>
+              <FormDescription className="text-right text-xs">{field.value?.length || 0}/150</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button 
+          type="submit" 
+          disabled={loading}
+          className={`
+            w-full h-14 text-lg font-semibold rounded-xl shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]
+            ${form.watch("has_electricity")
+              ? "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/20 text-white" 
+              : "bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 shadow-rose-500/20 text-white"}
+          `}
+        >
           {loading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Submitting Report...
             </>
           ) : (
             <>
-              <MapPin className="mr-2 h-4 w-4" />
-              Report Status
+              {form.watch("has_electricity") ? "Confirm Service Working" : "Submit Issue Report"}
             </>
           )}
         </Button>

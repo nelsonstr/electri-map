@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { formatDistanceToNow } from "date-fns"
 import { Badge } from "@/components/ui/badge"
-import { Zap, ZapOff, Loader2, MapPin } from "lucide-react"
+import { Zap, ZapOff, Loader2, MapPin, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
@@ -18,6 +18,7 @@ type Location = {
   created_at: string
   city?: string
   country?: string
+  service_type?: string
 }
 
 export default function LocationsList() {
@@ -137,13 +138,47 @@ export default function LocationsList() {
             <div key={location.id} className="border rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {location.has_electricity ? (
-                    <Badge className="bg-green-500">
-                      <Zap className="h-3 w-3 mr-1" /> Has Electricity
-                    </Badge>
-                  ) : (
-                    <Badge variant="destructive">
-                      <ZapOff className="h-3 w-3 mr-1" /> No Electricity
+
+                  {/* Dynamic Status Badge */}
+                  {(() => {
+                    const isWorking = location.has_electricity
+                    const type = location.service_type || "electrical"
+                    
+                    // Icon mapping
+                    const getIcon = (type: string) => {
+                       switch(type) {
+                         case 'water': return <Droplets className="h-3 w-3 mr-1" />
+                         case 'communication': return <Wifi className="h-3 w-3 mr-1" />
+                         case 'mobile': return <Smartphone className="h-3 w-3 mr-1" />
+                         case 'road-block': return <AlertTriangle className="h-3 w-3 mr-1" />
+                         default: return isWorking ? <Zap className="h-3 w-3 mr-1" /> : <ZapOff className="h-3 w-3 mr-1" />
+                       }
+                    }
+
+                    const getLabel = (type: string, working: boolean) => {
+                      if (working) return "Service Working"
+                      
+                      switch(type) {
+                        case 'water': return "Water Issue"
+                        case 'communication': return "Internet/Comm Issue"
+                        case 'mobile': return "Mobile Network Issue"
+                        case 'road-block': return "Road Blockage"
+                        default: return "Power Outage"
+                      }
+                    }
+                    
+                    return (
+                      <Badge className={isWorking ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}>
+                        {getIcon(type)}
+                        {getLabel(type, isWorking)}
+                      </Badge>
+                    )
+                  })()}
+                  
+                  {/* Service Type Badge (if not electrical) */}
+                  {location.service_type && location.service_type !== "electrical" && (
+                    <Badge variant="outline" className="capitalize text-[10px] h-5 px-2 text-muted-foreground border-slate-300 dark:border-slate-700">
+                      {location.service_type.replace("-", " ")}
                     </Badge>
                   )}
                 </div>
