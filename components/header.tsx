@@ -1,7 +1,8 @@
-import Link from "next/link"
+import { Link } from '@/i18n/routing';
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Zap, BarChart2 } from "lucide-react"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { Zap } from "lucide-react"
 
 export default function Header() {
   return (
@@ -18,6 +19,7 @@ export default function Header() {
           <Link href="/about">
             <Button variant="ghost">About</Button>
           </Link>
+          <LanguageSwitcher />
           <ModeToggle />
         </div>
       </div>

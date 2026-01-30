@@ -1,0 +1,153 @@
+{
+    "header": {
+        "siteName": "Services Status",
+        "nav": {
+            "home": "Home",
+            "about": "About",
+            "blog": "Blog",
+            "privacy": "Privacy"
+        }
+    },
+    "home": {
+        "title": "Services Status Map",
+        "subtitle": "Track and share infrastructure and service status in your area",
+        "tabs": {
+            "map": "Map",
+            "list": "List"
+        },
+        "cards": {
+            "liveMap": {
+                "title": "Live Map",
+                "description": "View service status across different locations"
+            },
+            "allLocations": {
+                "title": "All Locations",
+                "description": "View all reported service statuses"
+            }
+        }
+    },
+    "form": {
+        "title": "Report Service Status",
+        "locationSection": {
+            "title": "Location",
+            "latitude": "Latitude",
+            "longitude": "Longitude",
+            "autoDetect": "Auto-detect my location",
+            "detecting": "Detecting...",
+            "enterManually": "Enter manually"
+        },
+        "statusSection": {
+            "title": "Status",
+            "serviceWorking": "Service Working",
+            "serviceWorkingDesc": "Service is available and working",
+            "reportIssue": "Report Issue",
+            "reportIssueDesc": "Service outage or disruption"
+        },
+        "serviceTypeSection": {
+            "title": "Service Type",
+            "selectMultiple": "Select multiple services",
+            "electrical": "Electrical",
+            "communication": "Communication",
+            "water": "Water",
+            "mobile": "Mobile",
+            "roadBlock": "Road Block",
+            "gas": "Gas"
+        },
+        "commentSection": {
+            "title": "Additional Information (Optional)",
+            "placeholder": "Add any details about the service status..."
+        },
+        "submit": "Submit Report",
+        "submitWorking": "Confirm Service Working",
+        "submitIssue": "Submit Issue Report",
+        "success": {
+            "title": "Status reported successfully",
+            "description": "Thank you for contributing to the services status map!"
+        },
+        "errors": {
+            "locationRequired": "Location is required",
+            "invalidCoordinates": "Invalid coordinates",
+            "serviceTypeRequired": "Select at least one service type"
+        }
+    },
+    "map": {
+        "quickReport": {
+            "title": "Quick Report",
+            "description": "Report service status at the current map location",
+            "placeholder": "Add any additional information about the service status... (optional)"
+        },
+        "zoom": "Zoom to my location",
+        "popup": {
+            "reportedAt": "Reported",
+            "serviceType": "Service Type",
+            "working": "Working",
+            "issue": "Issue Reported"
+        }
+    },
+    "about": {
+        "title": "About Services Status",
+        "description": "Learn about our mission to help communities during infrastructure and utility outages",
+        "mission": {
+            "title": "Our Mission",
+            "content": "Services Status was created to help communities during infrastructure and utility outages. By providing real-time crowdsourced information about service availability (electricity, water, gas, communications, mobile networks, and road conditions), we help people make informed decisions and support each other during emergencies."
+        },
+        "howItWorks": {
+            "title": "How It Works",
+            "content": "Users can report their current location and service status, which is then displayed on our interactive map. This crowdsourced information helps others understand the extent of outages and find areas with available services."
+        },
+        "privacy": {
+            "title": "Privacy & Data",
+            "content": "We respect your privacy. Location reports are anonymous and we only collect the minimum information necessary. No personal data is required to use this service. For more details, please see our Privacy Policy."
+        },
+        "futureUpdates": {
+            "title": "Future Updates",
+            "description": "Share your features and suggestions",
+            "items": {
+                "plannedMaintenance": "Planned maintenance notifications from service providers",
+                "iotIntegration": "Integration with IoT sensors for automated reporting",
+                "historicalData": "Historical outage data and analytics",
+                "providerNotifications": "Direct service provider notifications and two-way communication",
+                "aiPrediction": "AI-powered outage prediction based on historical patterns",
+                "mobileApp": "Mobile app for iOS and Android",
+                "alerts": "SMS/email alerts for service disruptions in your area",
+                "forums": "Community forums and discussion boards",
+                "emergencyServices": "Integration with emergency services and first responders",
+                "apiAccess": "API access for third-party developers",
+                "detailedReports": "Detailed outage reports with estimated restoration times",
+                "multiLanguage": "Multi-language support for global communities"
+            }
+        }
+    },
+    "blog": {
+        "title": "Service Outage Best Practices",
+        "subtitle": "Insights and tips to keep you safe and prepared during utility and infrastructure service outages.",
+        "description": "Learn good practices to stay safe and prepared during utility and infrastructure service outages."
+    },
+    "privacy": {
+        "title": "Privacy Policy",
+        "description": "Privacy policy for services-status.xyz. We value your privacy and comply with GDPR and US regulations."
+    },
+    "languageSwitcher": {
+        "label": "Language",
+        "languages": {
+            "en": "English",
+            "pt": "Português",
+            "es": "Español",
+            "fr": "Français"
+        }
+    },
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "close": "Close",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit"
+    },
+    "sponsorship": {
+        "supportUs": "Support Us",
+        "becomeASponsor": "Become a Sponsor",
+        "message": "Help us keep this service free and accessible"
+    }
+}

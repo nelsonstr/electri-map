@@ -1,0 +1,153 @@
+{
+    "header": {
+        "siteName": "Statut des Services",
+        "nav": {
+            "home": "Accueil",
+            "about": "À propos",
+            "blog": "Blog",
+            "privacy": "Confidentialité"
+        }
+    },
+    "home": {
+        "title": "Carte de Statut des Services",
+        "subtitle": "Suivez et partagez l'état des infrastructures et services dans votre région",
+        "tabs": {
+            "map": "Carte",
+            "list": "Liste"
+        },
+        "cards": {
+            "liveMap": {
+                "title": "Carte en Direct",
+                "description": "Voir l'état des services à différents endroits"
+            },
+            "allLocations": {
+                "title": "Tous les Emplacements",
+                "description": "Voir tous les statuts de services signalés"
+            }
+        }
+    },
+    "form": {
+        "title": "Signaler l'État du Service",
+        "locationSection": {
+            "title": "Emplacement",
+            "latitude": "Latitude",
+            "longitude": "Longitude",
+            "autoDetect": "Détecter automatiquement ma position",
+            "detecting": "Détection en cours...",
+            "enterManually": "Saisir manuellement"
+        },
+        "statusSection": {
+            "title": "Statut",
+            "serviceWorking": "Service Fonctionnel",
+            "serviceWorkingDesc": "Le service est disponible et fonctionne",
+            "reportIssue": "Signaler un Problème",
+            "reportIssueDesc": "Interruption ou panne de service"
+        },
+        "serviceTypeSection": {
+            "title": "Type de Service",
+            "selectMultiple": "Sélectionner plusieurs services",
+            "electrical": "Électricité",
+            "communication": "Communication",
+            "water": "Eau",
+            "mobile": "Téléphonie Mobile",
+            "roadBlock": "Blocage Routier",
+            "gas": "Gaz"
+        },
+        "commentSection": {
+            "title": "Informations Complémentaires (Facultatif)",
+            "placeholder": "Ajoutez des détails sur l'état du service..."
+        },
+        "submit": "Envoyer le Rapport",
+        "submitWorking": "Confirmer le Service Fonctionnel",
+        "submitIssue": "Envoyer le Rapport de Problème",
+        "success": {
+            "title": "Statut signalé avec succès",
+            "description": "Merci de contribuer à la carte de statut des services !"
+        },
+        "errors": {
+            "locationRequired": "L'emplacement est obligatoire",
+            "invalidCoordinates": "Coordonnées invalides",
+            "serviceTypeRequired": "Sélectionnez au moins un type de service"
+        }
+    },
+    "map": {
+        "quickReport": {
+            "title": "Rapport Rapide",
+            "description": "Signaler l'état du service à l'emplacement actuel de la carte",
+            "placeholder": "Ajoutez des informations supplémentaires sur l'état du service... (facultatif)"
+        },
+        "zoom": "Zoomer sur ma position",
+        "popup": {
+            "reportedAt": "Signalé",
+            "serviceType": "Type de Service",
+            "working": "Fonctionnel",
+            "issue": "Problème Signalé"
+        }
+    },
+    "about": {
+        "title": "À Propos de Statut des Services",
+        "description": "Découvrez notre mission d'aider les communautés lors d'interruptions d'infrastructure et de services publics",
+        "mission": {
+            "title": "Notre Mission",
+            "content": "Statut des Services a été créé pour aider les communautés lors d'interruptions d'infrastructure et de services publics. En fournissant des informations en temps réel sur la disponibilité des services (électricité, eau, gaz, communications, réseaux mobiles et conditions routières), nous aidons les gens à prendre des décisions éclairées et à se soutenir mutuellement pendant les urgences."
+        },
+        "howItWorks": {
+            "title": "Comment ça Marche",
+            "content": "Les utilisateurs peuvent signaler leur emplacement actuel et l'état des services, qui sont ensuite affichés sur notre carte interactive. Ces informations collaboratives aident les autres à comprendre l'étendue des interruptions et à trouver des zones avec des services disponibles."
+        },
+        "privacy": {
+            "title": "Confidentialité et Données",
+            "content": "Nous respectons votre vie privée. Les rapports de localisation sont anonymes et nous ne collectons que les informations minimales nécessaires. Aucune donnée personnelle n'est requise pour utiliser ce service. Pour plus de détails, consultez notre Politique de Confidentialité."
+        },
+        "futureUpdates": {
+            "title": "Mises à Jour Futures",
+            "description": "Partagez vos suggestions et fonctionnalités",
+            "items": {
+                "plannedMaintenance": "Notifications de maintenance planifiée des fournisseurs de services",
+                "iotIntegration": "Intégration avec des capteurs IoT pour des rapports automatisés",
+                "historicalData": "Données historiques d'interruptions et analyses",
+                "providerNotifications": "Notifications directes des fournisseurs de services et communication bidirectionnelle",
+                "aiPrediction": "Prédiction d'interruptions par IA basée sur des modèles historiques",
+                "mobileApp": "Application mobile pour iOS et Android",
+                "alerts": "Alertes SMS/email pour les interruptions de services dans votre région",
+                "forums": "Forums et tableaux de discussion communautaires",
+                "emergencyServices": "Intégration avec les services d'urgence et les premiers intervenants",
+                "apiAccess": "Accès API pour les développeurs tiers",
+                "detailedReports": "Rapports détaillés d'interruptions avec temps estimé de rétablissement",
+                "multiLanguage": "Support multilingue pour les communautés mondiales"
+            }
+        }
+    },
+    "blog": {
+        "title": "Meilleures Pratiques pour les Interruptions de Services",
+        "subtitle": "Conseils et orientations pour rester en sécurité et préparé lors d'interruptions de services publics et d'infrastructure.",
+        "description": "Apprenez les bonnes pratiques pour rester en sécurité et préparé lors d'interruptions de services publics et d'infrastructure."
+    },
+    "privacy": {
+        "title": "Politique de Confidentialité",
+        "description": "Politique de confidentialité de services-status.xyz. Nous valorisons votre vie privée et respectons le RGPD et les réglementations américaines."
+    },
+    "languageSwitcher": {
+        "label": "Langue",
+        "languages": {
+            "en": "English",
+            "pt": "Português",
+            "es": "Español",
+            "fr": "Français"
+        }
+    },
+    "common": {
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "close": "Fermer",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "delete": "Supprimer",
+        "edit": "Modifier"
+    },
+    "sponsorship": {
+        "supportUs": "Soutenez-nous",
+        "becomeASponsor": "Devenir Sponsor",
+        "message": "Aidez-nous à maintenir ce service gratuit et accessible"
+    }
+}
