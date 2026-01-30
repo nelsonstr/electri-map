@@ -2,10 +2,12 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
+import * as L from "leaflet"
+import { useTranslations } from "next-intl"
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +15,7 @@ import { formatDistanceToNow } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui/input" 
 import { useToast } from "@/components/ui/use-toast"
 import {
   Dialog,
@@ -24,7 +26,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import * as L from "leaflet"
+
+
 
 // Fix Leaflet icon issues
 const DefaultIcon = (hasElectricity: boolean, serviceType: string = "electrical") => {
@@ -40,7 +43,15 @@ const DefaultIcon = (hasElectricity: boolean, serviceType: string = "electrical"
      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>'
   } else if (serviceType === "road-block") {
      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
-  } else {
+  } else if (serviceType === "gas") {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 22 3-7V5c0-1.1-.9-2-2-2s-2 .9-2 2v10l3 7Z"/><path d="M9 15.5a5 5 0 1 1 6 0"/></svg>'
+  } else if (serviceType === "multi-issue") {
+        bgColor = "bg-purple-600"
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+      } else if (serviceType === "multi-restoration") {
+        bgColor = "bg-cyan-600"
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+      } else {
      // Default electrical
      iconSvg = hasElectricity 
         ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>'
@@ -217,6 +228,8 @@ function QuickReportControl() {
   const [currentPosition, setCurrentPosition] = useState<[number, number] | null>(null)
   const { toast } = useToast()
   const supabase = createClient()
+  const t = useTranslations("map.quickReport")
+  const tForm = useTranslations("form")
 
   // Get current map center when dialog opens
   useEffect(() => {
@@ -280,8 +293,8 @@ function QuickReportControl() {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Quick Report</DialogTitle>
-            <DialogDescription>Report service status at the current map location</DialogDescription>
+            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -294,7 +307,7 @@ function QuickReportControl() {
               >
                 <div className="flex flex-col items-center">
                   <Zap className="h-6 w-6 mb-1" />
-                  <span>Service Working</span>
+                  <span>{tForm("statusSection.serviceWorking")}</span>
                 </div>
               </Button>
 
@@ -306,7 +319,7 @@ function QuickReportControl() {
               >
                 <div className="flex flex-col items-center">
                   <ZapOff className="h-6 w-6 mb-1" />
-                  <span>Report Issue</span>
+                  <span>{tForm("statusSection.reportIssue")}</span>
                 </div>
               </Button>
             </div>
@@ -353,7 +366,7 @@ function QuickReportControl() {
                   variant={serviceType === "road-block" ? "default" : "outline"}
                   className="h-14 p-1 flex flex-col gap-1"
                   onClick={() => setServiceType("road-block")}
-                  title="Road Block"
+                  title={tForm("serviceTypeSection.roadBlock")}
                 >
                   <AlertTriangle className="h-4 w-4" />
                 </Button>
@@ -361,7 +374,7 @@ function QuickReportControl() {
 
             <div>
               <Textarea
-                placeholder="Add any additional information about the service status... (optional)"
+                placeholder={t("placeholder")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="resize-none"
@@ -434,7 +447,11 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
   }
 }
 
-export default function ElectricityMap() {
+interface ElectricityMapProps {
+  className?: string
+}
+
+export default function ElectricityMap({ className }: ElectricityMapProps) {
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

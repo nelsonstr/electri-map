@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 
 // Dynamically import the actual app with no SSR
-const ElectricityApp = dynamic(() => import("@/components/electricity-app"), {
+const HomeClient = dynamic(() => import("@/components/home-client"), {
   ssr: false,
 })
 
@@ -20,5 +20,5 @@ export default function ClientEntry() {
     return null
   }
 
-  return <ElectricityApp />
+  return <HomeClient />
 }

@@ -1,6 +1,5 @@
 import type React from "react"
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
@@ -14,21 +13,24 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  // Await params to unwrap the Promise
+  const { locale } = await params;
+
   // Ensure that the incoming `locale` is valid
   if (!locales.includes(locale as any)) {
     notFound();
   }
 
-  // Providing all messages to the client side is the easiest way to get started
-  const messages = await getMessages();
+  // Load messages directly instead of using getMessages
+  const messages = (await import(`@/messages/${locale}.json`)).default;
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <Header />
         {children}

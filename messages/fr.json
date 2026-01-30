@@ -20,6 +20,10 @@
                 "title": "Carte en Direct",
                 "description": "Voir l'état des services à différents endroits"
             },
+            "reportStatus": {
+                "title": "Signaler Votre Statut",
+                "description": "Signaler l'état des services et de l'infrastructure dans votre région"
+            },
             "allLocations": {
                 "title": "Tous les Emplacements",
                 "description": "Voir tous les statuts de services signalés"
@@ -32,9 +36,14 @@
             "title": "Emplacement",
             "latitude": "Latitude",
             "longitude": "Longitude",
-            "autoDetect": "Détecter automatiquement ma position",
+            "autoDetect": "Détection Automatique",
+            "selectOnMap": "Sélectionner sur la Carte",
             "detecting": "Détection en cours...",
-            "enterManually": "Saisir manuellement"
+            "enterManually": "Saisir manuellement",
+            "usingCurrentLocation": "Utilisation de l'Emplacement Actuel",
+            "detectingCoordinates": "Détection des coordonnées...",
+            "refreshLocation": "Actualiser l'Emplacement",
+            "dragMarkerHint": "Faites glisser le marqueur pour ajuster"
         },
         "statusSection": {
             "title": "Statut",
@@ -54,10 +63,11 @@
             "gas": "Gaz"
         },
         "commentSection": {
-            "title": "Informations Complémentaires (Facultatif)",
-            "placeholder": "Ajoutez des détails sur l'état du service..."
+            "title": "Détails Supplémentaires",
+            "placeholder": "Décrivez le problème ou la situation..."
         },
         "submit": "Envoyer le Rapport",
+        "submitting": "Envoi du Rapport...",
         "submitWorking": "Confirmer le Service Fonctionnel",
         "submitIssue": "Envoyer le Rapport de Problème",
         "success": {
@@ -86,18 +96,29 @@
     },
     "about": {
         "title": "À Propos de Statut des Services",
-        "description": "Découvrez notre mission d'aider les communautés lors d'interruptions d'infrastructure et de services publics",
+        "description": "Aider les communautés à suivre et à partager l'état des infrastructures et des services publics",
         "mission": {
             "title": "Notre Mission",
-            "content": "Statut des Services a été créé pour aider les communautés lors d'interruptions d'infrastructure et de services publics. En fournissant des informations en temps réel sur la disponibilité des services (électricité, eau, gaz, communications, réseaux mobiles et conditions routières), nous aidons les gens à prendre des décisions éclairées et à se soutenir mutuellement pendant les urgences."
+            "content": "Statut des Services a été créé pour aider les communautés lors d'interruptions d'infrastructure et de services publics. En fournissant des informations en temps réel de source participative sur la disponibilité des services (électricité, eau, gaz, communications, réseaux mobiles et conditions routières), nous aidons les gens à prendre des décisions éclairées et à se soutenir mutuellement pendant les urgences."
         },
         "howItWorks": {
             "title": "Comment ça Marche",
-            "content": "Les utilisateurs peuvent signaler leur emplacement actuel et l'état des services, qui sont ensuite affichés sur notre carte interactive. Ces informations collaboratives aident les autres à comprendre l'étendue des interruptions et à trouver des zones avec des services disponibles."
+            "content": "Les utilisateurs peuvent signaler leur emplacement et l'état de divers services (électricité, eau, gaz, communications, réseaux mobiles, blocages routiers), qui sont affichés sur notre carte interactive. Ces informations participatives aident les autres à comprendre l'étendue des interruptions et à trouver des zones où les services sont disponibles."
         },
         "privacy": {
-            "title": "Confidentialité et Données",
-            "content": "Nous respectons votre vie privée. Les rapports de localisation sont anonymes et nous ne collectons que les informations minimales nécessaires. Aucune donnée personnelle n'est requise pour utiliser ce service. Pour plus de détails, consultez notre Politique de Confidentialité."
+            "title": "Confidentialité",
+            "content": "Nous respectons votre vie privée. Lorsque vous partagez votre position, nous ne stockons que les coordonnées et l'état du service. Nous ne collectons pas d'informations personnelles et ne suivons pas les utilisateurs individuels. Vos contributions aident la communauté tout en préservant votre anonymat."
+        },
+        "getInvolved": {
+            "title": "Impliquez-vous",
+            "description": "Aidez-nous à améliorer le Statut des Services et soutenez votre communauté",
+            "content": "Statut des Services est un projet communautaire. Plus il y a de gens qui contribuent, plus il devient précieux pour tout le monde. Voici comment vous pouvez aider :",
+            "items": {
+                "report": "Signalez régulièrement l'état du service, surtout pendant les pannes",
+                "share": "Partagez le Statut des Services avec vos amis, votre famille et vos voisins",
+                "feedback": "Donnez votre avis pour nous aider à améliorer la plateforme",
+                "volunteer": "Mettez vos compétences au service du projet si vous êtes développeur, designer ou organisateur communautaire"
+            }
         },
         "futureUpdates": {
             "title": "Mises à Jour Futures",
@@ -106,22 +127,60 @@
                 "plannedMaintenance": "Notifications de maintenance planifiée des fournisseurs de services",
                 "iotIntegration": "Intégration avec des capteurs IoT pour des rapports automatisés",
                 "historicalData": "Données historiques d'interruptions et analyses",
-                "providerNotifications": "Notifications directes des fournisseurs de services et communication bidirectionnelle",
-                "aiPrediction": "Prédiction d'interruptions par IA basée sur des modèles historiques",
+                "providerNotifications": "Notifications directes des fournisseurs de services et communication bidireccional",
+                "aiPrediction": "Prédiction des pannes par IA basée sur des modèles historiques",
                 "mobileApp": "Application mobile pour iOS et Android",
-                "alerts": "Alertes SMS/email pour les interruptions de services dans votre région",
-                "forums": "Forums et tableaux de discussion communautaires",
+                "alerts": "Alertes par SMS/email pour les interruptions de services dans votre région",
+                "forums": "Forums communautaires et forums de discussion",
                 "emergencyServices": "Intégration avec les services d'urgence et les premiers intervenants",
                 "apiAccess": "Accès API pour les développeurs tiers",
-                "detailedReports": "Rapports détaillés d'interruptions avec temps estimé de rétablissement",
+                "detailedReports": "Rapports détaillés de pannes avec délais de rétablissement estimés",
                 "multiLanguage": "Support multilingue pour les communautés mondiales"
             }
         }
     },
     "blog": {
-        "title": "Meilleures Pratiques pour les Interruptions de Services",
-        "subtitle": "Conseils et orientations pour rester en sécurité et préparé lors d'interruptions de services publics et d'infrastructure.",
-        "description": "Apprenez les bonnes pratiques pour rester en sécurité et préparé lors d'interruptions de services publics et d'infrastructure."
+        "title": "Meilleures Pratiques pour les Interruptions de Service",
+        "subtitle": "Conseils et orientations pour rester en sécurité et préparé pendant les interruptions de services publics et d'infrastructure.",
+        "description": "Apprenez les bonnes pratiques pour rester en sécurité et préparé pendant les interruptions de services publics et d'infrastructure.",
+        "readMore": "Lire Plus",
+        "posts": {
+            "lighting": {
+                "title": "Préparer l'Éclairage d'Urgence",
+                "excerpt": "Gardez votre famille en sécurité et voyez clair quand les lumières s'éteignent.",
+                "slug": "eclairage"
+            },
+            "preserveFoodWater": {
+                "title": "Préserver la Nourriture et l'Eau",
+                "excerpt": "Apprenez à garder vos denrées périssables fraîches et à stocker l'essentiel.",
+                "slug": "preserver-nourriture-eau"
+            },
+            "stayInformed": {
+                "title": "Rester Informé",
+                "excerpt": "Utilisez des radios à piles et des appareils chargés pour rester à jour.",
+                "slug": "rester-informe"
+            },
+            "conserveBattery": {
+                "title": "Économiser la Batterie du Téléphone",
+                "excerpt": "Maximisez la durée de vie de la batterie de votre appareil pendant une panne.",
+                "slug": "economiser-batterie"
+            },
+            "backupPower": {
+                "title": "Utiliser l'Énergie de Secours en Toute Sécurité",
+                "excerpt": "Directives pour les générateurs et les batteries afin d'éviter les dangers.",
+                "slug": "energie-secours"
+            },
+            "stayComfortable": {
+                "title": "Rester au Chaud (ou au Frais)",
+                "excerpt": "Conseils pour maintenir le confort par températures extrêmes.",
+                "slug": "rester-confortable"
+            },
+            "medicalNeeds": {
+                "title": "Prévoir les Besoins Médicaux",
+                "excerpt": "Assurez-vous que les médicaments et équipements critiques restent opérationnels.",
+                "slug": "besoins-medicaux"
+            }
+        }
     },
     "privacy": {
         "title": "Politique de Confidentialité",

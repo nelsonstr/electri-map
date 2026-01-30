@@ -20,6 +20,10 @@
                 "title": "Live Map",
                 "description": "View service status across different locations"
             },
+            "reportStatus": {
+                "title": "Report Your Status",
+                "description": "Report service and infrastructure status in your area"
+            },
             "allLocations": {
                 "title": "All Locations",
                 "description": "View all reported service statuses"
@@ -32,9 +36,14 @@
             "title": "Location",
             "latitude": "Latitude",
             "longitude": "Longitude",
-            "autoDetect": "Auto-detect my location",
+            "autoDetect": "Auto-Detect",
+            "selectOnMap": "Select on Map",
             "detecting": "Detecting...",
-            "enterManually": "Enter manually"
+            "enterManually": "Enter manually",
+            "usingCurrentLocation": "Using Current Location",
+            "detectingCoordinates": "Detecting coordinates...",
+            "refreshLocation": "Refresh Location",
+            "dragMarkerHint": "Drag marker to adjust"
         },
         "statusSection": {
             "title": "Status",
@@ -51,13 +60,19 @@
             "water": "Water",
             "mobile": "Mobile",
             "roadBlock": "Road Block",
-            "gas": "Gas"
+            "gas": "Gas",
+            "electricalDesc": "Power outage or issues",
+            "communicationDesc": "Internet or phone line down",
+            "waterDesc": "No water or low pressure",
+            "mobileDesc": "No signal or poor coverage",
+            "roadBlockDesc": "road blocked or closed"
         },
         "commentSection": {
-            "title": "Additional Information (Optional)",
-            "placeholder": "Add any details about the service status..."
+            "title": "Additional Details",
+            "placeholder": "Describe the issue or situation..."
         },
         "submit": "Submit Report",
+        "submitting": "Submitting Report...",
         "submitWorking": "Confirm Service Working",
         "submitIssue": "Submit Issue Report",
         "success": {
@@ -74,7 +89,8 @@
         "quickReport": {
             "title": "Quick Report",
             "description": "Report service status at the current map location",
-            "placeholder": "Add any additional information about the service status... (optional)"
+            "placeholder": "Add any additional information about the service status... (optional)",
+            "selectType": "Select Service Type"
         },
         "zoom": "Zoom to my location",
         "popup": {
@@ -86,18 +102,29 @@
     },
     "about": {
         "title": "About Services Status",
-        "description": "Learn about our mission to help communities during infrastructure and utility outages",
+        "description": "Helping communities track and share infrastructure and utility service status",
         "mission": {
             "title": "Our Mission",
             "content": "Services Status was created to help communities during infrastructure and utility outages. By providing real-time crowdsourced information about service availability (electricity, water, gas, communications, mobile networks, and road conditions), we help people make informed decisions and support each other during emergencies."
         },
         "howItWorks": {
             "title": "How It Works",
-            "content": "Users can report their current location and service status, which is then displayed on our interactive map. This crowdsourced information helps others understand the extent of outages and find areas with available services."
+            "content": "Users can report their location and the status of various services (electricity, water, gas, communications, mobile networks, road blockages), which is displayed on our interactive map. This crowdsourced information helps others understand the extent of outages and find areas where services are available."
         },
         "privacy": {
-            "title": "Privacy & Data",
-            "content": "We respect your privacy. Location reports are anonymous and we only collect the minimum information necessary. No personal data is required to use this service. For more details, please see our Privacy Policy."
+            "title": "Privacy",
+            "content": "We respect your privacy. When you share your location, we only store the coordinates and service status. We don't collect personal information or track individual users. Your contributions help the community while maintaining your anonymity."
+        },
+        "getInvolved": {
+            "title": "Get Involved",
+            "description": "Help us improve Services Status and support your community",
+            "content": "Services Status is a community-driven project. The more people contribute, the more valuable it becomes for everyone. Here's how you can help:",
+            "items": {
+                "report": "Report service status regularly, especially during outages",
+                "share": "Share Services Status with friends, family, and neighbors",
+                "feedback": "Provide feedback to help us improve the platform",
+                "volunteer": "Volunteer your skills if you're a developer, designer, or community organizer"
+            }
         },
         "futureUpdates": {
             "title": "Future Updates",
@@ -121,7 +148,80 @@
     "blog": {
         "title": "Service Outage Best Practices",
         "subtitle": "Insights and tips to keep you safe and prepared during utility and infrastructure service outages.",
-        "description": "Learn good practices to stay safe and prepared during utility and infrastructure service outages."
+        "description": "Learn good practices to stay safe and prepared during utility and infrastructure service outages.",
+        "readMore": "Read More",
+        "posts": {
+            "lighting": {
+                "title": "Prepare Emergency Lighting",
+                "excerpt": "Keep your family safe and see clearly when the lights go out.",
+                "slug": "emergency-lighting",
+                "content": [
+                    "When a power outage strikes, sudden darkness can cause panic and accidents. Preparation is key. Ensure every accessible room has a flashlight, and keep a stash of fresh batteries in a known location.",
+                    "While candles create a cozy atmosphere, they pose a significant fire hazard, especially during emergencies when emergency services might be delayed. Opt for battery-operated LED lanterns instead; they provide broader area lighting and are safe to leave on for extended periods.",
+                    "Consider investing in headlamps for every family member. They allow for hands-free operation, which is crucial when cooking, performing repairs, or attending to children and pets in the dark."
+                ]
+            },
+            "preserveFoodWater": {
+                "title": "Preserve Food and Water",
+                "excerpt": "Learn how to keep your perishables fresh and stock up on essentials.",
+                "slug": "preserve-food-water",
+                "content": [
+                    "Your refrigerator and freezer are your first line of defense for food preservation, but they need help. Keep the doors closed as much as possible. An unopened refrigerator will keep food cold for about 4 hours, while a full freezer can hold its temperature for nearly 48 hours.",
+                    "Stock up on non-perishable food items that require no cooking or refrigeration, such as canned goods, dry fruits, and nuts. Don't forget a manual can opener!",
+                    "Water is critical. Store at least one gallon of water per person per day for at least three days. If you have advanced warning of a storm, fill your bathtub and spare containers with water for washing and flushing toilets."
+                ]
+            },
+            "stayInformed": {
+                "title": "Stay Informed",
+                "excerpt": "Use battery-powered radios and charged devices to stay updated.",
+                "slug": "stay-informed",
+                "content": [
+                    "Information is as vital as supplies during a crisis. A battery-powered or hand-crank NOAA weather radio can be a lifesaver when cell towers fail or internet access is down.",
+                    "Sign up for local emergency alerts and warnings systems in your community. These often provide the most specific and timely instructions for your area.",
+                    "Keep a list of emergency phone numbers written down on paper. If your cell phone dies, you might not have access to your contacts list."
+                ]
+            },
+            "conserveBattery": {
+                "title": "Conserve Phone Battery",
+                "excerpt": "Maximize your device's battery life during an outage.",
+                "slug": "conserve-battery",
+                "content": [
+                    "Your mobile phone is your lifeline, so make it last. Activate 'Low Power Mode' immediately when power goes out. Dim your screen brightness to the lowest readable setting.",
+                    "Close unused apps running in the background and turn off Wi-Fi and Bluetooth if they are searching for signals that aren't there. This drains battery significantly.",
+                    "Use test messages instead of voice calls. Texts require far less data and battery power, and they are more likely to get through on congested networks."
+                ]
+            },
+            "backupPower": {
+                "title": "Use Backup Power Safely",
+                "excerpt": "Guidelines for generators and batteries to avoid hazards.",
+                "slug": "backup-power",
+                "content": [
+                    "Portable generators are incredibly useful but can be deadly if misused. NEVER operate a generator inside your home, garage, or basement. They produce carbon monoxide (CO), an odorless, colorless gas that kills within minutes.",
+                    "Place generators at least 20 feet away from your home, downwind from windows and doors. Always have working CO detectors in your home.",
+                    "Do not plug a generator directly into your wall outlet (backfeeding). This poses serious electrocution risks to utility workers trying to restore power. Connect appliances directly to the generator using heavy-duty extension cords."
+                ]
+            },
+            "stayComfortable": {
+                "title": "Stay Warm (or Cool)",
+                "excerpt": "Tips for maintaining comfort in extreme temperatures.",
+                "slug": "stay-comfortable",
+                "content": [
+                    "In extreme cold, dress in layers. Wear a hat, as a lot of body heat is lost through the head. designate one room as your 'warm room', isolate it by closing doors to other rooms, and gather everyone there.",
+                    "In extreme heat, stay on the lowest floor of your home where the air is cooler. Cover windows with drapes or aluminum foil to reflect sunlight. Drink plenty of water to prevent dehydration.",
+                    "Check on neighbors, especially the elderly and those with health conditions, as they are more vulnerable to extreme temperatures."
+                ]
+            },
+            "medicalNeeds": {
+                "title": "Plan for Medical Needs",
+                "excerpt": "Ensure critical medications and equipment remain operational.",
+                "slug": "medical-needs",
+                "content": [
+                    "If you or a family member relies on electric medical equipment, contact your utility provider. Many have 'priority reconnection' lists for life-sustaining equipment, though this is not a guarantee.",
+                    "Have a backup plan for refrigerated medicines like insulin. a cooler with ice packs can keep meds safe for hours. Know where you can get more ice if the outage persists.",
+                    "Talk to your doctor about an emergency plan. Ask if your medication can be stored at room temperature for a short period or if there are alternative treatments available during an emergency."
+                ]
+            }
+        }
     },
     "privacy": {
         "title": "Privacy Policy",

@@ -1,37 +1,58 @@
 "use client"
-// @ts-nocheck
-
-import { useState, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
 import { Loader2, MapPin, Zap, ZapOff, Wifi, Droplets, Smartphone, AlertTriangle, Flame } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { useTranslations } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import dynamic from "next/dynamic"
 
 // Dynamically import the map component to avoid SSR issues
-const LocationPickerMap = dynamic(() => import("./location-picker-map"), { ssr: false })
+const LocationPickerMap = dynamic(() => import("./location-picker-map"), {
+  loading: () => <div className="h-[300px] w-full bg-muted animate-pulse rounded-md" />,
+  ssr: false,
+})
 
 const formSchema = z.object({
-  has_electricity: z.boolean().default(false),
-  service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block", "gas"]).default("electrical"),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  has_electricity: z.boolean(),
+  service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block", "gas"]),
   comment: z
     .string()
-    .max(150, {
+    .max(500, {
       message: "Comment must not be longer than 500 characters",
     })
     .optional(),
-  latitude: z.number(),
-  longitude: z.number(),
 })
 
+const serviceTypeIcons = {
+  electrical: Zap,
+  communication: Wifi,
+  water: Droplets,
+  mobile: Smartphone,
+  "road-block": AlertTriangle,
+  gas: Flame
+} as const;
+
 export default function AddLocationForm() {
+  const t = useTranslations('form')
   const [loading, setLoading] = useState(false)
   const [locationMethod, setLocationMethod] = useState<"auto" | "map">("map")
   const [mapPosition, setMapPosition] = useState<[number, number] | null>(null)
@@ -42,7 +63,7 @@ export default function AddLocationForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       has_electricity: false,
-      service_type: "electrical",
+      service_type: "electrical" as "electrical" | "communication" | "water" | "mobile" | "road-block" | "gas",
       comment: "",
       latitude: 0,
       longitude: 0,
@@ -170,14 +191,7 @@ export default function AddLocationForm() {
     setMapPosition(position)
   }
 
-  const serviceTypeIcons = {
-    electrical: Zap,
-    communication: Wifi,
-    water: Droplets,
-    mobile: Smartphone,
-    "road-block": AlertTriangle,
-    gas: Flame
-  }
+
 
   return (
     <Form {...form}>
@@ -202,9 +216,9 @@ export default function AddLocationForm() {
               </div>
               <div className="space-y-1">
                 <h3 className={`font-semibold ${form.watch("has_electricity") ? "text-emerald-700 dark:text-emerald-400" : "text-slate-900 dark:text-slate-100"}`}>
-                  Service Working
+                  {t("statusSection.serviceWorking")}
                 </h3>
-                <p className="text-xs text-muted-foreground">Service is available and working</p>
+                <p className="text-xs text-muted-foreground">{t("statusSection.serviceWorkingDesc")}</p>
               </div>
             </div>
           </div>
@@ -218,7 +232,7 @@ export default function AddLocationForm() {
                 : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-200 dark:hover:border-rose-900"}
             `}
           >
-            <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
+             <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
                <div className={`
                 p-3 rounded-full transition-colors duration-300
                 ${!form.watch("has_electricity") ? "bg-rose-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}
@@ -227,45 +241,63 @@ export default function AddLocationForm() {
               </div>
               <div className="space-y-1">
                 <h3 className={`font-semibold ${!form.watch("has_electricity") ? "text-rose-700 dark:text-rose-400" : "text-slate-900 dark:text-slate-100"}`}>
-                  Report Issue
+                  {t("statusSection.reportIssue")}
                 </h3>
-                <p className="text-xs text-muted-foreground">Service outage or disruption</p>
+                <p className="text-xs text-muted-foreground">{t("statusSection.reportIssueDesc")}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Service Type Selection */}
-        <div className="space-y-4">
-          <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
-            Service Category
-          </FormLabel>
-          <div className="grid grid-cols-3 gap-3">
-            {(["electrical", "communication", "water", "mobile", "road-block", "gas"] as const).map((type) => {
-              const Icon = serviceTypeIcons[type]
-              const isSelected = form.watch("service_type") === type
-              const isActive = form.watch("has_electricity")
-              
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => form.setValue("service_type", type)}
-                  className={`
-                    group flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200
-                    ${isSelected 
-                      ? isActive 
-                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-medium shadow-sm"
-                        : "border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-medium shadow-sm"
-                      : "border-transparent bg-slate-50 dark:bg-slate-900 text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800"
-                    }
-                  `}
-                >
-                  <Icon className={`h-6 w-6 mb-2 transition-transform duration-200 ${isSelected ? "scale-110" : "group-hover:scale-110"}`} />
-                  <span className="text-[10px] capitalize leading-tight">{type.replace("-", " ")}</span>
-                </button>
-              )
-            })}
+        <div className="space-y-3">
+          <FormLabel>{t("serviceTypeSection.title")}</FormLabel>
+          <div className="grid grid-cols-3 gap-2">
+             <Button
+                type="button"
+                variant={form.watch("service_type") === "electrical" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "electrical")}
+              >
+                <Zap className="h-5 w-5" />
+                <span className="text-xs">{t("serviceTypeSection.electrical")}</span>
+              </Button>
+              <Button
+                type="button"
+                variant={form.watch("service_type") === "communication" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "communication")}
+              >
+                <Wifi className="h-5 w-5" />
+                <span className="text-xs">{t("serviceTypeSection.communication")}</span>
+              </Button>
+               <Button
+                type="button"
+                variant={form.watch("service_type") === "water" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "water")}
+              >
+                <Droplets className="h-5 w-5" />
+                <span className="text-xs">{t("serviceTypeSection.water")}</span>
+              </Button>
+               <Button
+                type="button"
+                variant={form.watch("service_type") === "mobile" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "mobile")}
+              >
+                <Smartphone className="h-5 w-5" />
+                <span className="text-xs">{t("serviceTypeSection.mobile")}</span>
+              </Button>
+               <Button
+                type="button"
+                variant={form.watch("service_type") === "road-block" ? "default" : "outline"}
+                className="h-20 flex flex-col gap-1"
+                onClick={() => form.setValue("service_type", "road-block")}
+              >
+                <AlertTriangle className="h-5 w-5" />
+                <span className="text-xs">{t("serviceTypeSection.roadBlock")}</span>
+              </Button>
           </div>
         </div>
 
@@ -273,7 +305,7 @@ export default function AddLocationForm() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
-              Location
+              {t('locationSection.title')}
             </FormLabel>
             <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
               <button
@@ -281,14 +313,14 @@ export default function AddLocationForm() {
                  onClick={() => setLocationMethod("auto")}
                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${locationMethod === "auto" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
-                Auto-Detect
+                {t('locationSection.autoDetect')}
               </button>
               <button
                  type="button"
                  onClick={() => setLocationMethod("map")}
                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${locationMethod === "map" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
-                Select on Map
+                {t('locationSection.selectOnMap')}
               </button>
             </div>
           </div>
@@ -297,11 +329,11 @@ export default function AddLocationForm() {
             {/* Map is always visible now */}
             <div className="absolute inset-0 z-0">
                {mapPosition && (
-                 <LocationPickerMap 
-                    initialPosition={mapPosition} 
-                    onPositionChange={handleMapPositionChange} 
-                    zoom={locationMethod === "auto" ? 18 : 13}
-                    showMarker={locationMethod !== "auto"}
+                 <LocationPickerMap
+                  initialPosition={mapPosition || [0, 0]}
+                  onPositionChange={handleMapPositionChange}
+                  zoom={locationMethod === "auto" ? 18 : 13}
+                  showMarker={locationMethod !== "auto"}
                  />
                )}
             </div>
@@ -313,7 +345,7 @@ export default function AddLocationForm() {
                   <div className="bg-blue-500/10 p-3 rounded-full mb-3 w-fit mx-auto">
                     <MapPin className="h-6 w-6 text-blue-500" />
                   </div>
-                  <h4 className="font-semibold mb-1">Using Current Location</h4>
+                  <h4 className="font-semibold mb-1">{t('locationSection.usingCurrentLocation')}</h4>
                   {mapPosition ? (
                      <p className="text-xs text-muted-foreground font-mono bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded-md mt-1 mb-3">
                        {mapPosition[0].toFixed(6)}, {mapPosition[1].toFixed(6)}
@@ -321,7 +353,7 @@ export default function AddLocationForm() {
                   ) : (
                     <div className="flex items-center justify-center gap-2 mt-2 mb-3 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Detecting coordinates...
+                      {t('locationSection.detectingCoordinates')}
                     </div>
                   )}
                   <Button 
@@ -343,7 +375,7 @@ export default function AddLocationForm() {
                        }
                     }}
                   >
-                    Refresh Location
+                    {t('locationSection.refreshLocation')}
                   </Button>
                 </div>
               </div>
@@ -352,7 +384,7 @@ export default function AddLocationForm() {
             {/* Hint for Map Mode */}
             {locationMethod === "map" && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-black/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border text-xs font-medium z-[400] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                  Drag marker to adjust
+                  {t('locationSection.dragMarkerHint')}
                 </div>
             )}
           </div>
@@ -364,10 +396,10 @@ export default function AddLocationForm() {
           name="comment"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">Additional Details</FormLabel>
+              <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">{t('commentSection.title')}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Describe the issue or situation..."
+                  placeholder={t('commentSection.placeholder')}
                   className="resize-none min-h-[100px] rounded-xl border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 focus:ring-slate-400/20"
                   {...field}
                 />
@@ -391,11 +423,11 @@ export default function AddLocationForm() {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Submitting Report...
+              {t('submitting')}
             </>
           ) : (
             <>
-              {form.watch("has_electricity") ? "Confirm Service Working" : "Submit Issue Report"}
+              {form.watch("has_electricity") ? t('submitWorking') : t('submitIssue')}
             </>
           )}
         </Button>

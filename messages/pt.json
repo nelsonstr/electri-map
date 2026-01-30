@@ -20,6 +20,10 @@
                 "title": "Mapa em Tempo Real",
                 "description": "Visualize o status dos serviços em diferentes locais"
             },
+            "reportStatus": {
+                "title": "Reportar Seu Status",
+                "description": "Reporte o status de serviços e infraestrutura na sua área"
+            },
             "allLocations": {
                 "title": "Todos os Locais",
                 "description": "Veja todos os status de serviços reportados"
@@ -32,9 +36,14 @@
             "title": "Localização",
             "latitude": "Latitude",
             "longitude": "Longitude",
-            "autoDetect": "Detectar automaticamente minha localização",
+            "autoDetect": "Auto-Detectar",
+            "selectOnMap": "Selecionar no Mapa",
             "detecting": "Detectando...",
-            "enterManually": "Inserir manualmente"
+            "enterManually": "Inserir manualmente",
+            "usingCurrentLocation": "Usando Localização Atual",
+            "detectingCoordinates": "Detectando coordenadas...",
+            "refreshLocation": "Atualizar Localização",
+            "dragMarkerHint": "Arraste o marcador para ajustar"
         },
         "statusSection": {
             "title": "Status",
@@ -51,13 +60,19 @@
             "water": "Água",
             "mobile": "Telefonia Móvel",
             "roadBlock": "Bloqueio de Estrada",
-            "gas": "Gás"
+            "gas": "Gás",
+            "electricalDesc": "Falta de energia ou problemas",
+            "communicationDesc": "Internet ou telefone fixo fora do ar",
+            "waterDesc": "Sem água ou baixa pressão",
+            "mobileDesc": "Sem sinal ou cobertura ruim",
+            "roadBlockDesc": "Estrada bloqueada ou fechada"
         },
         "commentSection": {
-            "title": "Informações Adicionais (Opcional)",
-            "placeholder": "Adicione detalhes sobre o status do serviço..."
+            "title": "Detalhes Adicionais",
+            "placeholder": "Descreva o problema ou situação..."
         },
         "submit": "Enviar Relatório",
+        "submitting": "Enviando Relatório...",
         "submitWorking": "Confirmar Serviço Funcionando",
         "submitIssue": "Enviar Relatório de Problema",
         "success": {
@@ -74,7 +89,8 @@
         "quickReport": {
             "title": "Relatório Rápido",
             "description": "Reporte o status do serviço na localização atual do mapa",
-            "placeholder": "Adicione informações adicionais sobre o status do serviço... (opcional)"
+            "placeholder": "Adicione informações adicionais sobre o status do serviço... (opcional)",
+            "selectType": "Selecione o Tipo de Serviço"
         },
         "zoom": "Aproximar para minha localização",
         "popup": {
@@ -86,18 +102,29 @@
     },
     "about": {
         "title": "Sobre o Status de Serviços",
-        "description": "Conheça nossa missão de ajudar comunidades durante interrupções de infraestrutura e serviços públicos",
+        "description": "Ajudando as comunidades a rastrear e compartilhar o status de serviços de infraestrutura e utilidade pública",
         "mission": {
             "title": "Nossa Missão",
             "content": "O Status de Serviços foi criado para ajudar comunidades durante interrupções de infraestrutura e serviços públicos. Ao fornecer informações em tempo real sobre disponibilidade de serviços (eletricidade, água, gás, comunicações, redes móveis e condições de estradas), ajudamos as pessoas a tomar decisões informadas e se apoiarem mutuamente durante emergências."
         },
         "howItWorks": {
             "title": "Como Funciona",
-            "content": "Os usuários podem reportar sua localização atual e o status dos serviços, que são então exibidos em nosso mapa interativo. Essas informações colaborativas ajudam outras pessoas a entender a extensão das interrupções e encontrar áreas com serviços disponíveis."
+            "content": "Os usuários podem relatar sua localização e o status de vários serviços (eletricidade, água, gás, comunicações, redes móveis, bloqueios de estradas), que são exibidos em nosso mapa interativo. Essas informações colaborativas ajudam outras pessoas a entender a extensão das interrupções e encontrar áreas onde os serviços estão disponíveis."
         },
         "privacy": {
-            "title": "Privacidade e Dados",
-            "content": "Respeitamos sua privacidade. Os relatórios de localização são anônimos e coletamos apenas as informações mínimas necessárias. Nenhum dado pessoal é necessário para usar este serviço. Para mais detalhes, consulte nossa Política de Privacidade."
+            "title": "Privacidade",
+            "content": "Respeitamos sua privacidade. Quando você compartilha sua localização, apenas armazenamos as coordenadas e o status do serviço. Não coletamos informações pessoais nem rastreamos usuários individuais. Suas contribuições ajudam a comunidade mantendo seu anonimato."
+        },
+        "getInvolved": {
+            "title": "Envolva-se",
+            "description": "Ajude-nos a melhorar o Status de Serviços e apoie sua comunidade",
+            "content": "O Status de Serviços é um projeto impulsionado pela comunidade. Quanto mais pessoas contribuírem, mais valioso ele se torna para todos. Veja como você pode ajudar:",
+            "items": {
+                "report": "Relate o status do serviço regularmente, especialmente durante interrupções",
+                "share": "Compartilhe o Status de Serviços com amigos, familiares e vizinhos",
+                "feedback": "Forneça feedback para nos ajudar a melhorar a plataforma",
+                "volunteer": "Voluntarie suas habilidades se você for um desenvolvedor, designer ou organizador comunitário"
+            }
         },
         "futureUpdates": {
             "title": "Atualizações Futuras",
@@ -120,8 +147,81 @@
     },
     "blog": {
         "title": "Melhores Práticas para Interrupções de Serviços",
-        "subtitle": "Dicas e orientações para manter-se seguro e preparado durante interrupções de serviços públicos e infraestrutura.",
-        "description": "Aprenda boas práticas para se manter seguro e preparado durante interrupções de serviços públicos e infraestrutura."
+        "subtitle": "Dicas e orientações para se manter seguro e preparado durante interrupções de serviços públicos e infraestrutura.",
+        "description": "Aprenda boas práticas para se manter seguro e preparado durante interrupções de serviços públicos e infraestrutura.",
+        "readMore": "Ler Mais",
+        "posts": {
+            "lighting": {
+                "title": "Prepare Iluminação de Emergência",
+                "excerpt": "Mantenha sua família segura e veja com clareza quando as luzes se apagarem.",
+                "slug": "iluminacao",
+                "content": [
+                    "Quando ocorre um corte de energia, a escuridão repentina pode causar pânico e acidentes. A preparação é fundamental. Certifique-se de que cada cômodo acessível tenha uma lanterna e mantenha um estoque de pilhas novas em um local conhecido.",
+                    "Embora as velas criem uma atmosfera acolhedora, elas representam um risco significativo de incêndio, especialmente durante emergências, quando os serviços de socorro podem estar atrasados. Opte por lanternas LED operadas por bateria; elas fornecem iluminação de área mais ampla e são seguras para deixar ligadas por longos períodos.",
+                    "Considere investir em lanternas de cabeça para todos os membros da família. Elas permitem a operação sem as mãos, o que é crucial ao cozinhar, fazer reparos ou cuidar de crianças e animais de estimação no escuro."
+                ]
+            },
+            "preserveFoodWater": {
+                "title": "Preserve Alimentos e Água",
+                "excerpt": "Saiba como manter seus perecíveis frescos e estocar o essencial.",
+                "slug": "preservar-alimentos-agua",
+                "content": [
+                    "Sua geladeira e freezer são sua primeira linha de defesa para a preservação de alimentos, mas precisam de ajuda. Mantenha as portas fechadas o máximo possível. Uma geladeira fechada manterá os alimentos frios por cerca de 4 horas, enquanto um freezer cheio pode manter sua temperatura por quase 48 horas.",
+                    "Faça estoque de alimentos não perecíveis que não requerem cozimento ou refrigeração, como enlatados, frutas secas e nozes. Não se esqueça de um abridor de latas manual!",
+                    "A água é crítica. Armazene pelo menos 4 litros de água por pessoa por dia, para pelo menos três dias. Se você tiver aviso prévio de uma tempestade, encha sua banheira e recipientes sobressalentes com água para lavar e dar descarga nos banheiros."
+                ]
+            },
+            "stayInformed": {
+                "title": "Mantenha-se Informado",
+                "excerpt": "Use rádios com bateria e dispositivos carregados para se manter atualizado.",
+                "slug": "manter-se-informado",
+                "content": [
+                    "A informação é tão vital quanto os suprimentos durante uma crise. Um rádio a bateria ou a manivela pode ser um salva-vidas quando as torres de celular falham ou o acesso à internet cai.",
+                    "Inscreva-se para receber alertas de emergência locais e sistemas de aviso em sua comunidade. Eles geralmente fornecem as instruções mais específicas e oportunas para sua área.",
+                    "Mantenha uma lista de números de telefone de emergência anotados em papel. Se o seu celular descarregar, você pode não ter acesso à sua lista de contatos."
+                ]
+            },
+            "conserveBattery": {
+                "title": "Conserve a Bateria do Celular",
+                "excerpt": "Maximize a vida útil da bateria do seu dispositivo durante uma interrupção.",
+                "slug": "conservar-bateria",
+                "content": [
+                    "Seu celular é sua linha vital, então faça-o durar. Ative o 'Modo de Pouca Energia' imediatamente quando a energia acabar. Diminua o brilho da tela para a configuração legível mais baixa.",
+                    "Feche aplicativos não utilizados que estão rodando em segundo plano e desligue o Wi-Fi e Bluetooth se eles estiverem procurando por sinais que não existem. Isso drena a bateria significativamente.",
+                    "Use mensagens de texto em vez de chamadas de voz. Mensagens de texto requerem muito menos dados e energia da bateria, e têm mais probabilidade de serem enviadas em redes congestionadas."
+                ]
+            },
+            "backupPower": {
+                "title": "Use Energia de Reserva com Segurança",
+                "excerpt": "Diretrizes para geradores e baterias para evitar perigos.",
+                "slug": "energia-reserva",
+                "content": [
+                    "Geradores portáteis são incrivelmente úteis, mas podem ser mortais se mal utilizados. NUNCA opere um gerador dentro de sua casa, garagem ou porão. Eles produzem monóxido de carbono (CO), um gás inodoro e incolor que mata em minutos.",
+                    "Coloque os geradores a pelo menos 6 metros de distância de sua casa, longe de janelas e portas. Sempre tenha detectores de CO funcionando em sua casa.",
+                    "Não conecte um gerador diretamente na tomada da parede. Isso apresenta sérios riscos de eletrocussão para os trabalhadores da concessionária que tentam restaurar a energia. Conecte os aparelhos diretamente ao gerador usando cabos de extensão resistentes."
+                ]
+            },
+            "stayComfortable": {
+                "title": "Mantenha-se Aquecido (ou Fresco)",
+                "excerpt": "Dicas para manter o conforto em temperaturas extremas.",
+                "slug": "manter-se-confortavel",
+                "content": [
+                    "No frio extremo, vista-se em camadas. Use um gorro, pois muito calor do corpo é perdido pela cabeça. Designe um cômodo como seu 'quarto quente', isole-o fechando as portas para outros cômodos e reúna todos lá.",
+                    "No calor extremo, fique no andar mais baixo de sua casa, onde o ar é mais frio. Cubra as janelas com cortinas ou papel alumínio para refletir a luz solar. Beba bastante água para evitar desidratação.",
+                    "Verifique seus vizinhos, especialmente os idosos e aqueles com condições de saúde, pois eles são mais vulneráveis a temperaturas extremas."
+                ]
+            },
+            "medicalNeeds": {
+                "title": "Planeje para Necessidades Médicas",
+                "excerpt": "Garanta que medicamentos e equipamentos críticos permaneçam operacionais.",
+                "slug": "necessidades-medicas",
+                "content": [
+                    "Se você ou um membro da família depende de equipamentos médicos elétricos, entre em contato com seu fornecedor de energia. Muitos têm listas de 'reconexão prioritária' para equipamentos de suporte à vida, embora isso não seja uma garantia.",
+                    "Tenha um plano de backup para medicamentos refrigerados como insulina. Um cooler com bolsas de gelo pode manter os medicamentos seguros por horas. Saiba onde você pode conseguir mais gelo se a interrupção persistir.",
+                    "Fale com seu médico sobre um plano de emergência. Pergunte se sua medicação pode ser armazenada em temperatura ambiente por um curto período ou se existem tratamentos alternativos disponíveis durante uma emergência."
+                ]
+            }
+        }
     },
     "privacy": {
         "title": "Política de Privacidade",

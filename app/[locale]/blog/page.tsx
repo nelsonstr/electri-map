@@ -1,79 +1,93 @@
-import React from "react"
-import { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
+"use client"
 
-export const metadata: Metadata = {
-    title: "Blog - Service Outage Best Practices",
-    description: "Learn good practices to stay safe and prepared during utility and infrastructure service outages.",
+import React from "react"
+import { useTranslations } from 'next-intl'
+import Link from "next/link"
+import { PageHeader } from "@/components/ui/page-header"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Clock, ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
 }
 
-const posts = [
-    {
-        title: "Prepare Emergency Lighting",
-        excerpt: "Keep your family safe and see clearly when the lights go out.",
-        image: "https://source.unsplash.com/featured/?flashlight",
-        href: "/blog/lighting",
-    },
-    {
-        title: "Preserve Food and Water",
-        excerpt: "Learn how to keep your perishables fresh and stock up on essentials.",
-        image: "https://source.unsplash.com/featured/?food,water",
-        href: "/blog/preserve-food-water",
-    },
-    {
-        title: "Stay Informed",
-        excerpt: "Use battery-powered radios and charged devices to stay up-to-date.",
-        image: "https://source.unsplash.com/featured/?radio",
-        href: "/blog/stay-informed",
-    },
-    {
-        title: "Conserve Phone Battery",
-        excerpt: "Maximize your device's battery life during an outage.",
-        image: "https://source.unsplash.com/featured/?phone,battery",
-        href: "/blog/conserve-battery",
-    },
-    {
-        title: "Use Backup Power Safely",
-        excerpt: "Generator and battery guidelines to avoid hazards.",
-        image: "https://source.unsplash.com/featured/?generator",
-        href: "/blog/backup-power",
-    },
-    {
-        title: "Stay Warm (or Cool)",
-        excerpt: "Tips for maintaining comfort in extreme temperatures.",
-        image: "https://source.unsplash.com/featured/?blanket,fan",
-        href: "/blog/stay-comfortable",
-    },
-    {
-        title: "Plan for Medical Needs",
-        excerpt: "Ensure critical medications and equipment remain operational.",
-        image: "https://source.unsplash.com/featured/?medical",
-        href: "/blog/medical-needs",
-    },
-]
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+}
 
 export default function BlogPage() {
-    return (
-        <main className="prose prose-lg mx-auto p-8">
-            <h1>Service Outage Best Practices</h1>
-            <p>Insights and tips to keep you safe and prepared during utility and infrastructure service outages.</p>
+    const t = useTranslations('blog')
+    
+    const postKeys = ['lighting', 'preserveFoodWater', 'stayInformed', 'conserveBattery', 'backupPower', 'stayComfortable', 'medicalNeeds']
 
-            <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {posts.map((post) => (
-                    <div key={post.href} className="border rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                        {/*        <div className="relative h-48 w-full">
-                            <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" />
-                        </div> */}
-                        <div className="p-4">
-                            <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-                            <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                            <Link href={post.href} className="text-blue-600 hover:underline">
-                                Read More →
-                            </Link>
-                        </div>
-                    </div>
-                ))}
+    return (
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
+            <div className="container mx-auto px-4 py-16 md:py-24">
+                <PageHeader 
+                  title={t('title')} 
+                  subtitle={t('subtitle')} 
+                />
+
+                <motion.div 
+                    variants={container}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                >
+                    {postKeys.map((key, index) => (
+                        <motion.div key={key} variants={item} className={index === 0 ? "md:col-span-2 lg:col-span-2" : ""}>
+                            <Card className={`h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col ${index === 0 ? "bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900 border-2 border-primary/10" : "bg-white dark:bg-slate-900"}`}>
+                                <div className={`relative ${index === 0 ? "h-64" : "h-48"} bg-slate-200 dark:bg-slate-800 animate-pulse`}>
+                                   {/* Placeholder for blog image - using a gradient pattern for now */}
+                                   <div className={`absolute inset-0 bg-gradient-to-br ${index === 0 ? "from-blue-500/20 to-purple-500/20" : "from-slate-500/10 to-slate-400/10"}`} />
+                                   <div className="absolute top-4 left-4">
+                                       <Badge variant="secondary" className="bg-white/90 dark:bg-black/50 backdrop-blur-md">
+                                           Guide
+                                       </Badge>
+                                   </div>
+                                </div>
+                                <CardHeader>
+                                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                                        <div className="flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            <span>Oct {10 + index}, 2025</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            <span>{3 + (index % 5)} min read</span>
+                                        </div>
+                                    </div>
+                                    <CardTitle className={`leading-tight ${index === 0 ? "text-2xl md:text-3xl" : "text-xl"}`}>
+                                        {t(`posts.${key}.title`)}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className={`text-muted-foreground ${index === 0 ? "text-lg" : "text-base line-clamp-3"}`}>
+                                        {t(`posts.${key}.excerpt`)}
+                                    </p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Link href={`/blog/${t(`posts.${key}.slug`)}`} className="w-full">
+                                        <div className="flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all group">
+                                            {t('readMore')} 
+                                            <ArrowRight className="h-4 w-4" />
+                                        </div>
+                                    </Link>
+                                </CardFooter>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </motion.div>
             </div>
         </main>
     )

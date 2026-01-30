@@ -13,7 +13,7 @@ import { cn, formatDate, formatDateTime } from '@/lib/utils';
 import { 
   AlertTriangle, Clock, Users, RefreshCw, Filter, Search,
   ArrowUp, ArrowDown, CheckCircle, XCircle, AlertCircle,
-  TrendingUp, TrendingDown, Timer, Warning
+  TrendingUp, TrendingDown, Timer, TriangleAlert as WarningIcon
 } from 'lucide-react';
 
 // Types
@@ -161,7 +161,7 @@ export function EscalationDashboard({
                 <p className="text-2xl font-bold">{criticalCount}</p>
                 <p className="text-sm text-muted-foreground">Critical Level</p>
               </div>
-              <Warning className="h-8 w-8 text-red-500" />
+              <WarningIcon className="h-8 w-8 text-red-500" />
             </div>
           </CardContent>
         </Card>
@@ -311,7 +311,7 @@ export function EscalationDashboard({
                                     )}>
                                       {chain.role}
                                     </div>
-                                    {index < escalation.escalation_chain.length - 1 && (
+                                    {index < (escalation.escalation_chain?.length ?? 0) - 1 && (
                                       <ArrowDown className="h-4 w-4 mx-1 text-muted-foreground" />
                                     )}
                                   </div>
