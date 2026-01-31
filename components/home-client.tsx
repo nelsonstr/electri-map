@@ -50,8 +50,21 @@ export default function HomeClient() {
             </div>
 
             <TabsContent value="map" className="space-y-8 animate-in fade-in-0 duration-500 slide-in-from-bottom-4">
-              <div className="grid lg:grid-cols-3 gap-8">
-                <Card className="lg:col-span-2 border-none shadow-xl bg-white dark:bg-slate-900 overflow-hidden rounded-3xl h-full flex flex-col min-h-[600px]">
+              <div className="grid lg:grid-cols-2 gap-8">
+                
+                <Card className="border-none shadow-xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden h-full">
+                  <CardHeader className="bg-slate-50/50 dark:bg-slate-800/50 border-b">
+                     <div className="flex items-center gap-2">
+                       <Activity className="w-5 h-5 text-green-500" />
+                       <CardTitle>{t('cards.reportStatus.title')}</CardTitle>
+                     </div>
+                    <CardDescription>{t('cards.reportStatus.description')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <AddLocationForm />
+                  </CardContent>
+                </Card>
+                <Card className="border-none shadow-xl bg-white dark:bg-slate-900 overflow-hidden rounded-3xl h-full flex flex-col min-h-[600px]">
                   <CardHeader className="bg-slate-50/50 dark:bg-slate-800/50 border-b">
                      <div className="flex items-center gap-2">
                        <MapIcon className="w-5 h-5 text-blue-500" />
@@ -69,19 +82,6 @@ export default function HomeClient() {
                     >
                       <ElectricityMap className="h-full w-full absolute inset-0" />
                     </Suspense>
-                  </CardContent>
-                </Card>
-
-                <Card className="lg:col-span-1 border-none shadow-xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden h-full">
-                  <CardHeader className="bg-slate-50/50 dark:bg-slate-800/50 border-b">
-                     <div className="flex items-center gap-2">
-                       <Activity className="w-5 h-5 text-green-500" />
-                       <CardTitle>{t('cards.reportStatus.title')}</CardTitle>
-                     </div>
-                    <CardDescription>{t('cards.reportStatus.description')}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <AddLocationForm />
                   </CardContent>
                 </Card>
               </div>

@@ -40,6 +40,7 @@
             "selectOnMap": "Select on Map",
             "detecting": "Detecting...",
             "enterManually": "Enter manually",
+            "useCurrentLocation": "Use Current Location",
             "usingCurrentLocation": "Using Current Location",
             "detectingCoordinates": "Detecting coordinates...",
             "refreshLocation": "Refresh Location",

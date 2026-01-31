@@ -24,9 +24,25 @@ export function LanguageSwitcher() {
   const pathname = usePathname();
 
   const handleLanguageChange = (newLocale: string) => {
-    // Remove current locale from pathname and add new one
-    const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, '');
+    const segments = pathname.split('/').filter(Boolean);
+    const firstSegment = segments[0];
+    const knownLocales = ['en', 'pt', 'es', 'fr'];
+
+    // Remove current locale if present
+    let pathWithoutLocale = pathname;
+    if (knownLocales.includes(firstSegment)) {
+      // Reconstruct path starting from the segment after locale
+      pathWithoutLocale = `/${segments.slice(1).join('/')}`;
+    }
+
+    // Ensure it starts with /
+    if (!pathWithoutLocale.startsWith('/')) {
+        pathWithoutLocale = `/${pathWithoutLocale}`;
+    }
+    
+    // Navigate to new locale
     router.push(`/${newLocale}${pathWithoutLocale}`);
+    router.refresh();
   };
 
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0];

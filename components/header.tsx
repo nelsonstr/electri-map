@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { Zap } from "lucide-react"
+import { UserContributions } from "@/components/user-contributions"
 
 export default function Header() {
   const t = useTranslations('header');
@@ -31,6 +32,7 @@ export default function Header() {
 
           </nav>
           <div className="flex items-center gap-2 border-l pl-2 md:pl-4">
+            <UserContributions />
             <LanguageSwitcher />
             <ModeToggle />
           </div>

@@ -1,15 +1,20 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = createClient()
 
   try {
-    const { data, error } = await supabase.from("locations").select("*").order("created_at", { ascending: false })
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get("user_id")
 
-    if (error) {
-      throw error
+    let query = supabase.from("locations").select("*").order("created_at", { ascending: false })
+
+    if (userId) {
+      query = query.eq("user_id", userId)
     }
+
+    const { data, error } = await query
 
     return NextResponse.json(data)
   } catch (error) {
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { latitude, longitude, has_electricity, comment } = body
+    const { latitude, longitude, has_electricity, comment, user_id } = body
 
     // Validate required fields
     if (typeof latitude !== "number" || typeof longitude !== "number" || typeof has_electricity !== "boolean") {
@@ -57,6 +62,7 @@ export async function POST(request: Request) {
         longitude,
         has_electricity,
         comment: comment || null,
+        user_id: user_id || null,
       })
       .select()
 

@@ -33,13 +33,16 @@ const formSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   has_electricity: z.boolean(),
-  service_type: z.enum(["electrical", "communication", "water", "mobile", "road-block", "gas"]),
+  service_type: z.array(z.enum(["electrical", "communication", "water", "mobile", "road-block", "gas"])).min(1, {
+    message: "You must select at least one service type.",
+  }),
   comment: z
     .string()
     .max(500, {
       message: "Comment must not be longer than 500 characters",
     })
     .optional(),
+  user_id: z.string().optional(),
 })
 
 const serviceTypeIcons = {
@@ -54,16 +57,25 @@ const serviceTypeIcons = {
 export default function AddLocationForm() {
   const t = useTranslations('form')
   const [loading, setLoading] = useState(false)
-  const [locationMethod, setLocationMethod] = useState<"auto" | "map">("map")
   const [mapPosition, setMapPosition] = useState<[number, number] | null>(null)
   const { toast } = useToast()
   const supabase = createClient()
+
+  // Generate or retrieve anonymous user ID
+  useEffect(() => {
+    let userId = localStorage.getItem('electri_map_user_id')
+    if (!userId) {
+      userId = crypto.randomUUID()
+      localStorage.setItem('electri_map_user_id', userId)
+    }
+    form.setValue('user_id', userId)
+  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       has_electricity: false,
-      service_type: "electrical" as "electrical" | "communication" | "water" | "mobile" | "road-block" | "gas",
+      service_type: ["electrical"],
       comment: "",
       latitude: 0,
       longitude: 0,
@@ -90,29 +102,55 @@ export default function AddLocationForm() {
     }
   }
 
-  // Auto-detect user location on mount
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { latitude, longitude } }) => {
-          form.setValue("latitude", latitude)
-          form.setValue("longitude", longitude)
-          setMapPosition([latitude, longitude])
-        },
-        (error) => {
-          console.log("Geolocation error:", error.message)
-          toast({
-            variant: "destructive",
-            title: "Location error",
-            description: "Could not access your location. You can select on the map.",
-          })
-        },
-        { timeout: 10000, enableHighAccuracy: false }
-      )
+  // Function to handle geolocation request
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        variant: "destructive",
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+      })
+      return
     }
-  }, [form, toast])
+
+    setLoading(true) // Re-using loading state or we could add a specific one for location
+    toast({ description: "Requesting location access..." })
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude, longitude } }) => {
+        form.setValue("latitude", latitude)
+        form.setValue("longitude", longitude)
+        setMapPosition([latitude, longitude])
+        setLoading(false)
+        toast({ title: "Location updated" })
+      },
+      (error) => {
+        console.log("Geolocation error:", error.message)
+        setLoading(false)
+        let errorMessage = "Could not access your location."
+        if (error.code === 1) errorMessage = "Location permission denied. Please enable it in settings."
+        else if (error.code === 2) errorMessage = "Location unavailable."
+        else if (error.code === 3) errorMessage = "Location request timed out."
+        
+        toast({
+          variant: "destructive",
+          title: "Location error",
+          description: errorMessage,
+        })
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    )
+  }
+
+
+
+  const isSubmittingRef = useRef(false)
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Prevent duplicate submissions via rapid clicks
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
+
     // Rate limiting: Check if user has submitted more than 2 times in the last 3 minutes
     const RATE_LIMIT_KEY = 'location_submissions'
     const MAX_SUBMISSIONS = 2
@@ -144,15 +182,18 @@ export default function AddLocationForm() {
       
       const locationInfo = await getLocationInfo(values.latitude, values.longitude)
 
-      const { error } = await supabase.from("locations").insert({
+      const inserts = values.service_type.map((type) => ({
         latitude: values.latitude,
         longitude: values.longitude,
         has_electricity: values.has_electricity,
-        service_type: values.service_type,
+        service_type: type,
         comment: values.comment || null,
         city: locationInfo.city,
         country: locationInfo.country,
-      })
+        user_id: values.user_id,
+      }))
+
+      const { error } = await supabase.from("locations").insert(inserts)
 
       if (error) throw error
       
@@ -160,14 +201,17 @@ export default function AddLocationForm() {
       recentSubmissions.push(now)
       localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(recentSubmissions))
 
+      const count = inserts.length
       toast({
-        title: "Status reported successfully",
+        title: count > 1 ? `${count} reports submitted successfully` : "Status reported successfully",
         description: "Thank you for contributing to the services status map!",
+        variant: "default",
+        className: "bg-green-500 text-white border-none"
       })
 
       form.reset({
         has_electricity: values.has_electricity,
-        service_type: values.service_type,
+        service_type: ["electrical"],
         comment: "",
         latitude: values.latitude,
         longitude: values.longitude,
@@ -181,6 +225,7 @@ export default function AddLocationForm() {
       })
     } finally {
       setLoading(false)
+      isSubmittingRef.current = false
     }
   }
 
@@ -253,144 +298,41 @@ export default function AddLocationForm() {
         <div className="space-y-3">
           <FormLabel>{t("serviceTypeSection.title")}</FormLabel>
           <div className="grid grid-cols-3 gap-2">
-             <Button
-                type="button"
-                variant={form.watch("service_type") === "electrical" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "electrical")}
-              >
-                <Zap className="h-5 w-5" />
-                <span className="text-xs">{t("serviceTypeSection.electrical")}</span>
-              </Button>
-              <Button
-                type="button"
-                variant={form.watch("service_type") === "communication" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "communication")}
-              >
-                <Wifi className="h-5 w-5" />
-                <span className="text-xs">{t("serviceTypeSection.communication")}</span>
-              </Button>
-               <Button
-                type="button"
-                variant={form.watch("service_type") === "water" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "water")}
-              >
-                <Droplets className="h-5 w-5" />
-                <span className="text-xs">{t("serviceTypeSection.water")}</span>
-              </Button>
-               <Button
-                type="button"
-                variant={form.watch("service_type") === "mobile" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "mobile")}
-              >
-                <Smartphone className="h-5 w-5" />
-                <span className="text-xs">{t("serviceTypeSection.mobile")}</span>
-              </Button>
-               <Button
-                type="button"
-                variant={form.watch("service_type") === "road-block" ? "default" : "outline"}
-                className="h-20 flex flex-col gap-1"
-                onClick={() => form.setValue("service_type", "road-block")}
-              >
-                <AlertTriangle className="h-5 w-5" />
-                <span className="text-xs">{t("serviceTypeSection.roadBlock")}</span>
-              </Button>
+            {[
+              { id: "electrical", icon: Zap, label: t("serviceTypeSection.electrical") },
+              { id: "communication", icon: Wifi, label: t("serviceTypeSection.communication") },
+              { id: "water", icon: Droplets, label: t("serviceTypeSection.water") },
+              { id: "mobile", icon: Smartphone, label: t("serviceTypeSection.mobile") },
+              { id: "road-block", icon: AlertTriangle, label: t("serviceTypeSection.roadBlock") },
+              { id: "gas", icon: Flame, label: "Gas" } // Using string temporarily if translation missing
+            ].map((service) => {
+              const isSelected = form.watch("service_type").includes(service.id as any);
+              return (
+                <Button
+                  key={service.id}
+                  type="button"
+                  variant={isSelected ? "default" : "outline"}
+                  className={`h-20 flex flex-col gap-1 ${isSelected ? "ring-2 ring-primary ring-offset-2" : ""}`}
+                  onClick={() => {
+                    const current = form.getValues("service_type");
+                    const updated = current.includes(service.id as any)
+                      ? current.filter((t) => t !== service.id)
+                      : [...current, service.id as any];
+                    // Ensure at least one is selected? zod validation handles submit, but let's allow deselect all in UI for flexibility
+                    form.setValue("service_type", updated as any, { shouldValidate: true });
+                  }}
+                >
+                  <service.icon className="h-5 w-5" />
+                  <span className="text-xs">{service.label}</span>
+                </Button>
+              );
+            })}
           </div>
+          <FormMessage>
+            {form.formState.errors.service_type?.message}
+          </FormMessage>
         </div>
-
-        {/* Location Selection */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
-              {t('locationSection.title')}
-            </FormLabel>
-            <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
-              <button
-                 type="button"
-                 onClick={() => setLocationMethod("auto")}
-                 className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${locationMethod === "auto" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {t('locationSection.autoDetect')}
-              </button>
-              <button
-                 type="button"
-                 onClick={() => setLocationMethod("map")}
-                 className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${locationMethod === "map" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {t('locationSection.selectOnMap')}
-              </button>
-            </div>
-          </div>
-
-          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 h-[300px]">
-            {/* Map is always visible now */}
-            <div className="absolute inset-0 z-0">
-               {mapPosition && (
-                 <LocationPickerMap
-                  initialPosition={mapPosition || [0, 0]}
-                  onPositionChange={handleMapPositionChange}
-                  zoom={locationMethod === "auto" ? 18 : 13}
-                  showMarker={locationMethod !== "auto"}
-                 />
-               )}
-            </div>
-
-            {/* Overlay for Auto-Detect Mode */}
-            {locationMethod === "auto" && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center animate-in fade-in duration-300 pointer-events-none">
-                <div className="bg-white/85 dark:bg-slate-900/85 p-6 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-800/50 max-w-sm mx-4 transform transition-all pointer-events-auto">
-                  <div className="bg-blue-500/10 p-3 rounded-full mb-3 w-fit mx-auto">
-                    <MapPin className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <h4 className="font-semibold mb-1">{t('locationSection.usingCurrentLocation')}</h4>
-                  {mapPosition ? (
-                     <p className="text-xs text-muted-foreground font-mono bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded-md mt-1 mb-3">
-                       {mapPosition[0].toFixed(6)}, {mapPosition[1].toFixed(6)}
-                     </p>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 mt-2 mb-3 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {t('locationSection.detectingCoordinates')}
-                    </div>
-                  )}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs w-full"
-                    onClick={() => {
-                       setMapPosition(null);
-                       if (navigator.geolocation) {
-                         navigator.geolocation.getCurrentPosition(
-                           ({ coords: { latitude, longitude } }) => {
-                             form.setValue("latitude", latitude)
-                             form.setValue("longitude", longitude)
-                             setMapPosition([latitude, longitude])
-                             toast({ title: "Location updated" })
-                           }
-                         )
-                       }
-                    }}
-                  >
-                    {t('locationSection.refreshLocation')}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Hint for Map Mode */}
-            {locationMethod === "map" && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-black/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border text-xs font-medium z-[400] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                  {t('locationSection.dragMarkerHint')}
-                </div>
-            )}
-          </div>
-        </div>
-
-        {/* Comment field */}
+{/* Comment field */}
         <FormField
           control={form.control}
           name="comment"
@@ -431,6 +373,50 @@ export default function AddLocationForm() {
             </>
           )}
         </Button>
+        
+        {/* Location Selection */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-sm font-medium uppercase tracking-wide text-muted-foreground ml-1">
+              {t('locationSection.title')}
+            </FormLabel>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 gap-1.5"
+              onClick={detectLocation}
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <MapPin className="h-3.5 w-3.5 text-blue-500" />
+              )}
+              {t('locationSection.useCurrentLocation')}
+            </Button>
+          </div>
+
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 h-[300px]">
+            {/* Map is always visible now */}
+            {/* Map is always visible now */}
+            <div className="absolute inset-0 z-0">
+               <LocationPickerMap
+                initialPosition={mapPosition || [38.736946, -9.142685]} // Default to Lisbon if unknown
+                onPositionChange={handleMapPositionChange}
+                zoom={13}
+                showMarker={true}
+               />
+            </div>
+
+            {/* Hint for Map */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-black/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border text-xs font-medium z-[400] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+               {t('locationSection.dragMarkerHint')}
+            </div>
+          </div>
+        </div>
+
+        
       </form>
     </Form>
   )

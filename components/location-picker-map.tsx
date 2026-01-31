@@ -76,6 +76,10 @@ export default function LocationPickerMap({ initialPosition, onPositionChange, z
   const [position, setPosition] = useState<[number, number]>(initialPosition)
 
   useEffect(() => {
+    setPosition(initialPosition)
+  }, [initialPosition])
+
+  useEffect(() => {
     onPositionChange(position)
   }, [position, onPositionChange])
 
