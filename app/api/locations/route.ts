@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
     if (userId) {
       query = query.eq("user_id", userId)
     }
- 
     
     const { data, error } = await query
 
