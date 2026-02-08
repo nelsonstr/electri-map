@@ -1,9 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Lazy initialization to avoid build-time errors
+let _supabase: SupabaseClient | null = null;
+function getSupabase(): SupabaseClient {
+  if (!_supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    _supabase = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return _supabase;
+}
 
 interface WazeAlert {
   uuid: string;
@@ -125,7 +134,7 @@ export async function syncRoadBlocks() {
 
   for (const incident of incidentsToUpsert) {
     // Check if exists
-    const { data: existing } = await supabase
+    const { data: existing } = await getSupabase()
       .from('incidents')
       .select('id, status')
       .eq('external_incident_ref', incident.external_incident_ref)
@@ -134,7 +143,7 @@ export async function syncRoadBlocks() {
     if (existing) {
         // Update existing if needed (e.g. if status changed or position updated)
         // For now, we assume if it's still in the feed, it's still active.
-        const { error } = await supabase
+        const { error } = await getSupabase()
             .from('incidents')
             .update({
                 updated_at: new Date().toISOString(),
@@ -151,7 +160,7 @@ export async function syncRoadBlocks() {
 
     } else {
         // Insert new
-        const { error } = await supabase
+        const { error } = await getSupabase()
             .from('incidents')
             .insert({
                 incident_number: incident.incident_number,

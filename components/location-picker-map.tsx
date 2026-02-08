@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import L from "leaflet"
@@ -25,17 +25,17 @@ interface LocationPickerMapProps {
 // Draggable marker component
 function DraggableMarker({
   position,
-  setPosition,
+  onUserPositionChange,
   zoom = 13
 }: {
   position: [number, number]
-  setPosition: (position: [number, number]) => void
+  onUserPositionChange: (position: [number, number]) => void
   zoom?: number
 }) {
   const map = useMapEvents({
     click(e) {
       try {
-        setPosition([e.latlng.lat, e.latlng.lng])
+        onUserPositionChange([e.latlng.lat, e.latlng.lng])
       } catch (error) {
         console.error("Error setting position:", error)
       }
@@ -64,8 +64,8 @@ function DraggableMarker({
       eventHandlers={{
         dragend: (e) => {
           const marker = e.target
-          const position = marker.getLatLng()
-          setPosition([position.lat, position.lng])
+          const pos = marker.getLatLng()
+          onUserPositionChange([pos.lat, pos.lng])
         },
       }}
     />
@@ -74,14 +74,33 @@ function DraggableMarker({
 
 export default function LocationPickerMap({ initialPosition, onPositionChange, zoom = 13, showMarker = true }: LocationPickerMapProps) {
   const [position, setPosition] = useState<[number, number]>(initialPosition)
+  const isInitialMount = useRef(true)
+  const lastInitialPosition = useRef(initialPosition)
+  
+  // Handle user-initiated position changes (click or drag)
+  const handleUserPositionChange = useCallback((newPosition: [number, number]) => {
+    setPosition(newPosition)
+    onPositionChange(newPosition)
+  }, [onPositionChange])
 
+  // Sync position when initialPosition prop changes (but not on every render)
   useEffect(() => {
+    // Skip if initialPosition hasn't actually changed
+    if (
+      lastInitialPosition.current[0] === initialPosition[0] &&
+      lastInitialPosition.current[1] === initialPosition[1]
+    ) {
+      return
+    }
+    
+    lastInitialPosition.current = initialPosition
     setPosition(initialPosition)
+    
+    // Only call onPositionChange on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+    }
   }, [initialPosition])
-
-  useEffect(() => {
-    onPositionChange(position)
-  }, [position, onPositionChange])
 
   return (
     <>
@@ -96,7 +115,7 @@ export default function LocationPickerMap({ initialPosition, onPositionChange, z
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {showMarker && <DraggableMarker position={position} setPosition={setPosition} zoom={zoom} />}
+        {showMarker && <DraggableMarker position={position} onUserPositionChange={handleUserPositionChange} zoom={zoom} />}
       </MapContainer>
     </>
   )
