@@ -29,7 +29,7 @@ Implement a comprehensive administrative boundary visualization system that allo
 - [ ] Street-level view remains point-based for precise location awareness.
 
 **Preconditions**:
-- User is viewing the Electri-Map interactive map.
+- User is viewing the NeighborPulse interactive map.
 - Location data points exist within the boundaries.
 
 **Actions**:

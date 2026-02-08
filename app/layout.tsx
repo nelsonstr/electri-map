@@ -6,8 +6,8 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "services-status.xyz",
-  description: "Real-time crowdsourced reporting of services, utilities, and infrastructure status in your area",
+  title: "NeighborPulse | Your Community's Living Pulse",
+  description: "Real-time crowdsourced reporting of services, utilities, and infrastructure status in your area. Your Community's Living Pulse.",
   icons: {
     icon: '/ico2.png',
   },

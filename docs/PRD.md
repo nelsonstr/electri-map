@@ -185,7 +185,7 @@ During widespread emergencies (major storms, earthquakes, infrastructure failure
 ### Challenge 2: Trust Establishment in Crowdsourced Emergency Information
 
 **Specific Design Problem or Constraint:**
-Users must trust the information they receive on Electri-Map, but the platform relies on crowd-sourced reports from unverified individuals. During life-threatening emergencies, incorrect information could have severe consequences.
+Users must trust the information they receive on NeighborPulse, but the platform relies on crowd-sourced reports from unverified individuals. During life-threatening emergencies, incorrect information could have severe consequences.
 
 **Impact on User Experience and Product Adoption:**
 - Hesitation to act on untrusted information delays emergency response
@@ -255,7 +255,7 @@ Emergency situations require rapid reporting, but the platform must prevent fals
 ### Challenge 4: Designing for Diverse Technical Literacy Levels
 
 **Specific Design Problem or Constraint:**
-Electri-Map serves users ranging from tech-savvy millennials to elderly individuals with limited digital experience. Emergency situations may be users' first interaction with the platform, requiring immediate intuitive understanding.
+NeighborPulse serves users ranging from tech-savvy millennials to elderly individuals with limited digital experience. Emergency situations may be users' first interaction with the platform, requiring immediate intuitive understanding.
 
 **Impact on User Experience and Product Adoption:**
 - Complex interfaces delay critical information access
@@ -290,7 +290,7 @@ Electri-Map serves users ranging from tech-savvy millennials to elderly individu
 ### Challenge 5: Real-Time Synchronization UX Across Multiple Devices
 
 **Specific Design Problem or Constraint:**
-Users may access Electri-Map simultaneously on phone, tablet, and desktop. Real-time updates must be synchronized seamlessly while avoiding confusing duplicate notifications or conflicting states.
+Users may access NeighborPulse simultaneously on phone, tablet, and desktop. Real-time updates must be synchronized seamlessly while avoiding confusing duplicate notifications or conflicting states.
 
 **Impact on User Experience and Product Adoption:**
 - Confusing state when viewing same data on multiple devices

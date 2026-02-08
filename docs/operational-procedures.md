@@ -1,6 +1,6 @@
 # Operational Procedures Manual
 
-**Electri-Map Civic Infrastructure Management Platform**
+**NeighborPulse Civic Infrastructure Management Platform**
 
 **Version:** 1.0  
 **Date:** January 2025  
@@ -23,7 +23,7 @@
 
 ## 1. Introduction
 
-This Operational Procedures Manual provides comprehensive guidance for operating the Electri-Map Civic Infrastructure Management Platform. It covers all aspects of service request handling, incident management, maintenance operations, and resource allocation across the eight service categories.
+This Operational Procedures Manual provides comprehensive guidance for operating the NeighborPulse Civic Infrastructure Management Platform. It covers all aspects of service request handling, incident management, maintenance operations, and resource allocation across the eight service categories.
 
 ### 1.1 Purpose and Scope
 
@@ -51,7 +51,7 @@ This manual serves as the authoritative reference for:
 Service requests can be submitted through multiple channels:
 
 **Web Portal:**
-1. Citizen accesses the electri-map web application
+1. Citizen accesses the neighborpulse web application
 2. Selects appropriate service category from dropdown
 3. Provides location (address or map pin)
 4. Describes issue with optional photo/video attachments

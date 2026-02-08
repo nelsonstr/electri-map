@@ -37,6 +37,7 @@ import type { CommunityAlert } from "@/types/community-alert"
 import { AlertService } from "@/lib/services/emergency/alert-service"
 import { AlertSheet } from "@/components/emergency/alert-sheet"
 import { Info } from "lucide-react"
+import { BoundaryLayer } from "@/components/map/boundary-layer"
 
 
 
@@ -58,7 +59,7 @@ const DefaultIcon = (hasElectricity: boolean, serviceType: string = "electrical"
         iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 22 3-7V5c0-1.1-.9-2-2-2s-2 .9-2 2v10l3 7Z"/><path d="M9 15.5a5 5 0 1 1 6 0"/></svg>'
   } else if (serviceType === "multi-issue") {
         bgColor = "bg-purple-600"
-        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
       } else if (serviceType === "multi-restoration") {
         bgColor = "bg-cyan-600"
         iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
@@ -237,7 +238,7 @@ const formatDistance = (meters: number): string => {
 }
 
 // Component to handle map location control
-function LocationControl() {
+function LocationControl({ onLocationFoundCallback }: { onLocationFoundCallback?: (pos: [number, number]) => void }) {
   const map = useMap()
   const [locating, setLocating] = useState(false)
 
@@ -255,7 +256,9 @@ function LocationControl() {
       // Add event listeners for location events
       const onLocationFound = (e: any) => {
         setLocating(false)
-        // You could add a marker at the user's location if desired
+        if (onLocationFoundCallback) {
+            onLocationFoundCallback([e.latlng.lat, e.latlng.lng])
+        }
       }
 
       const onLocationError = (e: any) => {
@@ -281,9 +284,7 @@ function LocationControl() {
     }
   }
 
-  useEffect(() => {
-    handleLocate()
-  }, [])
+// Removed useEffect triggering handleLocate on mount to avoid double-firing with parent component logic
 
   return (
     <div className="leaflet-top leaflet-right" style={{ zIndex: 1000 }}>
@@ -322,7 +323,7 @@ function SearchControl() {
         {
           headers: {
             "Accept-Language": "en",
-            "User-Agent": "ElectricityStatusMap/1.0",
+            "User-Agent": "NeighborPulse/1.0",
           },
         },
       )
@@ -429,7 +430,7 @@ function QuickReportControl() {
 
       toast({
         title: "Status reported successfully",
-        description: "Thank you for contributing to the services status map!",
+        description: "Thank you for contributing to the community status map!",
       })
 
       // No page reload; realtime subscription will append new report
@@ -615,11 +616,11 @@ const getLocationInfo = async (latitude: number, longitude: number) => {
   }
 }
 
-interface ElectricityMapProps {
+interface NeighborPulseMapProps {
   className?: string
 }
 
-export default function ElectricityMap({ className }: ElectricityMapProps) {
+export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
   const [locations, setLocations] = useState<Location[]>([])
   const [sosAlerts, setSosAlerts] = useState<SOSAlert[]>([])
   const [safeZones, setSafeZones] = useState<SafeZone[]>([])
@@ -708,12 +709,15 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
         },
         (error) => {
           console.error("Geolocation error:", error.message)
-          setError("Could not access your location.")
+           // Fallback to default location
+           setPosition([37.7749, -122.4194])
         },
         { timeout: 10000, enableHighAccuracy: false }
       )
     } else {
-      setError("Geolocation not supported by your browser.")
+       console.log("Geolocation not supported, using default location")
+        // Default to a central location (e.g., San Francisco for demo purposes)
+       setPosition([37.7749, -122.4194]) 
     }
 
     // Fetch locations from last 24 hours from Supabase
@@ -788,15 +792,13 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
     }
   }, [supabase, fetchSOSAlerts, fetchSafeZones])
 
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    )
-  }
+    // If error (e.g. location denied), we still want to show the map, just with a default view and maybe a toast 
+    if (error && !position) {
+         // Default location if we really can't get one and haven't set a fallback yet
+         setPosition([37.7749, -122.4194])
+         // We can clear the error so the map renders
+         setError(null)
+    }
 
   return (
     <>
@@ -861,9 +863,10 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          <LocationControl />
+          <LocationControl onLocationFoundCallback={(pos) => setPosition(pos)} />
           <SearchControl />
           <QuickReportControl />
+          <BoundaryLayer />
           
           {/* SOS Button floating on map */}
           <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, margin: "10px" }}>

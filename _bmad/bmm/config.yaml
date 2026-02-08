@@ -3,7 +3,7 @@
 # Version: 6.0.0-Beta.7
 # Date: 2026-02-06T16:42:22.156Z
 
-project_name: electri-map
+project_name: neighborpulse
 user_skill_level: intermediate
 planning_artifacts: "{project-root}/_bmad-output/planning-artifacts"
 implementation_artifacts: "{project-root}/_bmad-output/implementation-artifacts"

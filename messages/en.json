@@ -263,7 +263,8 @@
             "ariaLabel": "Emergency SOS button. Press to send emergency alert.",
             "tapCount": "Tap {count} more time(s) to activate",
             "active": "SOS Active",
-            "activeAria": "SOS button activated, sending emergency alert"
+            "activeAria": "SOS button activated, sending emergency alert",
+            "description": "Emergency SOS button to request immediate assistance"
         },
         "quickActions": {
             "callEmergency": "Call Emergency Services",

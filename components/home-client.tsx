@@ -2,7 +2,7 @@
 
 import { Suspense } from "react"
 import { useTranslations } from 'next-intl'
-import ElectricityMap from "@/components/electricity-map"
+import NeighborPulseMap from "@/components/neighbor-pulse-map"
 import AddLocationForm from "@/components/add-location-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -80,7 +80,7 @@ export default function HomeClient() {
                         </div>
                       }
                     >
-                      <ElectricityMap className="h-full w-full absolute inset-0" />
+                      <NeighborPulseMap className="h-full w-full absolute inset-0" />
                     </Suspense>
                   </CardContent>
                 </Card>

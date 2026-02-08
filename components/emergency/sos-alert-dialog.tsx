@@ -72,14 +72,7 @@ export function SosAlertDialog({
   const [locationStatus, setLocationStatus] = useState<'unknown' | 'confirming' | 'confirmed'>('unknown')
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
 
-  const {
-    register,
-    watch,
-    setValue,
-    trigger,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SOSFormData>({
+  const form = useForm<SOSFormData>({
     resolver: zodResolver(sosFormSchema),
     defaultValues: {
       emergencyType: undefined,
@@ -88,6 +81,9 @@ export function SosAlertDialog({
       notifyContacts: false,
     } as any,
   })
+
+  const { register, watch, setValue, trigger, handleSubmit, formState: { errors } } = form
+
 
   const formValues = watch()
 

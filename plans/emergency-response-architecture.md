@@ -9,14 +9,14 @@
 
 ## 1. Executive Summary
 
-This document outlines the comprehensive full-stack architecture and technology stack for building an **Emergency Response Application** that integrates with the existing electri-map civic infrastructure monitoring platform. The application will support emergency services (bombeiros, protecao civil) with real-time incident management, multi-agency coordination, resource tracking, and citizen alert systems.
+This document outlines the comprehensive full-stack architecture and technology stack for building an **Emergency Response Application** that integrates with the existing neighborpulse civic infrastructure monitoring platform. The application will support emergency services (bombeiros, protecao civil) with real-time incident management, multi-agency coordination, resource tracking, and citizen alert systems.
 
 **Key Objectives:**
 - Real-time emergency incident tracking and management
 - Multi-agency coordination for fire services, civil protection, EMS, and police
 - Resource allocation and tracking (personnel, equipment, vehicles)
 - Citizen alert and notification system
-- Integration with existing electri-map infrastructure
+- Integration with existing NeighborPulse infrastructure
 - Scalable architecture supporting 1M+ concurrent users during emergencies
 
 ---
@@ -159,7 +159,7 @@ graph TB
 ### 4.1 Module Structure
 
 ```
-electri-map/
+neighborpulse/
 ├── app/                           # Next.js App Router
 │   ├── (auth)/                    # Authentication routes
 │   │   ├── login/
@@ -475,9 +475,9 @@ sequenceDiagram
     MO->>MO: Acknowledge and respond
 ```
 
-### 6.3 Integration with Existing Electri-Map
+### 6.3 Integration with Existing NeighborPulse
 
-The emergency response app integrates with existing electri-map infrastructure:
+The emergency response app integrates with existing NeighborPulse infrastructure:
 
 1. **Shared Authentication:** Supabase Auth (same users, roles)
 2. **Shared Database:** Extended schema with RLS policies

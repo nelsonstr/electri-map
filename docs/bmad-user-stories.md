@@ -1600,7 +1600,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/neighborpulse/neighborpulse.git
-cd electri-map
+cd neighborpulse
 npm install
 ```
 

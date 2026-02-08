@@ -46,6 +46,7 @@
             "selectOnMap": "Selecionar no Mapa",
             "detecting": "Detectando...",
             "enterManually": "Inserir manualmente",
+            "useCurrentLocation": "Usar Localização Atual",
             "usingCurrentLocation": "Usando Localização Atual",
             "detectingCoordinates": "Detectando coordenadas...",
             "refreshLocation": "Atualizar Localização",
@@ -262,7 +263,8 @@
             "ariaLabel": "Botão SOS de Emergência. Pressione para enviar alerta de emergência.",
             "tapCount": "Toque mais {count} vez(es) para ativar",
             "active": "SOS Ativo",
-            "activeAria": "Botão SOS ativado, enviando alerta de emergência"
+            "activeAria": "Botão SOS ativado, enviando alerta de emergência",
+            "description": "Botão SOS de emergência para solicitar assistência imediata"
         },
         "quickActions": {
             "callEmergency": "Ligar para Emergência",

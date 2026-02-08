@@ -46,6 +46,7 @@
             "selectOnMap": "Sélectionner sur la Carte",
             "detecting": "Détection en cours...",
             "enterManually": "Saisir manuellement",
+            "useCurrentLocation": "Utiliser ma position",
             "usingCurrentLocation": "Utilisation de l'Emplacement Actuel",
             "detectingCoordinates": "Détection des coordonnées...",
             "refreshLocation": "Actualiser l'Emplacement",
@@ -226,7 +227,8 @@
             "ariaLabel": "Bouton SOS d'urgence. Appuyez pour envoyer une alerte d'urgence.",
             "tapCount": "Appuyez {count} fois de plus pour activer",
             "active": "SOS Actif",
-            "activeAria": "Bouton SOS activé, envoi d'une alerte d'urgence"
+            "activeAria": "Bouton SOS activé, envoi d'une alerte d'urgence",
+            "description": "Bouton SOS d'urgence pour demander une assistance immédiate"
         },
         "quickActions": {
             "callEmergency": "Appeler les Urgences",

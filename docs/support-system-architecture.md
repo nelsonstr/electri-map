@@ -1,6 +1,6 @@
 # Support System Architecture Document
 
-**Electri-Map Civic Infrastructure Management Platform**
+**NeighborPulse Civic Infrastructure Management Platform**
 
 **Version:** 1.0  
 **Date:** January 2025  
@@ -26,7 +26,7 @@
 
 ### 1.1 High-Level Architecture
 
-The Support System Architecture is designed as a modular, extensible platform that extends the existing electri-map infrastructure to support comprehensive civic service management. The architecture follows a layered approach with clear separation between citizen-facing services, operational systems, and backend infrastructure.
+The Support System Architecture is designed as a modular, extensible platform that extends the existing NeighborPulse infrastructure to support comprehensive civic service management. The architecture follows a layered approach with clear separation between citizen-facing services, operational systems, and backend infrastructure.
 
 ```mermaid
 graph TB
@@ -165,7 +165,7 @@ graph TD
 
 #### 2.2.1 Electrical Systems and Power Distribution Networks
 
-This category encompasses all electrical infrastructure including power lines, transformers, substations, and public lighting systems. The electrical category is the primary focus of the existing electri-map platform.
+This category encompasses all electrical infrastructure including power lines, transformers, substations, and public lighting systems. The electrical category is the primary focus of the existing NeighborPulse platform.
 
 **Subcategories:**
 - **Power Distribution** covers issues with overhead and underground power lines, transformers, fuse boxes, and electrical panels serving residential and commercial areas
@@ -764,9 +764,9 @@ flowchart TD
 
 ## 6. Integration Points
 
-### 6.1 Existing Electri-Map Integration
+### 6.1 Existing NeighborPulse Integration
 
-The support system builds upon and extends existing electri-map components:
+The support system builds upon and extends existing NeighborPulse components:
 
 **Existing Components Integration:**
 - [`components/civic/issue-report-form.tsx`](components/civic/issue-report-form.tsx:1) extends to support new categories
@@ -776,7 +776,7 @@ The support system builds upon and extends existing electri-map components:
 - [`supabase/schema.sql`](supabase/schema.sql:1) enhanced with new tables and functions
 
 **Data Sharing:**
-The platform shares data with existing electri-map components:
+The platform shares data with existing NeighborPulse components:
 - Issue data flows bidirectionally with the existing civic issue system
 - Location data integrates with the existing map infrastructure
 - User authentication uses existing Supabase auth integration
@@ -842,7 +842,7 @@ Real-time updates through WebSocket connections for:
 
 ### 7.1 Technology Stack
 
-Based on the existing electri-map infrastructure and the requirements of the support system, the following technology recommendations are made:
+Based on the existing NeighborPulse infrastructure and the requirements of the support system, the following technology recommendations are made:
 
 **Frontend Technologies:**
 - React 18 with TypeScript for type safety
@@ -1053,7 +1053,7 @@ The architecture is designed to support growth from initial deployment through e
 
 ## Appendix B: Reference Documents
 
-- Existing Electri-Map Documentation
+- Existing NeighborPulse Documentation
 - Supabase Documentation
 - Next.js Documentation
 - React Documentation

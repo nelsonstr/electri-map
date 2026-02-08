@@ -1,4 +1,4 @@
-// Emergency Incident Types for Electri-Map Emergency Response System
+// Emergency Incident Types for NeighborPulse Emergency Response System
 // Phase 1: Core Infrastructure
 
 // ============================================================================
