@@ -1,11 +1,17 @@
 {
     "header": {
-        "siteName": "Services Status",
+        "siteName": "NeighborPulse",
         "nav": {
             "home": "Home",
             "about": "About",
             "blog": "Blog",
             "privacy": "Privacy"
+        },
+        "communityAlert": {
+            "title": "Community Alerts",
+            "notifications": "Alert Notifications",
+            "alertsTab": "Alerts",
+            "settingsTab": "Settings"
         }
     },
     "home": {
@@ -250,5 +256,231 @@
         "supportUs": "Support Us",
         "becomeASponsor": "Become a Sponsor",
         "message": "Help us keep this service free and accessible"
+    },
+    "sos": {
+        "button": {
+            "label": "Emergency SOS",
+            "ariaLabel": "Emergency SOS button. Press to send emergency alert.",
+            "tapCount": "Tap {count} more time(s) to activate",
+            "active": "SOS Active",
+            "activeAria": "SOS button activated, sending emergency alert"
+        },
+        "quickActions": {
+            "callEmergency": "Call Emergency Services",
+            "viewInstructions": "View Safety Instructions",
+            "shareLocation": "Share My Location"
+        },
+        "dialog": {
+            "title": "Emergency Alert",
+            "description": "Create an emergency SOS alert to notify authorities and emergency contacts"
+        },
+        "steps": {
+            "emergencyType": "Select Emergency Type",
+            "location": "Confirm Your Location",
+            "contacts": "Emergency Contacts",
+            "confirm": "Confirm Emergency Alert"
+        },
+        "emergencyTypes": {
+            "fire": "Fire",
+            "flooding": "Flooding",
+            "electrocution": "Electrocution Hazard",
+            "collapse": "Building Collapse",
+            "medical": "Medical Emergency"
+        },
+        "location": {
+            "currentLocation": "Your Current Location",
+            "confirmButton": "Confirm Location",
+            "confirming": "Confirming...",
+            "confirmed": "Location Confirmed",
+            "fetching": "Fetching your location...",
+            "error": "Unable to get your location. Please enable location services."
+        },
+        "contacts": {
+            "optional": "Optional",
+            "description": "Notify your emergency contacts via SMS about this emergency.",
+            "notify": "Notify Emergency Contacts",
+            "enabled": "Enabled",
+            "disabled": "Disabled",
+            "toggleLabel": "Enable SMS notifications to emergency contacts"
+        },
+        "confirm": {
+            "summary": "Alert Summary",
+            "type": "Emergency Type",
+            "location": "Location",
+            "contacts": "Contact Notification",
+            "confirmed": "Confirmed",
+            "yes": "Yes",
+            "no": "No",
+            "warningTitle": "Important",
+            "warningMessage": "This will alert emergency services and your contacts. Only use in real emergencies."
+        },
+        "buttons": {
+            "back": "Back",
+            "next": "Next",
+            "confirmSOS": "Confirm SOS Alert",
+            "submitting": "Sending...",
+            "cancel": "Cancel"
+        },
+        "success": {
+            "title": "SOS Alert Sent",
+            "message": "Emergency services and your contacts have been notified."
+        },
+        "errors": {
+            "title": "Error",
+            "selectType": "Please select an emergency type",
+            "confirmLocation": "Please confirm your location",
+            "locationError": "Unable to access your location. Please enable location services.",
+            "locationRequired": "Location is required to send SOS alert",
+            "submissionError": "Failed to send SOS alert. Please try again."
+        },
+        "map": {
+            "markerLabel": "SOS Alert - {type}",
+            "clusterLabel": "{count} SOS Alerts"
+        }
+    },
+    "safeZone": {
+        "title": "Safe Zone Locator",
+        "description": "Find safe locations with working services during emergencies",
+        "show": "Show Safe Zones",
+        "hide": "Hide Safe Zones",
+        "safetyRating": "Safety Rating",
+        "openNow": "Open Now",
+        "closed": "Closed",
+        "roadAccessible": "Road Accessible",
+        "hours": "Hours",
+        "phone": "Phone",
+        "capacity": "Current Capacity",
+        "people": "people",
+        "availableServices": "Available Services",
+        "descriptionLabel": "Description",
+        "lastUpdated": "Last Updated",
+        "navigate": "Navigate",
+        "call": "Call",
+        "openingMaps": "Opening Maps...",
+        "openInMaps": "Open in Maps",
+        "dataMayBeInaccurate": "Information may not be real-time. Verify before traveling.",
+        "close": "Close",
+        "noZonesFound": "No safe zones found in this area",
+        "loading": "Loading safe zones...",
+        "error": "Error loading safe zones",
+        "retry": "Retry",
+        "categories": {
+            "hospital": "Hospital",
+            "shelter": "Shelter",
+            "police-station": "Police Station",
+            "fire-station": "Fire Station",
+            "community-center": "Community Center",
+            "business": "Open Business"
+        },
+        "services": {
+            "power": "Power",
+            "water": "Water",
+            "shelter": "Shelter",
+            "medical": "Medical",
+            "communication": "Communication",
+            "food": "Food"
+        },
+        "filters": {
+            "title": "Filter Safe Zones",
+            "hasPower": "Has Power",
+            "hasWater": "Has Water",
+            "roadAccessible": "Road Accessible",
+            "clearFilters": "Clear Filters"
+        },
+        "sort": {
+            "title": "Sort By",
+            "distance": "Distance",
+            "safety": "Safety Rating",
+            "services": "Available Services"
+        },
+        "list": {
+            "title": "Nearby Safe Zones",
+            "showing": "Showing {count} safe zones",
+            "selected": "Selected",
+            "viewOnMap": "View on Map",
+            "getDirections": "Get Directions"
+        }
+    },
+    "communityAlert": {
+        "title": "Community Alerts",
+        "notifications": "Alert Notifications",
+        "alertsTab": "Alerts",
+        "settingsTab": "Settings",
+        "show": "Show Alerts",
+        "hide": "Hide Alerts",
+        "noAlerts": "No alerts in your area",
+        "loading": "Loading alerts...",
+        "error": "Error loading alerts",
+        "retry": "Retry",
+        "critical": "Critical",
+        "warning": "Warning",
+        "informational": "Info",
+        "severity": {
+            "critical": "Critical",
+            "warning": "Warning",
+            "informational": "Informational"
+        },
+        "alertTypes": {
+            "powerOutage": "Power Outage",
+            "waterOutage": "Water Outage",
+            "gasLeak": "Gas Leak",
+            "roadClosure": "Road Closure",
+            "fire": "Fire",
+            "flood": "Flood",
+            "medical": "Medical Emergency",
+            "infrastructure": "Infrastructure Issue",
+            "other": "Other"
+        },
+        "distance": "{distance} away",
+        "timeAgo": "{time} ago",
+        "justNow": "Just now",
+        "minutesAgo": "{count} min ago",
+        "hoursAgo": "{count} hours ago",
+        "activeUntil": "Active until",
+        "viewOnMap": "View on Map",
+        "dismiss": "Dismiss",
+        "settings": {
+            "title": "Alert Settings",
+            "description": "Configure how you receive community alerts",
+            "notifications": {
+                "title": "Notifications",
+                "enablePush": "Enable push notifications",
+                "enablePushDesc": "Receive alerts on your device",
+                "enableCriticalSMS": "Critical alerts via SMS",
+                "enableCriticalSMSDesc": "Get SMS for critical emergencies"
+            },
+            "radius": {
+                "title": "Alert Radius",
+                "description": "Receive alerts within",
+                "meters": "{value} meters",
+                "kilometers": "{value} km",
+                "min": "500m",
+                "max": "10km"
+            },
+            "severity": {
+                "title": "Severity Levels",
+                "description": "Which alert severities to show",
+                "critical": "Critical alerts",
+                "warning": "Warning alerts",
+                "informational": "Informational alerts"
+            },
+            "quietHours": {
+                "title": "Quiet Hours",
+                "description": "Silence non-critical alerts",
+                "enabled": "Enable quiet hours",
+                "start": "Start time",
+                "end": "End time",
+                "criticalOverride": "Critical alerts always notify"
+            },
+            "save": "Save Settings",
+            "saved": "Settings saved successfully"
+        },
+        "enableNotifications": {
+            "title": "Enable Notifications",
+            "description": "Allow push notifications to receive alerts",
+            "enable": "Enable Notifications",
+            "denied": "Notifications blocked",
+            "deniedDesc": "Please enable notifications in your browser settings"
+        }
     }
 }

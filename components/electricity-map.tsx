@@ -2,14 +2,14 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
+import { useEffect, useState, useCallback } from "react"
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import * as L from "leaflet"
 import { useTranslations } from "next-intl"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus, Wifi, Droplets, Smartphone, AlertTriangle } from "lucide-react"
+import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus, Wifi, Droplets, Smartphone, AlertTriangle, Siren } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input" 
 import { useToast } from "@/components/ui/use-toast"
+import { Shield, ShieldCheck } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { SOSButton } from "@/components/emergency/sos-button"
+import { SosAlertDialog } from "@/components/emergency/sos-alert-dialog"
+import { SafeZoneSheet } from "@/components/emergency/safe-zone-sheet"
+import { SafeZoneList } from "@/components/emergency/safe-zone-list"
+import { listActiveSOSAlerts, type SOSAlert } from "@/lib/services/emergency/sos-service"
+import { listNearbySafeZones, type SafeZone, type SafeZoneFilters, type SafeZoneSortOption } from "@/lib/services/emergency/safe-zone-service"
+import type { CommunityAlert } from "@/types/community-alert"
+import { AlertService } from "@/lib/services/emergency/alert-service"
+import { AlertSheet } from "@/components/emergency/alert-sheet"
+import { Info } from "lucide-react"
 
 
 
@@ -66,6 +77,163 @@ const DefaultIcon = (hasElectricity: boolean, serviceType: string = "electrical"
     iconSize: [30, 30],
     iconAnchor: [15, 15],
   })
+}
+
+// SOS Alert Icon with pulsing animation
+const SOSIcon = (emergencyType: string, priority: number) => {
+  // Color based on emergency type
+  const getEmergencyColor = (type: string) => {
+    const colors: Record<string, string> = {
+      fire: "#ef4444",
+      flooding: "#3b82f6",
+      electrocution: "#f59e0b",
+      building_collapse: "#6b7280",
+      medical: "#dc2626",
+    }
+    return colors[type] || "#ef4444"
+  }
+
+  const color = getEmergencyColor(emergencyType)
+  const pulseClass = priority <= 2 ? "sos-marker-critical" : "sos-marker-high"
+
+  return L.divIcon({
+    className: `sos-marker ${pulseClass}`,
+    html: `<div class="sos-marker-container" style="--sos-color: ${color}">
+      <div class="sos-marker-pulse"></div>
+      <div class="sos-marker-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/>
+          <path d="M3 3h18"/>
+          <path d="M12 15v5"/>
+          <path d="M9 9l6 6"/>
+          <path d="M15 9l-6 6"/>
+        </svg>
+      </div>
+    </div>`,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  })
+}
+
+// Safe Zone Icon with calm, reassuring design
+const SafeZoneIcon = (category: string, safetyRating: number) => {
+  // Get icon based on category
+  const getCategoryIcon = (cat: string) => {
+    const icons: Record<string, string> = {
+      hospital: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6"/><path d="M18 12a6 6 0 1 0-12 0c0-2 1.5-3.5 3.5-5 1 1.5 2.5 2 2.5 5Z"/><path d="M6 12a6 6 0 1 0 12 0c0 2-1.5 3.5-3.5 5-1-1.5-2.5-2-2.5-5Z"/></svg>',
+      shelter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      'police-station': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18v-8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8z"/><path d="M12 11V3"/><path d="M8 3h8"/></svg>',
+      'fire-station': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 14-2-4-4-2 1-5 3-5 5 1.5 3.5-1 1 3.5 2 4z"/><path d="M5 21V3l3 3h8l-1 6"/></svg>',
+      'community-center': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/></svg>',
+      business: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M9 9h6v6H9z"/></svg>',
+    }
+    return icons[cat] || icons.business
+  }
+
+  // Color based on safety rating
+  const getSafetyColor = (rating: number): string => {
+    if (rating >= 4) return '#22c55e' // green-500
+    if (rating >= 3) return '#84cc16' // lime-500
+    if (rating >= 2) return '#eab308' // yellow-500
+    return '#f97316' // orange-500
+  }
+
+  const color = getSafetyColor(safetyRating)
+  const iconSvg = getCategoryIcon(category)
+
+  return L.divIcon({
+    className: 'safe-zone-marker',
+    html: `<div class="safe-zone-marker-container" style="--safe-color: ${color}">
+      <div class="safe-zone-marker-icon">
+        ${iconSvg}
+      </div>
+    </div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  })
+}
+
+// Helper function to get emergency type label
+const getEmergencyTypeLabel = (type: string): string => {
+  const labels: Record<string, string> = {
+    fire: "Fire",
+    flooding: "Flooding",
+    electrocution: "Electrocution Hazard",
+    building_collapse: "Building Collapse",
+    medical: "Medical Emergency",
+  }
+  return labels[type] || type
+}
+
+// Helper function to get priority label
+const getPriorityLabel = (priority: number): string => {
+  if (priority === 1) return "Critical"
+  if (priority === 2) return "High"
+  return "Medium"
+}
+
+// Helper function to get safe zone category icon
+const getSafeZoneCategoryIcon = (category: string): string => {
+  const icons: Record<string, string> = {
+    hospital: "🏥",
+    shelter: "🏠",
+    "police-station": "🚒",
+    "fire-station": "🚒",
+    "community-center": "🏛️",
+    business: "🏪",
+  }
+  return icons[category] || "🏪"
+}
+
+// Helper function to get safety rating color
+const getSafetyRatingColor = (rating: number): string => {
+  if (rating >= 4) return '#22c55e' // green-500
+  if (rating >= 3) return '#84cc16' // lime-500
+  if (rating >= 2) return '#eab308' // yellow-500
+  return '#f97316' // orange-500
+}
+
+// Community Alert Icon
+const CommunityAlertIcon = (severity: CommunityAlert['severity']) => {
+  const getSeverityColor = (s: CommunityAlert['severity']): string => {
+    const colors: Record<CommunityAlert['severity'], string> = {
+      informational: '#3B82F6', // blue-500
+      warning: '#F59E0B', // amber-500
+      critical: '#EF4444', // red-500
+    }
+    return colors[s]
+  }
+
+  const getSeverityIcon = (s: CommunityAlert['severity']): string => {
+    const icons: Record<CommunityAlert['severity'], string> = {
+      informational: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      warning: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      critical: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    }
+    return icons[s]
+  }
+
+  const color = getSeverityColor(severity)
+  const iconSvg = getSeverityIcon(severity)
+
+  return L.divIcon({
+    className: 'community-alert-marker',
+    html: `<div class="community-alert-marker-container" style="--alert-color: ${color}">
+      <div class="community-alert-marker-icon">
+        ${iconSvg}
+      </div>
+    </div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  })
+}
+
+// Helper to format distance
+const formatDistance = (meters: number): string => {
+  if (meters >= 1000) {
+    return `${(meters / 1000).toFixed(1)} km`
+  }
+  return `${Math.round(meters)} m`
 }
 
 // Component to handle map location control
@@ -293,8 +461,8 @@ function QuickReportControl() {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
-            <DialogDescription>{t("description")}</DialogDescription>
+            <DialogTitle>{t("quickReport.title")}</DialogTitle>
+            <DialogDescription>{t("quickReport.description")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -374,7 +542,7 @@ function QuickReportControl() {
 
             <div>
               <Textarea
-                placeholder={t("placeholder")}
+                placeholder={t("quickReport.placeholder")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="resize-none"
@@ -453,11 +621,83 @@ interface ElectricityMapProps {
 
 export default function ElectricityMap({ className }: ElectricityMapProps) {
   const [locations, setLocations] = useState<Location[]>([])
+  const [sosAlerts, setSosAlerts] = useState<SOSAlert[]>([])
+  const [safeZones, setSafeZones] = useState<SafeZone[]>([])
+  const [communityAlerts, setCommunityAlerts] = useState<CommunityAlert[]>([])
+  const [alertFilters, setAlertFilters] = useState<{
+    severities: CommunityAlert['severity'][]
+    maxRadius: number
+  }>({
+    severities: ['informational', 'warning', 'critical'],
+    maxRadius: 10000, // 10km default
+  })
+  const [safeZoneFilters, setSafeZoneFilters] = useState<SafeZoneFilters>({
+    hasPower: undefined,
+    hasWater: undefined,
+    roadAccessible: undefined,
+    categories: undefined,
+  })
+  const [safeZoneSortBy, setSafeZoneSortBy] = useState<SafeZoneSortOption>('distance')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [position, setPosition] = useState<[number, number] | null>(null)
+  const [sosDialogOpen, setSosDialogOpen] = useState(false)
+  const [selectedSafeZone, setSelectedSafeZone] = useState<SafeZone | null>(null)
+  const [safeZoneSheetOpen, setSafeZoneSheetOpen] = useState(false)
+  const [selectedAlert, setSelectedAlert] = useState<CommunityAlert | null>(null)
+  const [alertSheetOpen, setAlertSheetOpen] = useState(false)
+  const [showSafeZones, setShowSafeZones] = useState(true)
+  const [showCommunityAlerts, setShowCommunityAlerts] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations("map")
+  const tRoot = useTranslations()
+
+  // Fetch SOS alerts
+  const fetchSOSAlerts = useCallback(async () => {
+    try {
+      const alerts = await listActiveSOSAlerts()
+      setSosAlerts(alerts)
+    } catch (err) {
+      console.error("Error fetching SOS alerts:", err)
+    }
+  }, [])
+
+  // Fetch safe zones
+  const fetchSafeZones = useCallback(async () => {
+    if (!position) return
+    
+    try {
+      const zones = await listNearbySafeZones(
+        position[0],
+        position[1],
+        50, // 50km radius
+        safeZoneFilters,
+        safeZoneSortBy
+      )
+      setSafeZones(zones)
+    } catch (err) {
+      console.error("Error fetching safe zones:", err)
+    }
+  }, [position, safeZoneFilters, safeZoneSortBy])
+
+  // Fetch community alerts
+  const fetchCommunityAlerts = useCallback(async () => {
+    if (!position) return
+    
+    try {
+      const alertService = new AlertService()
+      const alerts = await alertService.getNearbyAlerts(
+        position[0],
+        position[1],
+        alertFilters.maxRadius,
+        alertFilters.severities
+      )
+      setCommunityAlerts(alerts)
+    } catch (err) {
+      console.error("Error fetching community alerts:", err)
+    }
+  }, [position, alertFilters])
 
   useEffect(() => {
     // Get user location once on mount
@@ -498,8 +738,11 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
     }
 
     fetchLocations()
+    fetchSOSAlerts()
+    fetchSafeZones()
+    fetchCommunityAlerts()
 
-    // Set up real-time subscription
+    // Set up real-time subscription for locations
     const channel = supabase
       .channel("locations-changes")
       .on(
@@ -522,10 +765,28 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
       )
       .subscribe()
 
+    // Set up real-time subscription for SOS alerts
+    const sosChannel = supabase
+      .channel("sos-alerts-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sos_alerts",
+        },
+        () => {
+          // Refetch SOS alerts when changes occur
+          fetchSOSAlerts()
+        }
+      )
+      .subscribe()
+
     return () => {
       supabase.removeChannel(channel)
+      supabase.removeChannel(sosChannel)
     }
-  }, [])
+  }, [supabase, fetchSOSAlerts, fetchSafeZones])
 
   if (error) {
     return (
@@ -549,6 +810,46 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
           background: transparent;
           border: none;
         }
+        .safe-zone-marker {
+          background: transparent;
+          border: none;
+        }
+        .safe-zone-marker-container {
+          position: relative;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .safe-zone-marker-icon {
+          position: relative;
+          z-index: 1;
+          width: 28px;
+          height: 28px;
+          background: var(--safe-color);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+        @keyframes pulse-safe {
+          0% { transform: scale(1); opacity: 0.3; }
+          100% { transform: scale(2); opacity: 0; }
+        }
+        @keyframes pulse-sos {
+          0% { transform: scale(1); opacity: 0.4; }
+          100% { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes pulse-critical {
+          0% { transform: scale(0.8); opacity: 0.6; }
+          100% { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes pulse-high {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
       `}</style>
       {/* Show loader until position is available */}
       {!position && <div>Loading map...</div>}
@@ -563,6 +864,45 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
           <LocationControl />
           <SearchControl />
           <QuickReportControl />
+          
+          {/* SOS Button floating on map */}
+          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, margin: "10px" }}>
+            <SOSButton onSOSClick={() => setSosDialogOpen(true)} />
+          </div>
+
+          {/* Safe Zone Toggle Button */}
+          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, marginTop: "80px", marginLeft: "10px" }}>
+            <Button
+              variant={showSafeZones ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowSafeZones(!showSafeZones)}
+              className="flex items-center gap-2"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {showSafeZones ? tRoot("safeZone.hide") : tRoot("safeZone.show")}
+            </Button>
+          </div>
+
+          {/* Community Alert Toggle Button */}
+          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, marginTop: showSafeZones ? "120px" : "80px", marginLeft: "10px" }}>
+            <Button
+              variant={showCommunityAlerts ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowCommunityAlerts(!showCommunityAlerts)}
+              className="flex items-center gap-2"
+            >
+              <AlertCircle className="h-4 w-4" />
+              {showCommunityAlerts ? tRoot("communityAlert.hide") : tRoot("communityAlert.show")}
+              {communityAlerts.length > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {communityAlerts.filter(a => a.severity === 'critical').length > 0 && (
+                    <span className="mr-1 text-red-500">●</span>
+                  )}
+                  {communityAlerts.length}
+                </Badge>
+              )}
+            </Button>
+          </div>
 
           {locations.map((location) => (
             <Marker
@@ -602,8 +942,187 @@ export default function ElectricityMap({ className }: ElectricityMapProps) {
               </Popup>
             </Marker>
           ))}
+
+          {/* SOS Alert Markers */}
+          {sosAlerts.map((alert) => (
+            <Marker
+              key={alert.id}
+              position={[alert.latitude, alert.longitude]}
+              icon={SOSIcon(alert.emergency_type, alert.priority)}
+            >
+              <Popup>
+                <div className="p-2 min-w-[200px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="destructive" className="flex items-center gap-1">
+                      <Siren className="h-3 w-3" />
+                      SOS
+                    </Badge>
+                    <Badge variant="outline">
+                      {getEmergencyTypeLabel(alert.emergency_type)}
+                    </Badge>
+                  </div>
+                  
+                  <Badge className={`mb-2 ${
+                    alert.priority <= 2 
+                      ? "bg-red-600" 
+                      : alert.priority === 3 
+                        ? "bg-orange-500" 
+                        : "bg-yellow-500"
+                  }`}>
+                    {getPriorityLabel(alert.priority)} Priority
+                  </Badge>
+
+                  {alert.description && (
+                    <p className="text-sm mb-2">{alert.description}</p>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">
+                    Reported {formatDistanceToNow(new Date(alert.created_at))} ago
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
+          {/* Safe Zone Markers */}
+          {showSafeZones && safeZones.map((zone) => (
+            <Marker
+              key={zone.id}
+              position={[zone.location.latitude, zone.location.longitude]}
+              icon={SafeZoneIcon(zone.category, zone.safetyRating)}
+              eventHandlers={{
+                click: () => {
+                  setSelectedSafeZone(zone)
+                  setSafeZoneSheetOpen(true)
+                },
+              }}
+            >
+              <Popup>
+                <div className="p-2 min-w-[180px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl" aria-hidden="true">
+                      {getSafeZoneCategoryIcon(zone.category)}
+                    </span>
+                    <span className="font-medium">{zone.name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge style={{ backgroundColor: getSafetyRatingColor(zone.safetyRating) }}>
+                      Safety: {zone.safetyRating}/5
+                    </Badge>
+                    {zone.roadAccessible && (
+                      <Badge variant="outline">Road Accessible</Badge>
+                    )}
+                  </div>
+                  
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    {zone.services.hasPower && <div>✓ Power available</div>}
+                    {zone.services.hasWater && <div>✓ Water available</div>}
+                    {zone.services.hasShelter && <div>✓ Shelter available</div>}
+                  </div>
+                  
+                  <Button
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => {
+                      setSelectedSafeZone(zone)
+                      setSafeZoneSheetOpen(true)
+                    }}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
+          {/* Community Alert Markers */}
+          {showCommunityAlerts && communityAlerts.map((alert) => (
+            <React.Fragment key={alert.id}>
+              <Marker
+                position={[alert.latitude, alert.longitude]}
+                icon={CommunityAlertIcon(alert.severity)}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedAlert(alert)
+                    setAlertSheetOpen(true)
+                  },
+                }}
+              >
+                <Popup>
+                  <div className="p-2 min-w-[200px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      {alert.severity === 'critical' && <AlertTriangle className="h-5 w-5 text-red-500" />}
+                      {alert.severity === 'warning' && <AlertCircle className="h-5 w-5 text-amber-500" />}
+                      {alert.severity === 'informational' && <Info className="h-5 w-5 text-blue-500" />}
+                      <span className={`font-semibold ${
+                        alert.severity === 'critical' ? 'text-red-600' : 
+                        alert.severity === 'warning' ? 'text-amber-600' : 'text-blue-600'
+                      }`}>
+                        {alert.title}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{alert.description}</p>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p>{tRoot("communityAlert.distance")}: {formatDistance(alert.distance || 0)}</p>
+                      <p>{tRoot("communityAlert.severity")}: {tRoot(`communityAlert.severity.${alert.severity}`)}</p>
+                      <p>{tRoot("communityAlert.reportedAt")}: {new Date(alert.createdAt).toLocaleString()}</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2 w-full"
+                      onClick={() => {
+                        setSelectedAlert(alert)
+                        setAlertSheetOpen(true)
+                      }}
+                    >
+                      {tRoot("communityAlert.viewDetails")}
+                    </Button>
+                  </div>
+                </Popup>
+              </Marker>
+              {/* Alert Radius Circle */}
+              <Circle
+                center={[alert.latitude, alert.longitude]}
+                radius={alert.radius}
+                pathOptions={{
+                  color: alert.severity === 'critical' ? '#ef4444' : 
+                         alert.severity === 'warning' ? '#f59e0b' : '#3b82f6',
+                  fillColor: alert.severity === 'critical' ? '#ef4444' : 
+                             alert.severity === 'warning' ? '#f59e0b' : '#3b82f6',
+                  fillOpacity: 0.05,
+                  weight: 2,
+                  dashArray: '5, 10',
+                }}
+              />
+            </React.Fragment>
+          ))}
         </MapContainer>
       )}
+      
+      {/* SOS Alert Dialog */}
+      <SosAlertDialog 
+        open={sosDialogOpen} 
+        onOpenChange={setSosDialogOpen} 
+        onAlertCreated={fetchSOSAlerts}
+      />
+
+      {/* Safe Zone Sheet */}
+      <SafeZoneSheet
+        safeZone={selectedSafeZone}
+        userLatitude={position?.[0]}
+        userLongitude={position?.[1]}
+        open={safeZoneSheetOpen}
+        onOpenChange={setSafeZoneSheetOpen}
+      />
+
+      {/* Alert Sheet */}
+      <AlertSheet
+        alert={selectedAlert}
+        open={alertSheetOpen}
+        onOpenChange={setAlertSheetOpen}
+      />
     </>
   )
 }

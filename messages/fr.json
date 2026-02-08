@@ -1,11 +1,17 @@
 {
     "header": {
-        "siteName": "Statut des Services",
+        "siteName": "NeighborPulse",
         "nav": {
             "home": "Accueil",
             "about": "À propos",
             "blog": "Blog",
             "privacy": "Confidentialité"
+        },
+        "communityAlert": {
+            "title": "Alertes Communautaires",
+            "notifications": "Notifications d'Alertes",
+            "alertsTab": "Alertes",
+            "settingsTab": "Paramètres"
         }
     },
     "home": {
@@ -60,7 +66,12 @@
             "water": "Eau",
             "mobile": "Téléphonie Mobile",
             "roadBlock": "Blocage Routier",
-            "gas": "Gaz"
+            "gas": "Gaz",
+            "electricalDesc": "Pannes d'électricité ou problèmes",
+            "communicationDesc": "Internet ou ligne téléphonique en panne",
+            "waterDesc": "Pas d'eau ou faible pression",
+            "mobileDesc": "Pas de signal ou mauvaise couverture",
+            "roadBlockDesc": "route bloquée ou fermée"
         },
         "commentSection": {
             "title": "Détails Supplémentaires",
@@ -208,5 +219,230 @@
         "supportUs": "Soutenez-nous",
         "becomeASponsor": "Devenir Sponsor",
         "message": "Aidez-nous à maintenir ce service gratuit et accessible"
+    },
+    "sos": {
+        "button": {
+            "label": "SOS Urgence",
+            "ariaLabel": "Bouton SOS d'urgence. Appuyez pour envoyer une alerte d'urgence.",
+            "tapCount": "Appuyez {count} fois de plus pour activer",
+            "active": "SOS Actif",
+            "activeAria": "Bouton SOS activé, envoi d'une alerte d'urgence"
+        },
+        "quickActions": {
+            "callEmergency": "Appeler les Urgences",
+            "viewInstructions": "Voir les Consignes de Sécurité",
+            "shareLocation": "Partager Ma Position"
+        },
+        "dialog": {
+            "title": "Alerte d'Urgence",
+            "description": "Créez une alerte SOS pour prévenir les autorités et les contacts d'urgence"
+        },
+        "steps": {
+            "emergencyType": "Sélectionner le Type d'Urgence",
+            "location": "Confirmer Votre Position",
+            "contacts": "Contacts d'Urgence",
+            "confirm": "Confirmer l'Alerte d'Urgence"
+        },
+        "emergencyTypes": {
+            "fire": "Incendie",
+            "flooding": "Inondation",
+            "electrocution": "Risque d'Électrocution",
+            "collapse": "Effondrement de Bâtiment",
+            "medical": "Urgence Médicale"
+        },
+        "location": {
+            "currentLocation": "Votre Position Actuelle",
+            "confirmButton": "Confirmer la Position",
+            "confirming": "Confirmation...",
+            "confirmed": "Position Confirmée",
+            "fetching": "Récupération de votre position...",
+            "error": "Impossible d'obtenir votre position. Veuillez activer les services de localisation."
+        },
+        "contacts": {
+            "optional": "Facultatif",
+            "description": "Prévenez vos contacts d'urgence par SMS concernant cette urgence.",
+            "notify": "Notifier les Contacts d'Urgence",
+            "enabled": "Activé",
+            "disabled": "Désactivé",
+            "toggleLabel": "Activer les notifications SMS pour les contacts d'urgence"
+        },
+        "confirm": {
+            "summary": "Résumé de l'Alerte",
+            "type": "Type d'Urgence",
+            "location": "Position",
+            "contacts": "Notification de Contact",
+            "confirmed": "Confirmé",
+            "yes": "Oui",
+            "no": "Non",
+            "warningTitle": "Important",
+            "warningMessage": "Cela alerttera les services d'urgence et vos contacts. Utilisez uniquement en cas de vraie urgence."
+        },
+        "buttons": {
+            "back": "Retour",
+            "next": "Suivant",
+            "confirmSOS": "Confirmer l'Alerte SOS",
+            "submitting": "Envoi en cours...",
+            "cancel": "Annuler"
+        },
+        "success": {
+            "title": "Alerte SOS Envoyée",
+            "message": "Les services d'urgence et vos contacts ont été prévenus."
+        },
+        "errors": {
+            "title": "Erreur",
+            "selectType": "Veuillez sélectionner un type d'urgence",
+            "confirmLocation": "Veuillez confirmer votre position",
+            "locationError": "Impossible d'accéder à votre position. Veuillez activer les services de localisation.",
+            "locationRequired": "La position est requise pour envoyer une alerte SOS",
+            "submissionError": "Échec de l'envoi de l'alerte SOS. Veuillez réessayer."
+        },
+        "map": {
+            "markerLabel": "Alerte SOS - {type}",
+            "clusterLabel": "{count} Alertes SOS"
+        }
+    },
+    "safeZone": {
+        "title": "Zone de Securite",
+        "show": "Afficher les Zones de Sécurité",
+        "hide": "Masquer les Zones de Sécurité",
+        "findSafeZones": "Trouver des Zones de Securite",
+        "nearbyZones": "Zones de Securite a Proximite",
+        "noZonesFound": "Aucune zone de securite trouvee",
+        "searching": "Recherche de zones de securite...",
+        "distance": "Distance",
+        "rating": "Classement de Securite",
+        "directions": "Directions",
+        "navigate": "Naviguer",
+        "filters": {
+            "title": "Filtres",
+            "hasPower": "Avec Electricite",
+            "hasWater": "Avec Eau",
+            "roadAccessible": "Route Accessible"
+        },
+        "sortBy": "Trier par",
+        "sortOptions": {
+            "distance": "Distance",
+            "rating": "Classement",
+            "services": "Services Disponibles"
+        },
+        "showMap": "Afficher sur la Carte",
+        "showList": "Afficher sur la Liste",
+        "categories": {
+            "hospital": "Hopital",
+            "shelter": "Abri",
+            "communityCenter": "Centre Communautaire",
+            "fireStation": "Pompiers",
+            "policeStation": "Police",
+            "openBusiness": "Commerce Ouvert"
+        },
+        "capacity": "Capacite Actuelle",
+        "people": "personnes",
+        "availableServices": "Services Disponibles",
+        "descriptionLabel": "Description",
+        "services": {
+            "power": "Electricite",
+            "water": "Eau",
+            "medical": "Medical",
+            "food": "Nourriture",
+            "shelter": "Abri",
+            "communication": "Communication"
+        },
+        "status": {
+            "open": "Ouvert",
+            "limited": "Capacite Limitee",
+            "full": "Plein",
+            "unknown": "Inconnu"
+        },
+        "contact": "Contact",
+        "hours": "Heures",
+        "address": "Adresse",
+        "lastUpdated": "Derniere Mise a Jour",
+        "errors": {
+            "locationRequired": "La position est requise pour rechercher des zones de securite",
+            "fetchError": "Erreur lors de la recherche de zones de securite",
+            "navigationError": "Impossible d'ouvrir la navigation"
+        }
+    },
+    "communityAlert": {
+        "title": "Alertes Communautaires",
+        "notifications": "Notifications d'Alertes",
+        "alertsTab": "Alertes",
+        "settingsTab": "Parametres",
+        "show": "Afficher les Alertes",
+        "hide": "Masquer les Alertes",
+        "noAlerts": "Aucune alerte dans votre region",
+        "loading": "Chargement des alertes...",
+        "error": "Erreur lors du chargement des alertes",
+        "retry": "Reessayer",
+        "critical": "Critique",
+        "warning": "Avertissement",
+        "informational": "Information",
+        "severity": {
+            "critical": "Critique",
+            "warning": "Avertissement",
+            "informational": "Information"
+        },
+        "alertTypes": {
+            "powerOutage": "Coupure de Courant",
+            "waterOutage": "Coupure d'Eau",
+            "gasLeak": "Fuite de Gaz",
+            "roadClosure": "Fermeture de Route",
+            "fire": "Incendie",
+            "flood": "Inondation",
+            "medical": "Urgence Medicale",
+            "infrastructure": "Probleme d'Infrastructure",
+            "other": "Autre"
+        },
+        "distance": "{distance} de distance",
+        "timeAgo": "il y a {time}",
+        "justNow": "A l'instant",
+        "minutesAgo": "il y a {count} min",
+        "hoursAgo": "il y a {count} heures",
+        "activeUntil": "Actif jusqu'a",
+        "viewOnMap": "Voir sur la Carte",
+        "dismiss": "Ignorer",
+        "settings": {
+            "title": "Parametres d'Alertes",
+            "description": "Configurez comment vous recevez les alertes communautaires",
+            "notifications": {
+                "title": "Notifications",
+                "enablePush": "Activer les notifications push",
+                "enablePushDesc": "Recevez des alertes sur votre appareil",
+                "enableCriticalSMS": "Alertes critiques par SMS",
+                "enableCriticalSMSDesc": "Recevez des SMS pour les urgences critiques"
+            },
+            "radius": {
+                "title": "Rayon d'Alertes",
+                "description": "Recevez les alertes dans un rayon de",
+                "meters": "{value} metres",
+                "kilometers": "{value} km",
+                "min": "500m",
+                "max": "10km"
+            },
+            "severity": {
+                "title": "Niveaux de Severite",
+                "description": "Quelles severites d'alerte afficher",
+                "critical": "Alertes critiques",
+                "warning": "Alertes d'avertissement",
+                "informational": "Alertes d'information"
+            },
+            "quietHours": {
+                "title": "Heures Calmes",
+                "description": "Silencier les alertes non critiques",
+                "enabled": "Activer les heures calmes",
+                "start": "Heure de debut",
+                "end": "Heure de fin",
+                "criticalOverride": "Les alertes critiques notifient toujours"
+            },
+            "save": "Enregistrer les Parametres",
+            "saved": "Parametres enregistres avec succes"
+        },
+        "enableNotifications": {
+            "title": "Activer les Notifications",
+            "description": "Autorisez les notifications push pour recevoir les alertes",
+            "enable": "Activer les Notifications",
+            "denied": "Notifications bloquees",
+            "deniedDesc": "Veuillez activer les notifications dans les parametres de votre navigateur"
+        }
     }
 }

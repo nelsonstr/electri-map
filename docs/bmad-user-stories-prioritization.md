@@ -2,7 +2,7 @@
 
 ## 8. Prioritization & Sprint Planning
 
-This section provides comprehensive prioritization analysis, sprint planning, dependency mapping, and release planning for the Electri-Map platform. It aligns user stories with PRD phases (Q1-Q4 2026) and establishes a clear roadmap for implementation.
+This section provides comprehensive prioritization analysis, sprint planning, dependency mapping, and release planning for the NeighborPulse platform. It aligns user stories with PRD phases (Q1-Q4 2026) and establishes a clear roadmap for implementation.
 
 ### 8.1 MoSCoW Prioritization Matrix
 
@@ -447,7 +447,7 @@ Release milestones define key deliverables and acceptance criteria for each majo
 
 #### 8.5.1 MVP Release (Sprint 3 End - Feb 14, 2026)
 
-**Release Name:** Electri-Map MVP - Emergency Response Edition
+**Release Name:** NeighborPulse MVP - Emergency Response Edition
 
 **Release Criteria:**
 
@@ -479,7 +479,7 @@ Release milestones define key deliverables and acceptance criteria for each majo
 
 #### 8.5.2 Beta Release (Sprint 6 End - Mar 28, 2026)
 
-**Release Name:** Electri-Map Beta - Community Edition
+**Release Name:** NeighborPulse Beta - Community Edition
 
 **Release Criteria:**
 
@@ -511,7 +511,7 @@ Release milestones define key deliverables and acceptance criteria for each majo
 
 #### 8.5.3 Public Launch (Sprint 9 End - May 9, 2026)
 
-**Release Name:** Electri-Map 1.0 - Public Launch Edition
+**Release Name:** NeighborPulse 1.0 - Public Launch Edition
 
 **Release Criteria:**
 
@@ -543,7 +543,7 @@ Release milestones define key deliverables and acceptance criteria for each majo
 
 #### 8.5.4 Scale Launch (Sprint 12 End - Jun 20, 2026)
 
-**Release Name:** Electri-Map 2.0 - Scale Edition
+**Release Name:** NeighborPulse 2.0 - Scale Edition
 
 **Release Criteria:**
 

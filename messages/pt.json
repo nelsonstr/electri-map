@@ -1,11 +1,17 @@
 {
     "header": {
-        "siteName": "Status de Serviços",
+        "siteName": "NeighborPulse",
         "nav": {
             "home": "Início",
             "about": "Sobre",
             "blog": "Blog",
             "privacy": "Privacidade"
+        },
+        "communityAlert": {
+            "title": "Alertas da Comunidade",
+            "notifications": "Notificações de Alertas",
+            "alertsTab": "Alertas",
+            "settingsTab": "Configurações"
         }
     },
     "home": {
@@ -249,5 +255,230 @@
         "supportUs": "Apoie-nos",
         "becomeASponsor": "Torne-se um Patrocinador",
         "message": "Ajude-nos a manter este serviço gratuito e acessível"
+    },
+    "sos": {
+        "button": {
+            "label": "SOS de Emergência",
+            "ariaLabel": "Botão SOS de Emergência. Pressione para enviar alerta de emergência.",
+            "tapCount": "Toque mais {count} vez(es) para ativar",
+            "active": "SOS Ativo",
+            "activeAria": "Botão SOS ativado, enviando alerta de emergência"
+        },
+        "quickActions": {
+            "callEmergency": "Ligar para Emergência",
+            "viewInstructions": "Ver Instruções de Segurança",
+            "shareLocation": "Compartilhar Minha Localização"
+        },
+        "dialog": {
+            "title": "Alerta de Emergência",
+            "description": "Crie um alerta SOS para notificar autoridades e contatos de emergência"
+        },
+        "steps": {
+            "emergencyType": "Selecione o Tipo de Emergência",
+            "location": "Confirme Sua Localização",
+            "contacts": "Contatos de Emergência",
+            "confirm": "Confirmar Alerta de Emergência"
+        },
+        "emergencyTypes": {
+            "fire": "Incêndio",
+            "flooding": "Enchente",
+            "electrocution": "Risco de Eletrocussão",
+            "collapse": "Colapso de Edifício",
+            "medical": "Emergência Médica"
+        },
+        "location": {
+            "currentLocation": "Sua Localização Atual",
+            "confirmButton": "Confirmar Localização",
+            "confirming": "Confirmando...",
+            "confirmed": "Localização Confirmada",
+            "fetching": "Obtendo sua localização...",
+            "error": "Não foi possível obter sua localização. Por favor, ative os serviços de localização."
+        },
+        "contacts": {
+            "optional": "Opcional",
+            "description": "Notifique seus contatos de emergência por SMS sobre esta emergência.",
+            "notify": "Notificar Contatos de Emergência",
+            "enabled": "Ativado",
+            "disabled": "Desativado",
+            "toggleLabel": "Ativar notificações SMS para contatos de emergência"
+        },
+        "confirm": {
+            "summary": "Resumo do Alerta",
+            "type": "Tipo de Emergência",
+            "location": "Localização",
+            "contacts": "Notificação de Contato",
+            "confirmed": "Confirmado",
+            "yes": "Sim",
+            "no": "Não",
+            "warningTitle": "Importante",
+            "warningMessage": "Isso alertará os serviços de emergência e seus contatos. Use apenas em emergências reais."
+        },
+        "buttons": {
+            "back": "Voltar",
+            "next": "Próximo",
+            "confirmSOS": "Confirmar Alerta SOS",
+            "submitting": "Enviando...",
+            "cancel": "Cancelar"
+        },
+        "success": {
+            "title": "Alerta SOS Enviado",
+            "message": "Os serviços de emergência e seus contatos foram notificados."
+        },
+        "errors": {
+            "title": "Erro",
+            "selectType": "Por favor, selecione um tipo de emergência",
+            "confirmLocation": "Por favor, confirme sua localização",
+            "locationError": "Não foi possível acessar sua localização. Por favor, ative os serviços de localização.",
+            "locationRequired": "Localização é obrigatória para enviar alerta SOS",
+            "submissionError": "Falha ao enviar alerta SOS. Por favor, tente novamente."
+        },
+        "map": {
+            "markerLabel": "Alerta SOS - {type}",
+            "clusterLabel": "{count} Alertas SOS"
+        }
+    },
+    "safeZone": {
+        "title": "Local Seguro",
+        "show": "Mostrar Áreas Seguras",
+        "hide": "Ocultar Áreas Seguras",
+        "findSafeZones": "Encontrar Locais Seguros",
+        "nearbyZones": "Locais Seguros Próximos",
+        "noZonesFound": "Nenhum local seguro encontrado",
+        "searching": "Buscando locais seguros...",
+        "distance": "Distância",
+        "rating": "Classificação de Segurança",
+        "directions": "Direções",
+        "navigate": "Navegar",
+        "filters": {
+            "title": "Filtros",
+            "hasPower": "Com Energia",
+            "hasWater": "Com Água",
+            "roadAccessible": "Estrada Acessível"
+        },
+        "sortBy": "Ordenar por",
+        "sortOptions": {
+            "distance": "Distância",
+            "rating": "Classificação",
+            "services": "Serviços Disponíveis"
+        },
+        "showMap": "Mostrar no Mapa",
+        "showList": "Mostrar na Lista",
+        "categories": {
+            "hospital": "Hospital",
+            "shelter": "Abrigo",
+            "communityCenter": "Centro Comunitário",
+            "fireStation": "Bombeiros",
+            "policeStation": "Policia",
+            "openBusiness": "Estabelecimento Aberto"
+        },
+        "capacity": "Capacidade Atual",
+        "people": "pessoas",
+        "availableServices": "Serviços Disponíveis",
+        "descriptionLabel": "Descrição",
+        "services": {
+            "power": "Energia",
+            "water": "Água",
+            "medical": "Médico",
+            "food": "Alimento",
+            "shelter": "Abrigo",
+            "communication": "Comunicação"
+        },
+        "status": {
+            "open": "Aberto",
+            "limited": "Capacidade Limitada",
+            "full": "Lotado",
+            "unknown": "Desconhecido"
+        },
+        "contact": "Contato",
+        "hours": "Horário",
+        "address": "Endereço",
+        "lastUpdated": "Última Atualização",
+        "errors": {
+            "locationRequired": "Localização é obrigatória para buscar locais seguros",
+            "fetchError": "Falha ao buscar locais seguros",
+            "navigationError": "Não foi possível abrir navegação"
+        }
+    },
+    "communityAlert": {
+        "title": "Alertas da Comunidade",
+        "notifications": "Notificações de Alertas",
+        "alertsTab": "Alertas",
+        "settingsTab": "Configurações",
+        "show": "Mostrar Alertas",
+        "hide": "Ocultar Alertas",
+        "noAlerts": "Nenhum alerta na sua área",
+        "loading": "Carregando alertas...",
+        "error": "Erro ao carregar alertas",
+        "retry": "Tentar novamente",
+        "critical": "Crítico",
+        "warning": "Aviso",
+        "informational": "Informativo",
+        "severity": {
+            "critical": "Crítico",
+            "warning": "Aviso",
+            "informational": "Informativo"
+        },
+        "alertTypes": {
+            "powerOutage": "Corte de Energia",
+            "waterOutage": "Corte de Água",
+            "gasLeak": "Vazamento de Gás",
+            "roadClosure": "Fechamento de Estrada",
+            "fire": "Incêndio",
+            "flood": "Enchente",
+            "medical": "Emergência Médica",
+            "infrastructure": "Problema de Infraestrutura",
+            "other": "Outro"
+        },
+        "distance": "{distance} de distância",
+        "timeAgo": "{time} atrás",
+        "justNow": "Agora mesmo",
+        "minutesAgo": "{count} min atrás",
+        "hoursAgo": "{count} horas atrás",
+        "activeUntil": "Ativo até",
+        "viewOnMap": "Ver no Mapa",
+        "dismiss": "Dispensar",
+        "settings": {
+            "title": "Configurações de Alertas",
+            "description": "Configure como você recebe alertas da comunidade",
+            "notifications": {
+                "title": "Notificações",
+                "enablePush": "Ativar notificações push",
+                "enablePushDesc": "Receba alertas no seu dispositivo",
+                "enableCriticalSMS": "Alertas críticos via SMS",
+                "enableCriticalSMSDesc": "Receba SMS para emergências críticas"
+            },
+            "radius": {
+                "title": "Raio de Alertas",
+                "description": "Receba alertas dentro de",
+                "meters": "{value} metros",
+                "kilometers": "{value} km",
+                "min": "500m",
+                "max": "10km"
+            },
+            "severity": {
+                "title": "Níveis de Severidade",
+                "description": "Quais severidades de alerta mostrar",
+                "critical": "Alertas críticos",
+                "warning": "Alertas de aviso",
+                "informational": "Alertas informativos"
+            },
+            "quietHours": {
+                "title": "Horas de Silêncio",
+                "description": "Silencie alertas não críticos",
+                "enabled": "Ativar horas de silêncio",
+                "start": "Hora de início",
+                "end": "Hora de fim",
+                "criticalOverride": "Alertas críticos sempre notificam"
+            },
+            "save": "Salvar Configurações",
+            "saved": "Configurações salvas com sucesso"
+        },
+        "enableNotifications": {
+            "title": "Ativar Notificações",
+            "description": "Permita notificações push para receber alertas",
+            "enable": "Ativar Notificações",
+            "denied": "Notificações bloqueadas",
+            "deniedDesc": "Por favor, ative as notificações nas configurações do seu navegador"
+        }
     }
 }
