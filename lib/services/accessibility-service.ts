@@ -531,9 +531,9 @@ export async function createAccessibilityAudit(
   }
 
   return {
-    id: data.id,
-    pageUrl: data.page_url,
-    pageTitle: data.page_title,
+    id: data.id as string,
+    pageUrl: data.page_url as string,
+    pageTitle: data.page_title as string,
     score: data.score,
     issues: data.issues.map((issue: Record<string, unknown>) => ({
       id: issue.id,
@@ -545,9 +545,9 @@ export async function createAccessibilityAudit(
       suggestion: issue.suggestion,
     })),
     testedWith: data.tested_with,
-    testedAt: data.created_at,
-    isResolved: data.is_resolved,
-    createdAt: data.created_at,
+    testedAt: data.created_at as string,
+    isResolved: data.is_resolved as boolean,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -588,16 +588,16 @@ export async function getAccessibilityAudits(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    pageUrl: data.page_url,
-    pageTitle: data.page_title,
+    id: data.id as string,
+    pageUrl: data.page_url as string,
+    pageTitle: data.page_title as string,
     score: data.score,
     issues: data.issues || [],
     testedWith: data.tested_with,
-    testedAt: data.created_at,
-    isResolved: data.is_resolved,
-    resolvedAt: data.resolved_at || undefined,
-    createdAt: data.created_at,
+    testedAt: data.created_at as string,
+    isResolved: data.is_resolved as boolean,
+    resolvedAt: data.resolved_at as string || undefined,
+    createdAt: data.created_at as string,
   }))
 }
 
@@ -770,12 +770,12 @@ export async function createScreenReaderAnnouncement(
   }
 
   return {
-    id: data.id,
-    message: data.message,
-    priority: data.priority,
+    id: data.id as string,
+    message: data.message as string,
+    priority: data.priority as number,
     pageSection: data.page_section || undefined,
-    isRead: data.is_read,
-    createdAt: data.created_at,
+    isRead: data.is_read as boolean,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -797,13 +797,13 @@ export async function getUnreadAnnouncements(): Promise<ScreenReaderAnnouncement
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    message: data.message,
-    priority: data.priority,
+    id: data.id as string,
+    message: data.message as string,
+    priority: data.priority as number,
     pageSection: data.page_section || undefined,
-    isRead: data.is_read,
-    readAt: data.read_at || undefined,
-    createdAt: data.created_at,
+    isRead: data.is_read as boolean,
+    readAt: data.read_at as string || undefined,
+    createdAt: data.created_at as string,
   }))
 }
 
@@ -840,13 +840,13 @@ export async function getAccessibilityShortcuts(): Promise<AccessibilityShortcut
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    key: data.key,
+    id: data.id as string,
+    key: data.key as string,
     modifiers: data.modifiers,
-    action: data.action,
-    description: data.description,
-    isEnabled: data.is_enabled,
-    createdAt: data.created_at,
+    action: data.action as string,
+    description: data.description as string,
+    isEnabled: data.is_enabled as boolean,
+    createdAt: data.created_at as string,
   }))
 }
 
@@ -970,7 +970,7 @@ function getDefaultSettings(userId?: string): AccessibilitySettings {
  */
 function mapSettingsFromDB(data: Record<string, unknown>): AccessibilitySettings {
   return {
-    id: data.id,
+    id: data.id as string,
     userId: data.user_id as string | undefined,
     textSize: data.text_size as TextSizePreset,
     textSizeMultiplier: data.text_size_multiplier as number,
@@ -990,8 +990,8 @@ function mapSettingsFromDB(data: Record<string, unknown>): AccessibilitySettings
     keyboardNavigation: data.keyboard_navigation as boolean,
     shortcutsEnabled: data.shortcuts_enabled as boolean,
     externalAssistiveDevices: data.external_assistive_devices as string[] | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

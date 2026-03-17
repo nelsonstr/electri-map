@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     
     const { data, error } = await query
 
-    return NextResponse.json(data)
+    return NextResponse.json(data || [])
   } catch (error) {
     console.error("Error fetching locations:", error)
     return NextResponse.json({ error: "Failed to fetch locations" }, { status: 500 })

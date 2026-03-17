@@ -308,6 +308,7 @@ export async function getTwoFactorSettings(
       gracePeriodEnabled: false,
       recoveryCodesEnabled: false,
       trustDevicesEnabled: false,
+      required: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -539,7 +540,7 @@ export async function verifyTwoFactorCode(
           is_used: true,
           used_at: new Date().toISOString(),
         })
-        .eq('id', backupCode.id)
+        .eq('id', (backupCode as any).id)
 
       // Log successful attempt
       await logAttempt(input.userId, undefined, 'backup_codes', true, 'valid')
@@ -581,7 +582,8 @@ export async function verifyTwoFactorCode(
     deviceQuery = deviceQuery.eq('is_primary', true)
   }
 
-  const { data: device, error: deviceError } = await deviceQuery.single()
+  const { data: deviceData, error: deviceError } = await deviceQuery.single()
+  const device = deviceData as any
 
   if (deviceError || !device) {
     // Log failed attempt
@@ -599,18 +601,18 @@ export async function verifyTwoFactorCode(
   switch (device.method) {
     case 'totp':
       // In production, use actual TOTP verification
-      isValid = code.length === 6 && /^\d+$/.test(code)
+      isValid = input.code.length === 6 && /^\d+$/.test(input.code)
       break
 
     case 'sms':
     case 'email':
       // In production, verify against stored code
-      isValid = code.length === 6 && /^\d+$/.test(code)
+      isValid = input.code.length === 6 && /^\d+$/.test(input.code)
       break
 
     case 'security_key':
       // WebAuthn verification
-      isValid = code === 'verified'
+      isValid = input.code === 'verified'
       break
   }
 
@@ -620,12 +622,12 @@ export async function verifyTwoFactorCode(
       .from('two_factor_devices')
       .update({
         last_used_at: new Date().toISOString(),
-        usage_count: device.usage_count + 1,
+        usage_count: (device.usage_count as number) + 1,
       })
       .eq('id', device.id)
 
     // Log successful attempt
-    await logAttempt(input.userId, device.id, device.method, true, 'valid')
+    await logAttempt(input.userId, device.id as string, device.method as TwoFactorMethod, true, 'valid')
 
     return {
       success: true,
@@ -635,7 +637,7 @@ export async function verifyTwoFactorCode(
   }
 
   // Log failed attempt
-  await logAttempt(input.userId, device.id, device.method, false, 'invalid')
+  await logAttempt(input.userId, device.id as string, device.method as TwoFactorMethod, false, 'invalid')
 
   return {
     success: false,
@@ -663,16 +665,17 @@ export async function generateBackupCodesForUser(
 
   // Insert new codes
   for (const hash of hashedCodes) {
-    await supabase
+    const { error } = await supabase
       .from('two_factor_backup_codes')
       .insert({
         user_id: userId,
         code_hash: hash,
         is_used: false,
       })
-      .catch(error => {
-        console.error('Error inserting backup code:', error)
-      })
+
+    if (error) {
+      console.error('Error inserting backup code:', error)
+    }
   }
 
   return codes
@@ -943,7 +946,7 @@ async function logAttempt(
 ): Promise<void> {
   const supabase = createClient()
 
-  await supabase
+  const { error } = await supabase
     .from('two_factor_attempts')
     .insert({
       user_id: userId,
@@ -953,9 +956,10 @@ async function logAttempt(
       result,
       timestamp: new Date().toISOString(),
     })
-    .catch(error => {
-      console.error('Error logging attempt:', error)
-    })
+
+  if (error) {
+    console.error('Error logging attempt:', error)
+  }
 }
 
 /**
@@ -963,21 +967,21 @@ async function logAttempt(
  */
 function mapDeviceFromDB(data: Record<string, unknown>): TwoFactorDevice {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     method: data.method as TwoFactorMethod,
-    name: data.name,
+    name: data.name as string,
     totpSecret: data.totp_secret as string | undefined,
     totpVerifiedAt: data.verified_at as string | undefined,
     phoneNumber: data.phone_number as string | undefined,
     emailAddress: data.email_address as string | undefined,
     verifiedAt: data.verified_at as string | undefined,
-    isPrimary: data.is_primary,
-    isActive: data.is_active,
+    isPrimary: data.is_primary as boolean,
+    isActive: data.is_active as boolean,
     lastUsedAt: data.last_used_at as string | undefined,
-    usageCount: data.usage_count,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    usageCount: data.usage_count as number,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -986,19 +990,19 @@ function mapDeviceFromDB(data: Record<string, unknown>): TwoFactorDevice {
  */
 function mapSettingsFromDB(data: Record<string, unknown>): TwoFactorSettings {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     status: data.status as TwoFactorStatus,
     primaryMethod: data.primary_method as TwoFactorMethod | undefined,
-    required: data.required,
-    requiredForRoles: data.required_for_roles as string[] | undefined,
-    gracePeriodEnabled: data.grace_period_enabled,
+    required: data.required as boolean,
+    requiredForRoles: (data.required_for_roles as string[]) || undefined,
+    gracePeriodEnabled: data.grace_period_enabled as boolean,
     gracePeriodEndsAt: data.grace_period_ends_at as string | undefined,
-    recoveryCodesEnabled: data.recovery_codes_enabled,
+    recoveryCodesEnabled: data.recovery_codes_enabled as boolean,
     recoveryEmail: data.recovery_email as string | undefined,
-    trustDevicesEnabled: data.trust_devices_enabled,
+    trustDevicesEnabled: data.trust_devices_enabled as boolean,
     enabledAt: data.enabled_at as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

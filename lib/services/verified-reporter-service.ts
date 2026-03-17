@@ -169,7 +169,7 @@ export interface TierBenefits {
   
   // Features
   maxAlertsPerDay: number
-  canVerifyReports: boolean
+  canVerifyOthers: boolean
   canEscalateAlerts: boolean
   hasDedicatedChannel: boolean
   appearsOnLeaderboard: boolean
@@ -230,6 +230,19 @@ export interface AwardBadgeInput {
   badgeType: BadgeType
   expiresAt?: string
   description?: string
+}
+
+/**
+ * Top contributor
+ */
+export interface TopContributor {
+  userId: string
+  displayName?: string
+  avatarUrl?: string
+  contributions: number
+  verifiedReports: number
+  impactScore: number
+  rank: number
 }
 
 // ============================================================================
@@ -453,7 +466,7 @@ export async function createVerificationApplication(
     throw new Error(`Failed to create application: ${error.message}`)
   }
 
-  return mapApplicationFromDB(data)
+  return mapApplicationFromDB(application)
 }
 
 /**
@@ -589,15 +602,15 @@ export async function reviewApplication(
 
   // If verified, create/update verification profile
   if (input.status === 'verified') {
-    await upsertVerificationProfile(data.user_id, {
+    await upsertVerificationProfile(data.user_id as string, {
       status: 'verified',
       tier: input.tier || 'bronze',
       verifiedAt: new Date().toISOString(),
-      expiresAt: input.expiresAt || null,
+      expiresAt: (input.expiresAt as string) || undefined,
     })
 
     // Award verified reporter badge
-    await awardBadge(data.user_id, 'verified_reporter')
+    await awardBadge(data.user_id as string, 'verified_reporter')
   }
 
   return mapApplicationFromDB(data)
@@ -647,33 +660,33 @@ export async function getVerificationProfile(
     .select('*', { count: 'exact' })
     .eq('user_id', userId)
 
-  const benefits = getTierBenefits(verification.tier)
+  const benefits = getTierBenefits(verification.tier as VerificationTier)
 
   return {
     userId,
     status: verification.status as VerificationStatus,
     tier: verification.tier as VerificationTier,
     badges: (badges || []).map(b => ({
-      id: b.id,
+      id: b.id as string,
       type: b.badge_type as BadgeType,
       name: getBadgeTypeDisplayName(b.badge_type as BadgeType),
-      iconUrl: b.icon_url || undefined,
-      earnedAt: b.earned_at,
-      expiresAt: b.expires_at || undefined,
-      isVisible: b.is_visible,
-      isFeatured: b.is_featured,
+      iconUrl: b.icon_url as string | undefined,
+      earnedAt: b.earned_at as string,
+      expiresAt: (b.expires_at as string) || undefined,
+      isVisible: b.is_visible as boolean,
+      isFeatured: b.is_featured as boolean,
     })),
     totalReports: totalReports || 0,
     verifiedReports: verifiedReports || 0,
     confirmationRate: totalReports ? Math.round((confirmations! / totalReports) * 100) : 0,
-    averageRating: verification.average_rating || 0,
-    reputationScore: verification.reputation_score || 0,
+    averageRating: (verification.average_rating as number) || 0,
+    reputationScore: (verification.reputation_score as number) || 0,
     canVerifyOthers: benefits.canVerifyOthers,
     canEscalateAlerts: benefits.canEscalateAlerts,
     priorityInAlerts: benefits.alertPriority,
-    verifiedAt: verification.verified_at || undefined,
-    expiresAt: verification.expires_at || undefined,
-    lastReviewAt: verification.last_review_at || undefined,
+    verifiedAt: (verification.verified_at as string) || undefined,
+    expiresAt: (verification.expires_at as string) || undefined,
+    lastReviewAt: (verification.last_review_at as string) || undefined,
   }
 }
 
@@ -717,15 +730,15 @@ export async function awardBadge(
   await updateReputationScore(userId, badgeDefinition.reputationBonus)
 
   return {
-    id: data.id,
+    id: data.id as string,
     type: data.badge_type as BadgeType,
-    name: data.name,
-    description: data.description || undefined,
-    iconUrl: data.icon_url || undefined,
-    earnedAt: data.earned_at,
-    expiresAt: data.expires_at || undefined,
-    isVisible: data.is_visible,
-    isFeatured: data.is_featured,
+    name: data.name as string,
+    description: (data.description as string) || undefined,
+    iconUrl: (data.icon_url as string) || undefined,
+    earnedAt: data.earned_at as string,
+    expiresAt: (data.expires_at as string) || undefined,
+    isVisible: data.is_visible as boolean,
+    isFeatured: data.is_featured as boolean,
   }
 }
 
@@ -756,15 +769,15 @@ export async function getUserBadges(
   }
 
   return (data || []).map(b => ({
-    id: b.id,
+    id: b.id as string,
     type: b.badge_type as BadgeType,
-    name: b.name,
-    description: b.description || undefined,
-    iconUrl: b.icon_url || undefined,
-    earnedAt: b.earned_at,
-    expiresAt: b.expires_at || undefined,
-    isVisible: b.is_visible,
-    isFeatured: b.is_featured,
+    name: b.name as string,
+    description: (b.description as string) || undefined,
+    iconUrl: (b.icon_url as string) || undefined,
+    earnedAt: b.earned_at as string,
+    expiresAt: (b.expires_at as string) || undefined,
+    isVisible: b.is_visible as boolean,
+    isFeatured: b.is_featured as boolean,
   }))
 }
 
@@ -782,17 +795,7 @@ export async function getLeaderboard(
 
   let query = supabase
     .from('verification_profiles')
-    .select(`
-      user_id,
-      tier,
-      reputation_score,
-      verified_at,
-      profiles!inner (
-        id,
-        display_name,
-        avatar_url
-      )
-    `)
+    .select('user_id, tier, reputation_score, verified_at, profiles!inner(id, display_name, avatar_url)')
     .eq('status', 'verified')
     .order('reputation_score', { ascending: false })
 
@@ -806,17 +809,18 @@ export async function getLeaderboard(
 
   const { data } = await query
 
-  if (!data || data.length === 0) {
+  if (!data || data.length as number === 0) {
     return []
   }
 
-  return (data || []).map((item, index) => ({
-    userId: item.user_id,
-    displayName: item.profiles?.display_name,
-    avatarUrl: item.profiles?.avatar_url,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data || []).map((item: any, index: number) => ({
+    userId: item.user_id as string,
+    displayName: item.profiles?.display_name as string | undefined,
+    avatarUrl: item.profiles?.avatar_url as string | undefined,
     contributions: 0,
     verifiedReports: 0,
-    impactScore: item.reputation_score || 0,
+    impactScore: (item.reputation_score as number) || 0,
     rank: index + 1,
   }))
 }
@@ -910,7 +914,7 @@ export async function getVerificationStats(): Promise<{
     .select('average_rating')
     .eq('status', 'verified')
 
-  const avgRating = profiles?.reduce((sum, p) => sum + (p.average_rating || 0), 0) / (profiles?.length || 1)
+  const avgRating = (profiles || []).reduce((sum, p) => sum + ((p.average_rating as number) || 0), 0) / ((profiles || []).length || 1)
 
   // Top contributors
   const topContributors = await getLeaderboard({ limit: 5 })
@@ -1022,24 +1026,24 @@ export async function submitAppeal(
  */
 function mapApplicationFromDB(data: Record<string, unknown>): VerificationApplication {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     status: data.status as VerificationStatus,
     tier: data.tier as VerificationTier,
-    applicationType: data.application_type,
+    applicationType: data.application_type as string,
     organizationName: data.organization_name as string | undefined,
     jobTitle: data.job_title as string | undefined,
-    credentials: (data.credentials as CredentialSubmission[]) || [],
-    supportingDocuments: (data.supporting_documents as string[]) || [],
-    references: (data.references as Reference[]) || [],
+    credentials: (data.credentials as unknown as CredentialSubmission[]) || [],
+    supportingDocuments: (data.supporting_documents as unknown as string[]) || [],
+    references: (data.references as unknown as Reference[]) || [],
     reviewedBy: data.reviewed_by as string | undefined,
     reviewedAt: data.reviewed_at as string | undefined,
     reviewNotes: data.review_notes as string | undefined,
     rejectionReason: data.rejection_reason as string | undefined,
     expiresAt: data.expires_at as string | undefined,
-    submittedAt: data.submitted_at,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    submittedAt: data.submitted_at as string,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1129,7 +1133,7 @@ async function upsertVerificationProfile(
     .from('verification_profiles')
     .upsert({
       user_id: userId,
-      status: data.status,
+      status: data.status as string,
       tier: data.tier,
       verified_at: data.verifiedAt || null,
       expires_at: data.expiresAt || null,

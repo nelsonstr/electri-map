@@ -462,10 +462,10 @@ export async function createContactGroup(
     .from('contact_groups')
     .insert({
       user_id: userId,
-      name: validationResult.data.name,
-      description: validationResult.data.description || null,
-      icon: validationResult.data.icon || null,
-      color: validationResult.data.color || null,
+      name: validationResult.data.name as string,
+      description: validationResult.data.description as string || null,
+      icon: validationResult.data.icon as string || null,
+      color: validationResult.data.color as string || null,
       contact_ids: [],
     })
     .select('*')
@@ -477,15 +477,15 @@ export async function createContactGroup(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    name: data.name,
-    description: data.description || undefined,
-    icon: data.icon || undefined,
-    color: data.color || undefined,
-    contactIds: data.contact_ids || [],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    userId: data.user_id as string,
+    name: data.name as string,
+    description: data.description as string || undefined,
+    icon: data.icon as string || undefined,
+    color: data.color as string || undefined,
+    contactIds: data.contact_ids as any[] || [],
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -653,16 +653,16 @@ export async function sendContactRequest(
   }
 
   return {
-    id: data.id,
-    senderId: data.sender_id,
-    receiverId: data.receiver_id,
-    senderName: data.sender_name,
-    receiverName: data.receiver_name,
-    message: data.message || undefined,
+    id: data.id as string,
+    senderId: data.sender_id as string,
+    receiverId: data.receiver_id as string,
+    senderName: data.sender_name as string,
+    receiverName: data.receiver_name as string,
+    message: data.message as string || undefined,
     relationship: data.relationship,
-    status: data.status,
-    createdAt: data.created_at,
-    respondedAt: data.responded_at || undefined,
+    status: data.status as string,
+    createdAt: data.created_at as string,
+    respondedAt: data.responded_at as string || undefined,
   }
 }
 
@@ -880,13 +880,13 @@ export async function acknowledgeSOSAlert(
  */
 function mapContactFromDB(data: Record<string, unknown>): EmergencyContact {
   return {
-    id: data.id,
-    userId: data.user_id,
-    name: data.name,
+    id: data.id as string,
+    userId: data.user_id as string,
+    name: data.name as string,
     phoneNumber: data.phone_number,
     email: data.email as string | undefined,
     relationship: data.relationship as ContactRelationship,
-    isPrimary: data.is_primary,
+    isPrimary: data.is_primary as boolean,
     notificationPreference: data.notification_preference as ContactNotificationPreference,
     status: data.status as ContactStatus,
     shareLocation: data.share_location,
@@ -895,8 +895,8 @@ function mapContactFromDB(data: Record<string, unknown>): EmergencyContact {
     notifyOnProximityAlert: data.notify_on_proximity_alert,
     proximityRadius: data.proximity_radius as number | undefined,
     notes: data.notes as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

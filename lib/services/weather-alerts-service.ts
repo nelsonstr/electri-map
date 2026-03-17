@@ -647,7 +647,7 @@ export async function getWeatherAlerts(
   }
 
   // Filter by distance
-  return (data || [])
+  return ((data || []) as any[])
     .map(a => {
       const distance = calculateDistance(
         latitude, longitude,
@@ -1175,8 +1175,8 @@ export async function getBatchWeather(
  */
 function mapSubscriptionFromDB(data: Record<string, unknown>): WeatherSubscription {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     location: data.location as { latitude: number; longitude: number; name?: string; radius: number },
     alertTypes: data.alert_types as WeatherAlertType[],
     severityThreshold: data.severity_threshold as WeatherAlertSeverity,
@@ -1185,9 +1185,9 @@ function mapSubscriptionFromDB(data: Record<string, unknown>): WeatherSubscripti
       sms: (data.notifications as { sms: boolean })?.sms ?? false,
       email: (data.notifications as { email: boolean })?.email ?? false,
     },
-    active: data.active,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    active: data.active as boolean,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

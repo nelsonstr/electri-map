@@ -26,6 +26,11 @@ export default function Header() {
   const [alerts, setAlerts] = useState<CommunityAlert[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserId(localStorage.getItem("electri_map_user_id"));
+  }, []);
 
   useEffect(() => {
     // Fetch nearby alerts to show count
@@ -71,7 +76,7 @@ export default function Header() {
             {/* Community Alerts Sheet */}
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative" aria-label={t('communityAlert.notifications')}>
+                <Button variant="ghost" size="icon" className="relative" aria-label={t('communityAlert.notifications')} suppressHydrationWarning>
                   <Bell className="h-5 w-5" />
                   {totalCount > 0 && (
                     <Badge 
@@ -117,10 +122,14 @@ export default function Header() {
                 </div>
 
                 {showSettings ? (
-                  <AlertSettings onClose={() => setSheetOpen(false)} />
+                  userId ? (
+                    <AlertSettings userId={userId} onClose={() => setSheetOpen(false)} />
+                  ) : (
+                    <div className="p-4 text-center text-muted-foreground">Please sign in to manage settings.</div>
+                  )
                 ) : (
                   <AlertList 
-                    alerts={alerts} 
+                    userId={userId || ''}
                     onAlertClick={(alert) => {
                       // Could navigate to map or show details
                       console.log('Alert clicked:', alert);

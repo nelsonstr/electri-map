@@ -97,7 +97,7 @@ export interface DataExport {
   
   // Download
   downloadUrl?: string
-  expiresAt?: string
+
   
   // Size
   fileSize?: number
@@ -487,7 +487,7 @@ export async function updatePrivacySetting(
     const { data: updated, error } = await supabase
       .from('privacy_settings')
       .update(updateData)
-      .eq('id', existing.id)
+      .eq('id', (existing as { id: string }).id)
       .select('*')
       .single()
 
@@ -596,17 +596,17 @@ export async function createDataExport(
   })
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    dataTypes: data.data_types,
-    format: data.format,
-    status: data.status,
-    progress: data.progress,
-    downloadUrl: data.download_url || undefined,
-    expiresAt: data.expires_at || undefined,
-    fileSize: data.file_size || undefined,
-    requestedAt: data.requested_at,
-    completedAt: data.completed_at || undefined,
+    id: data.id as string,
+    userId: data.user_id as string,
+    dataTypes: data.data_types as DataExport['dataTypes'],
+    format: data.format as DataExport['format'],
+    status: data.status as DataExport['status'],
+    progress: (data.progress as number) || undefined,
+    downloadUrl: (data.download_url as string) || undefined,
+    expiresAt: (data.expires_at as string) || undefined,
+    fileSize: (data.file_size as number) || undefined,
+    requestedAt: data.requested_at as string,
+    completedAt: (data.completed_at as string) || undefined,
   }
 }
 
@@ -636,17 +636,17 @@ export async function getDataExportStatus(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    dataTypes: data.data_types,
-    format: data.format,
-    status: data.status,
-    progress: data.progress,
-    downloadUrl: data.download_url || undefined,
-    expiresAt: data.expires_at || undefined,
-    fileSize: data.file_size || undefined,
-    requestedAt: data.requested_at,
-    completedAt: data.completed_at || undefined,
+    id: data.id as string,
+    userId: data.user_id as string,
+    dataTypes: data.data_types as DataExport['dataTypes'],
+    format: data.format as DataExport['format'],
+    status: data.status as DataExport['status'],
+    progress: (data.progress as number) || undefined,
+    downloadUrl: (data.download_url as string) || undefined,
+    expiresAt: (data.expires_at as string) || undefined,
+    fileSize: (data.file_size as number) || undefined,
+    requestedAt: data.requested_at as string,
+    completedAt: (data.completed_at as string) || undefined,
   }
 }
 
@@ -670,17 +670,17 @@ export async function getUserDataExports(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    userId: data.user_id,
-    dataTypes: data.data_types,
-    format: data.format,
-    status: data.status,
-    progress: data.progress,
-    downloadUrl: data.download_url || undefined,
-    expiresAt: data.expires_at || undefined,
-    fileSize: data.file_size || undefined,
-    requestedAt: data.requested_at,
-    completedAt: data.completed_at || undefined,
+    id: data.id as string,
+    userId: data.user_id as string,
+    dataTypes: data.data_types as DataExport['dataTypes'],
+    format: data.format as DataExport['format'],
+    status: data.status as DataExport['status'],
+    progress: (data.progress as number) || undefined,
+    downloadUrl: (data.download_url as string) || undefined,
+    expiresAt: (data.expires_at as string) || undefined,
+    fileSize: (data.file_size as number) || undefined,
+    requestedAt: data.requested_at as string,
+    completedAt: (data.completed_at as string) || undefined,
   }))
 }
 
@@ -744,19 +744,19 @@ export async function createDeletionRequest(
   })
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    reason: data.reason || undefined,
-    confirmationCode: data.confirmation_code,
-    dataTypes: data.data_types,
-    retainData: data.retain_data || undefined,
-    status: data.status,
-    scheduledAt: data.scheduled_at,
-    completedAt: data.completed_at || undefined,
-    verifiedAt: data.verified_at || undefined,
-    verifiedBy: data.verified_by || undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    userId: data.user_id as string,
+    reason: (data.reason as string) || undefined,
+    confirmationCode: data.confirmation_code as string,
+    dataTypes: data.data_types as DataDeletionRequest['dataTypes'],
+    retainData: (data.retain_data as string[]) || undefined,
+    status: data.status as DataDeletionRequest['status'],
+    scheduledAt: data.scheduled_at as string,
+    completedAt: (data.completed_at as string) || undefined,
+    verifiedAt: (data.verified_at as string) || undefined,
+    verifiedBy: (data.verified_by as string) || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -807,19 +807,19 @@ export async function getDeletionRequestStatus(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    reason: data.reason || undefined,
-    confirmationCode: data.confification_code,
-    dataTypes: data.data_types,
-    retainData: data.retain_data || undefined,
-    status: data.status,
-    scheduledAt: data.scheduled_at,
-    completedAt: data.completed_at || undefined,
-    verifiedAt: data.verified_at || undefined,
-    verifiedBy: data.verified_by || undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    userId: data.user_id as string,
+    reason: (data.reason as string) || undefined,
+    confirmationCode: data.confirmation_code as string,
+    dataTypes: data.data_types as DataDeletionRequest['dataTypes'],
+    retainData: (data.retain_data as string[]) || undefined,
+    status: data.status as DataDeletionRequest['status'],
+    scheduledAt: data.scheduled_at as string,
+    completedAt: (data.completed_at as string) || undefined,
+    verifiedAt: (data.verified_at as string) || undefined,
+    verifiedBy: (data.verified_by as string) || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -872,20 +872,20 @@ export async function recordConsent(
   }
 
   return {
-    id: data.id,
-    consentType: data.consent_type,
-    consentVersion: data.consent_version,
-    userId: data.user_id || undefined,
-    anonymousId: data.anonymous_id || undefined,
-    granted: data.granted,
-    revokedAt: data.revoked_at || undefined,
-    source: data.source,
-    ipAddress: data.ip_address || undefined,
-    userAgent: data.user_agent || undefined,
-    scope: data.scope || undefined,
-    purpose: data.purpose || undefined,
-    grantedAt: data.granted_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    consentType: data.consent_type as string,
+    consentVersion: data.consent_version as string,
+    userId: (data.user_id as string) || undefined,
+    anonymousId: (data.anonymous_id as string) || undefined,
+    granted: data.granted as boolean,
+    revokedAt: (data.revoked_at as string) || undefined,
+    source: data.source as "web" | "mobile" | "api" | "import",
+    ipAddress: (data.ip_address as string) || undefined,
+    userAgent: (data.user_agent as string) || undefined,
+    scope: (data.scope as string[]) || undefined,
+    purpose: (data.purpose as string) || undefined,
+    grantedAt: data.granted_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -909,20 +909,20 @@ export async function getUserConsents(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    consentType: data.consent_type,
-    consentVersion: data.consent_version,
-    userId: data.user_id || undefined,
-    anonymousId: data.anonymous_id || undefined,
-    granted: data.granted,
-    revokedAt: data.revoked_at || undefined,
-    source: data.source,
-    ipAddress: data.ip_address || undefined,
-    userAgent: data.user_agent || undefined,
-    scope: data.scope || undefined,
-    purpose: data.purpose || undefined,
-    grantedAt: data.granted_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    consentType: data.consent_type as string,
+    consentVersion: data.consent_version as string,
+    userId: (data.user_id as string) || undefined,
+    anonymousId: (data.anonymous_id as string) || undefined,
+    granted: data.granted as boolean,
+    revokedAt: (data.revoked_at as string) || undefined,
+    source: data.source as "web" | "mobile" | "api" | "import",
+    ipAddress: (data.ip_address as string) || undefined,
+    userAgent: (data.user_agent as string) || undefined,
+    scope: (data.scope as string[]) || undefined,
+    purpose: (data.purpose as string) || undefined,
+    grantedAt: data.granted_at as string,
+    updatedAt: data.updated_at as string,
   }))
 }
 
@@ -1012,18 +1012,18 @@ export async function getPrivacyAuditLog(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    action: data.action,
-    targetType: data.target_type,
-    targetId: data.target_id || undefined,
-    userId: data.user_id || undefined,
-    actorId: data.actor_id || undefined,
-    ipAddress: data.ip_address || undefined,
-    userAgent: data.user_agent || undefined,
-    location: data.location || undefined,
-    description: data.description,
-    changes: data.changes || undefined,
-    timestamp: data.timestamp,
+    id: data.id as string,
+    action: data.action as PrivacyAuditLog['action'],
+    targetType: data.target_type as PrivacyAuditLog['targetType'],
+    targetId: (data.target_id as string) || undefined,
+    userId: (data.user_id as string) || undefined,
+    actorId: (data.actor_id as string) || undefined,
+    ipAddress: (data.ip_address as string) || undefined,
+    userAgent: (data.user_agent as string) || undefined,
+    location: (data.location as string) || undefined,
+    description: data.description as string,
+    changes: (data.changes as Record<string, unknown>) || undefined,
+    timestamp: data.timestamp as string,
   }))
 }
 
@@ -1061,7 +1061,7 @@ export async function getDataSummary(
 
   // Get oldest and newest dates
   const oldestAlert = alertsResult.data?.[0]
-  const newestAlert = alertsResult.data?.[alertsResult.data.length - 1]
+  const newestAlert = alertsResult.data?.[alertsResult.data.length as number - 1]
 
   return {
     profileData: true, // Profile always exists for registered users
@@ -1070,8 +1070,8 @@ export async function getDataSummary(
     locationPoints: locationsResult.count || 0,
     communicationCount: communicationsResult.count || 0,
     emergencyContacts: contactsResult.count || 0,
-    oldestData: oldestAlert?.created_at || '',
-    newestData: newestAlert?.created_at || '',
+    oldestData: ((oldestAlert as any)?.created_at as string) || '',
+    newestData: ((newestAlert as any)?.created_at as string) || '',
   }
 }
 
@@ -1097,7 +1097,8 @@ async function logPrivacyAction(
 ): Promise<void> {
   const supabase = createClient()
 
-  await supabase
+  /* eslint-enable @typescript-eslint/no-unused-vars */
+  const { error } = await supabase
     .from('privacy_audit_log')
     .insert({
       action: action.action,
@@ -1111,9 +1112,10 @@ async function logPrivacyAction(
       location: action.location || null,
       timestamp: new Date().toISOString(),
     })
-    .catch(error => {
-      console.error('Failed to log privacy action:', error)
-    })
+
+  if (error) {
+    console.error('Failed to log privacy action:', error)
+  }
 }
 
 /**
@@ -1121,16 +1123,16 @@ async function logPrivacyAction(
  */
 function mapSettingFromDB(data: Record<string, unknown>): PrivacySetting {
   return {
-    id: data.id,
+    id: data.id as string,
     userId: data.user_id as string | undefined,
     settingType: data.setting_type as PrivacySettingType,
-    value: data.value,
+    value: data.value as number,
     visibilityLevel: data.visibility_level as VisibilityLevel | undefined,
     allowedRoles: data.allowed_roles as string[] | undefined,
     allowedUserIds: data.allowed_user_ids as string[] | undefined,
     expiresAt: data.expires_at as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1157,13 +1159,14 @@ export async function deleteAllUserData(
 
   for (const table of tablesToDelete) {
     if (!table.retain) {
-      await supabase
+      const { error } = await supabase
         .from(table.name)
         .delete()
         .eq(table.condition, userId)
-        .catch(error => {
-          console.error(`Error deleting from ${table.name}:`, error)
-        })
+
+      if (error) {
+        console.error(`Error deleting from ${table.name}:`, error)
+      }
     }
   }
 

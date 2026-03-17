@@ -94,7 +94,6 @@ export interface LoginHistoryEntry {
   
   // Timestamps
   timestamp: string
-  timezone: string
 }
 
 /**
@@ -548,14 +547,11 @@ export async function getLoginHistory(
     query = query.lte('timestamp', options.endDate)
   }
 
-  if (options?.offset) {
-    query = query.offset(options.offset)
-  }
-
-  if (options?.limit) {
-    query = query.limit(options.limit)
-  } else {
-    query = query.limit(50)
+  const limit = options?.limit || 50
+  const offset = options?.offset || 0
+  
+  if (limit) {
+    query = query.range(offset, offset + limit - 1)
   }
 
   const { data, error } = await query
@@ -636,17 +632,17 @@ export async function getLoginStatistics(
     }
   }
 
-  const entries = data || []
+  const entries = (data || []).map(mapEntryFromDB)
   
   const successful = entries.filter(e => e.status === 'success')
   const failed = entries.filter(e => e.status === 'failed')
 
-  const uniqueDevices = new Set(entries.map(e => e.device_id).filter(Boolean)).size
+  const uniqueDevices = new Set(entries.map(e => e.deviceId).filter(Boolean)).size
   const uniqueLocations = new Set(entries.map(e => e.location).filter(Boolean)).size
 
   const threatDistribution: Record<string, number> = {}
   entries.forEach(e => {
-    const level = e.threat_level || 'low'
+    const level = e.threatLevel || 'low'
     threatDistribution[level] = (threatDistribution[level] || 0) + 1
   })
 
@@ -868,8 +864,8 @@ export async function getLoginsByLocation(
  */
 function mapEntryFromDB(data: Record<string, unknown>): LoginHistoryEntry {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     sessionId: data.session_id as string | undefined,
     method: data.method as LoginMethod,
     status: data.status as LoginStatus,
@@ -890,7 +886,6 @@ function mapEntryFromDB(data: Record<string, unknown>): LoginHistoryEntry {
     suspiciousIndicators: data.suspicious_indicators as string[] | undefined,
     threatLevel: data.threat_level as 'low' | 'medium' | 'high',
     sessionDuration: data.session_duration as number | undefined,
-    timestamp: data.timestamp,
-    timezone: data.timezone as string || 'UTC',
+    timestamp: data.timestamp as string,
   }
 }

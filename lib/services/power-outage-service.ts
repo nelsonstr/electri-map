@@ -513,7 +513,7 @@ export async function createOutageReport(
       .order('created_at', { ascending: false })
 
     if (nearbyOutages && nearbyOutages.length > 0) {
-      outageId = nearbyOutages[0].id
+      outageId = nearbyOutages[0].id as string
     }
   }
 
@@ -549,19 +549,19 @@ export async function createOutageReport(
   }
 
   return {
-    id: data.id,
-    outageId: data.outage_id || undefined,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    address: data.address || undefined,
-    municipality: data.municipality || undefined,
-    parish: data.parish || undefined,
-    reporterId: data.reporter_id || undefined,
-    cause: data.cause as OutageCause | undefined,
-    description: data.description || undefined,
-    isVisible: data.is_visible,
-    verified: data.verified,
-    createdAt: data.created_at,
+    id: data.id as string,
+    outageId: (data.outage_id as string) || undefined,
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
+    address: (data.address as string) || undefined,
+    municipality: (data.municipality as string) || undefined,
+    parish: (data.parish as string) || undefined,
+    reporterId: (data.reporter_id as string) || undefined,
+    cause: (data.cause as OutageCause) || undefined,
+    description: (data.description as string) || undefined,
+    isVisible: data.is_visible as boolean,
+    verified: data.verified as boolean,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -586,20 +586,20 @@ export async function getOutageReports(
   }
 
   return (data || []).map(report => ({
-    id: report.id,
-    outageId: report.outage_id || undefined,
-    latitude: report.latitude,
-    longitude: report.longitude,
-    address: report.address || undefined,
-    municipality: report.municipality || undefined,
-    parish: report.parish || undefined,
-    reporterId: report.reporter_id || undefined,
-    reporterType: report.reporter_type as 'user' | 'automated' | 'utility' | 'government' | undefined,
-    cause: report.cause as OutageCause | undefined,
-    description: report.description || undefined,
-    isVisible: report.is_visible,
-    verified: report.verified,
-    createdAt: report.created_at,
+    id: report.id as string,
+    outageId: (report.outage_id as string) || undefined,
+    latitude: report.latitude as number,
+    longitude: report.longitude as number,
+    address: (report.address as string) || undefined,
+    municipality: (report.municipality as string) || undefined,
+    parish: (report.parish as string) || undefined,
+    reporterId: (report.reporter_id as string) || undefined,
+    reporterType: (report.reporter_type as 'user' | 'automated' | 'utility' | 'government') || undefined,
+    cause: (report.cause as OutageCause) || undefined,
+    description: (report.description as string) || undefined,
+    isVisible: report.is_visible as boolean,
+    verified: report.verified as boolean,
+    createdAt: report.created_at as string,
   }))
 }
 
@@ -676,18 +676,18 @@ export async function getOutageUpdates(
   }
 
   return (data || []).map(update => ({
-    id: update.id,
-    outageId: update.outage_id,
-    title: update.title || undefined,
-    description: update.description,
-    previousStatus: update.previous_status,
-    newStatus: update.new_status,
-    customersRestored: update.customers_restored || undefined,
-    progressPercentage: update.progress_percentage || undefined,
-    crewId: update.crew_id || undefined,
-    crewStatus: update.crew_status || undefined,
-    estimatedRestoration: update.estimated_restoration || undefined,
-    createdAt: update.created_at,
+    id: update.id as string,
+    outageId: update.outage_id as string,
+    title: (update.title as string) || undefined,
+    description: update.description as string,
+    previousStatus: (update.previous_status as PowerOutageStatus) || undefined,
+    newStatus: update.new_status as PowerOutageStatus,
+    customersRestored: (update.customers_restored as number) || undefined,
+    progressPercentage: (update.progress_percentage as number) || undefined,
+    crewId: (update.crew_id as string) || undefined,
+    crewStatus: (update.crew_status as string) || undefined,
+    estimatedRestoration: (update.estimated_restoration as string) || undefined,
+    createdAt: update.created_at as string,
   }))
 }
 
@@ -771,18 +771,20 @@ export async function getOutageStats(
   let totalRestorationTime = 0
   let restorationCount = 0
 
-  for (const outage of data || []) {
-    if (['active', 'reported', 'confirmed', 'investigating', 'crew_dispatched', 'restoring', 'partially_restored'].includes(outage.status)) {
+  for (const outage of (data || []) as any[]) {
+    const status = outage.status as string
+    if (['active', 'reported', 'confirmed', 'investigating', 'crew_dispatched', 'restoring', 'partially_restored'].includes(status)) {
       stats.totalActiveOutages++
       
       if (outage.severity === 'critical') {
         stats.criticalOutages++
       }
 
-      stats.totalAffectedCustomers += outage.affected_customers_total || 0
+      stats.totalAffectedCustomers += (outage.affected_customers_total as number) || 0
 
       if (outage.municipality) {
-        stats.byMunicipality[outage.municipality] = (stats.byMunicipality[outage.municipality] || 0) + 1
+        const municipality = outage.municipality as string
+        stats.byMunicipality[municipality] = (stats.byMunicipality[municipality] || 0) + 1
       }
 
       if (outage.cause) {
@@ -791,8 +793,8 @@ export async function getOutageStats(
 
       // Calculate restoration time
       if (outage.actual_restoration && outage.outage_started_at) {
-        const start = new Date(outage.outage_started_at)
-        const end = new Date(outage.actual_restoration)
+        const start = new Date(outage.outage_started_at as string)
+        const end = new Date(outage.actual_restoration as string)
         totalRestorationTime += (end.getTime() - start.getTime())
         restorationCount++
       }
@@ -903,17 +905,17 @@ export async function getEstimatedRestorationTime(
     .eq('severity', severity)
     .not('actual_restoration', 'is', null)
 
-  if (!data || data.length === 0) {
+  if (!data || data.length as number === 0) {
     return null
   }
 
   let totalTime = 0
   let count = 0
 
-  for (const outage of data) {
+  for (const outage of (data || []) as any[]) {
     if (outage.actual_restoration && outage.outage_started_at) {
-      const start = new Date(outage.outage_started_at)
-      const end = new Date(outage.actual_restoration)
+      const start = new Date(outage.outage_started_at as string)
+      const end = new Date(outage.actual_restoration as string)
       totalTime += (end.getTime() - start.getTime())
       count++
     }
@@ -931,7 +933,7 @@ export async function getEstimatedRestorationTime(
  */
 function mapOutageFromDB(data: Record<string, unknown>): PowerOutage {
   return {
-    id: data.id,
+    id: data.id as string,
     externalId: data.external_id as string | undefined,
     municipality: data.municipality as string | undefined,
     parish: data.parish as string | undefined,
@@ -956,13 +958,13 @@ function mapOutageFromDB(data: Record<string, unknown>): PowerOutage {
     estimatedArrival: data.estimated_arrival as string | undefined,
     crewId: data.crew_id as string | undefined,
     lastUpdated: data.last_updated as string | undefined,
-    updateCount: data.update_count || 0,
+    updateCount: data.update_count as number || 0,
     relatedOutageIds: data.related_outage_ids as string[] | undefined,
     parentOutageId: data.parent_outage_id as string | undefined,
     source: data.source as string | undefined,
-    reportCount: data.report_count || 0,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    reportCount: data.report_count as number || 0,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

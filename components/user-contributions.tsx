@@ -39,7 +39,7 @@ export function UserContributions() {
       const res = await fetch(`/api/locations?user_id=${userId}`)
       if (res.ok) {
         const data = await res.json()
-        setLocations(data)
+        setLocations(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error("Failed to fetch locations", error)
@@ -94,6 +94,7 @@ export function UserContributions() {
           size="icon" 
           className="relative"
           onClick={fetchUserLocations}
+          suppressHydrationWarning
         >
           <Clock className="h-5 w-5" />
           {/* Optional: Indicator dot if user has active items? */}

@@ -449,7 +449,7 @@ export async function getSOSList(
     const { data: readingsData } = await supabase
       .from('vital_sign_readings')
       .select('*')
-      .eq('sos_id', sos.id)
+      .eq('sos_id', sos.id as string)
       .order('timestamp', { ascending: false })
 
     sosList.push(mapSOSFromDB(sos, (readingsData || []).map(mapReadingFromDB)))
@@ -679,7 +679,7 @@ async function sendSOSNotifications(
         sentAt: new Date().toISOString(),
         status: 'sent' as const,
       }
-      notifications.push(notification)
+      notifications.push(notification as any)
       
       // In production, this would actually send SMS/push notification
       console.log(`SOS alert sent to ${contact.name}: ${contact.phone || contact.email}`)
@@ -714,18 +714,18 @@ async function sendSOSNotifications(
 
 function mapSOSFromDB(data: Record<string, unknown>, readings: VitalSignsReading[]): VitalSignsSOS {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     alertId: data.alert_id as string | undefined,
     status: data.status as SOSStatus,
     priority: data.priority as SOSPriority,
     triggerReadings: readings,
     primaryTrigger: data.primary_trigger as VitalSignType,
-    location: data.location as VitalSignsSOS['location'] | undefined,
+    location: (data.location as VitalSignsSOS['location']) || undefined,
     assignedTo: data.assigned_to as string | undefined,
     responseNotes: data.response_notes as string | undefined,
     resolvedAt: data.resolved_at as string | undefined,
-    escalationLevel: data.escalation_level,
+    escalationLevel: (data.escalation_level as number) || 0,
     escalatedAt: data.escalated_at as string | undefined,
     notificationsSent: (data.notifications_sent as Array<{
       type: string
@@ -733,21 +733,21 @@ function mapSOSFromDB(data: Record<string, unknown>, readings: VitalSignsReading
       sentAt: string
       status: 'sent' | 'delivered' | 'failed'
     }>) || [],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
 function mapReadingFromDB(data: Record<string, unknown>): VitalSignsReading {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     deviceId: data.device_id as string | undefined,
     type: data.type as VitalSignType,
-    value: data.value,
-    unit: data.unit,
+    value: data.value as number,
+    unit: data.unit as string,
     status: data.status as VitalSignStatus,
-    timestamp: data.timestamp,
+    timestamp: data.timestamp as string,
     metadata: data.metadata as Record<string, unknown> | undefined,
   }
 }

@@ -667,11 +667,11 @@ export async function cloneSchedule(
 
 function mapScheduleFromDB(data: Record<string, unknown>): AlertSchedule {
   return {
-    id: data.id,
-    name: data.name,
+    id: data.id as string,
+    name: data.name as string,
     description: data.description as string | undefined,
     status: data.status as ScheduleStatus,
-    startDate: data.start_date,
+    startDate: data.start_date as string,
     endDate: data.end_date as string | undefined,
     timezone: data.timezone,
     scheduledTime: data.scheduled_time,
@@ -682,7 +682,7 @@ function mapScheduleFromDB(data: Record<string, unknown>): AlertSchedule {
     lastRunAt: data.last_run_at as string | undefined,
     nextRunAt: data.next_run_at as string | undefined,
     totalRuns: data.total_runs,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

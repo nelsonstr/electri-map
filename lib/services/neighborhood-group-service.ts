@@ -869,15 +869,15 @@ export async function createPostComment(
   }
 
   return {
-    id: data.id,
-    postId: data.post_id,
-    authorId: data.author_id,
-    content: data.content,
-    parentCommentId: data.parent_comment_id || undefined,
+    id: data.id as string,
+    postId: data.post_id as string,
+    authorId: data.author_id as string,
+    content: data.content as string,
+    parentCommentId: data.parent_comment_id as string || undefined,
     likeCount: 0,
-    isHidden: data.is_hidden,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    isHidden: data.is_hidden as boolean,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -949,16 +949,16 @@ export async function inviteToGroup(
   }
 
   return {
-    id: data.id,
-    groupId: data.group_id,
-    invitedEmail: data.invited_email || undefined,
-    invitedUserId: data.invited_user_id || undefined,
+    id: data.id as string,
+    groupId: data.group_id as string,
+    invitedEmail: data.invited_email as string || undefined,
+    invitedUserId: data.invited_user_id as string || undefined,
     invitedBy: data.invited_by,
-    status: data.status,
-    personalMessage: data.personal_message || undefined,
-    expiresAt: data.expires_at || undefined,
-    respondedAt: data.responded_at || undefined,
-    createdAt: data.created_at,
+    status: data.status as string,
+    personalMessage: data.personal_message as string || undefined,
+    expiresAt: data.expires_at as string || undefined,
+    respondedAt: data.responded_at as string || undefined,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -1110,8 +1110,8 @@ export async function updateGroupSettings(
  */
 function mapGroupFromDB(data: Record<string, unknown>): NeighborhoodGroup {
   return {
-    id: data.id,
-    name: data.name,
+    id: data.id as string,
+    name: data.name as string,
     description: data.description as string | undefined,
     type: data.type as GroupType,
     visibility: data.visibility as GroupVisibility,
@@ -1121,17 +1121,17 @@ function mapGroupFromDB(data: Record<string, unknown>): NeighborhoodGroup {
     longitude: data.longitude as number | undefined,
     radius: data.radius as number | undefined,
     address: data.address as string | undefined,
-    isActive: data.is_active,
+    isActive: data.is_active as boolean,
     allowMemberPosts: data.allow_member_posts,
     requirePostApproval: data.require_post_approval,
     allowResourceSharing: data.allow_resource_sharing,
     coverImageUrl: data.cover_image_url as string | undefined,
     iconUrl: data.icon_url as string | undefined,
-    memberCount: data.member_count || 0,
-    postCount: data.post_count || 0,
+    memberCount: data.member_count as number || 0,
+    postCount: data.post_count as number || 0,
     metadata: data.metadata as Record<string, unknown> | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1140,18 +1140,18 @@ function mapGroupFromDB(data: Record<string, unknown>): NeighborhoodGroup {
  */
 function mapMemberFromDB(data: Record<string, unknown>): GroupMember {
   return {
-    id: data.id,
-    groupId: data.group_id,
-    userId: data.user_id,
+    id: data.id as string,
+    groupId: data.group_id as string,
+    userId: data.user_id as string,
     displayName: data.display_name as string | undefined,
     avatarUrl: data.avatar_url as string | undefined,
     role: data.role as MemberRole,
     status: data.status as MembershipStatus,
-    notificationsEnabled: data.notifications_enabled,
+    notificationsEnabled: data.notifications_enabled as boolean,
     emailNotifications: data.email_notifications,
     pushNotifications: data.push_notifications,
     lastActiveAt: data.last_active_at as string | undefined,
-    joinedAt: data.joined_at,
+    joinedAt: data.joined_at as string,
     bannedAt: data.banned_at as string | undefined,
     banReason: data.ban_reason as string | undefined,
   }
@@ -1162,23 +1162,23 @@ function mapMemberFromDB(data: Record<string, unknown>): GroupMember {
  */
 function mapPostFromDB(data: Record<string, unknown>): GroupPost {
   return {
-    id: data.id,
-    groupId: data.group_id,
-    authorId: data.author_id,
+    id: data.id as string,
+    groupId: data.group_id as string,
+    authorId: data.author_id as string,
     title: data.title as string | undefined,
-    content: data.content,
+    content: data.content as string,
     visibility: data.visibility as PostVisibility,
     mediaUrls: data.media_urls as string[] | undefined,
-    mediaCount: data.media_count || 0,
+    mediaCount: data.media_count as number || 0,
     postType: data.post_type as 'announcement' | 'alert' | 'question' | 'resource' | 'event' | 'discussion',
-    isPinned: data.is_pinned,
-    isEdited: data.is_edited,
-    likeCount: data.like_count || 0,
-    commentCount: data.comment_count || 0,
-    isHidden: data.is_hidden,
+    isPinned: data.is_pinned as boolean,
+    isEdited: data.is_edited as boolean,
+    likeCount: data.like_count as number || 0,
+    commentCount: data.comment_count as number || 0,
+    isHidden: data.is_hidden as boolean,
     hiddenReason: data.hidden_reason as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

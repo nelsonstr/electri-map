@@ -54,6 +54,14 @@ export interface DeviceInfo {
 /**
  * Push notification
  */
+export interface NotificationAction {
+  id: string
+  title: string
+  icon?: string
+  destructive?: boolean
+  foreground?: boolean
+}
+
 export interface PushNotification {
   id: string
   
@@ -66,13 +74,7 @@ export interface PushNotification {
   data?: Record<string, string>
   
   // Actions
-  actions?: Array<{
-    id: string
-    title: string
-    icon?: string
-    destructive?: boolean
-    foreground?: boolean
-  }>
+  actions?: NotificationAction[]
   
   // Styling
   badge?: string | number
@@ -489,7 +491,7 @@ export async function registerDevice(
         last_active_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('id', existing.id)
+      .eq('id', (existing as { id: string }).id)
       .select('*')
       .single()
 
@@ -853,25 +855,27 @@ export async function sendPushNotification(
   }
 
   return {
-    id: notification.id,
-    title: notification.title,
-    body: notification.body,
-    subtitle: notification.subtitle || undefined,
-    data: notification.data || undefined,
-    actions: notification.actions || undefined,
-    badge: notification.badge || undefined,
-    icon: notification.icon || undefined,
-    imageUrl: notification.image_url || undefined,
-    priority: notification.priority,
-    scheduledAt: notification.scheduled_at || undefined,
-    expiresAt: notification.expires_at || undefined,
-    status: notification.status,
-    sentAt: notification.sent_at || undefined,
-    sentCount: notification.sent_count,
-    deliveredCount: notification.delivered_count,
-    clickedCount: notification.clicked_count,
-    dismissedCount: notification.dismissed_count,
-    createdAt: notification.created_at,
+    id: notification.id as unknown as string,
+    title: notification.title as unknown as string,
+    body: notification.body as unknown as string,
+    subtitle: (notification.subtitle as unknown as string) || undefined,
+    data: (notification.data as unknown as Record<string, string>) || undefined,
+    actions: (notification.actions as unknown as NotificationAction[]) || undefined,
+    badge: (notification.badge as unknown as string) || undefined,
+    icon: (notification.icon as unknown as string) || undefined,
+    imageUrl: (notification.image_url as unknown as string) || undefined,
+    priority: notification.priority as "high" | "normal",
+    scheduledAt: (notification.scheduled_at as unknown as string) || undefined,
+    expiresAt: (notification.expires_at as unknown as string) || undefined,
+    status: notification.status as PushStatus,
+    sentAt: (notification.sent_at as unknown as string) || undefined,
+    deliveredAt: (notification.delivered_at as unknown as string) || undefined,
+    clickedAt: (notification.clicked_at as unknown as string) || undefined,
+    sentCount: notification.sent_count as number,
+    deliveredCount: notification.delivered_count as number,
+    clickedCount: notification.clicked_count as number,
+    dismissedCount: notification.dismissed_count as number,
+    createdAt: notification.created_at as unknown as string,
   }
 }
 
@@ -947,25 +951,28 @@ export async function getNotificationHistory(
     return []
   }
 
-  return (data || []).map((item: Record<string, unknown>) => ({
-    id: item.id,
-    userId: item.user_id,
-    notificationId: item.notification_id,
-    status: item.status as PushStatus,
-    statusAt: item.status_at,
-    clickedAt: item.clicked_at || undefined,
-    dismissedAt: item.dismissed_at || undefined,
-    deviceId: item.device_id || undefined,
-    appState: item.app_state as 'foreground' | 'background' | 'closed' | undefined,
-    createdAt: item.created_at,
-    notification: {
-      id: (item.push_notifications as Record<string, unknown>)?.id,
-      title: (item.push_notifications as Record<string, unknown>)?.title,
-      body: (item.push_notifications as Record<string, unknown>)?.body,
-      status: (item.push_notifications as Record<string, unknown>)?.status,
-      createdAt: (item.push_notifications as Record<string, unknown>)?.created_at,
-    } as PushNotification,
-  }))
+  return ((data || []) as unknown as Record<string, unknown>[]).map((item) => {
+    const notification = item.push_notifications as Record<string, unknown> | null
+    return {
+      id: item.id as string,
+      userId: item.user_id as string,
+      notificationId: item.notification_id as string,
+      status: item.status as PushStatus,
+      statusAt: item.status_at as string,
+      clickedAt: (item.clicked_at as string) || undefined,
+      dismissedAt: (item.dismissed_at as string) || undefined,
+      deviceId: (item.device_id as string) || undefined,
+      appState: item.app_state as 'foreground' | 'background' | 'closed' | undefined,
+      createdAt: item.created_at as string,
+      notification: {
+        id: notification?.id as string,
+        title: notification?.title as string,
+        body: notification?.body as string,
+        status: notification?.status,
+        createdAt: notification?.created_at as string,
+      } as PushNotification,
+    }
+  })
 }
 
 /**
@@ -1001,7 +1008,7 @@ export async function updateNotificationStatus(
     .eq('user_id', userId)
     .eq('notification_id', notificationId)
     .eq('device_id', deviceId)
-})
+}
 
 /**
  * Gets unread notification count
@@ -1125,19 +1132,19 @@ export async function getPushStatistics(
  */
 function mapDeviceFromDB(data: Record<string, unknown>): DeviceInfo {
   return {
-    id: data.id,
+    id: data.id as unknown as string,
     userId: data.user_id as string | undefined,
     platform: data.platform as PushPlatform,
     osVersion: data.os_version as string | undefined,
     appVersion: data.app_version as string | undefined,
-    pushToken: data.push_token,
+    pushToken: data.push_token as unknown as string,
     capabilities: data.capabilities as DeviceInfo['capabilities'],
-    isActive: data.is_active,
+    isActive: data.is_active as boolean,
     lastActiveAt: data.last_active_at as string | undefined,
     model: data.model as string | undefined,
     manufacturer: data.manufacturer as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as unknown as string,
+    updatedAt: data.updated_at as unknown as string,
   }
 }
 
@@ -1146,15 +1153,15 @@ function mapDeviceFromDB(data: Record<string, unknown>): DeviceInfo {
  */
 function mapPreferencesFromDB(data: Record<string, unknown>): NotificationPreference {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as unknown as string,
+    userId: data.user_id as unknown as string,
     categories: data.categories as NotificationPreference['categories'],
     quietHours: data.quiet_hours as NotificationPreference['quietHours'],
     deliveryChannels: data.delivery_channels as NotificationPreference['deliveryChannels'],
     priorityThreshold: data.priority_threshold as NotificationPreference['priorityThreshold'],
     batchDelivery: data.batch_delivery as NotificationPreference['batchDelivery'],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as unknown as string,
+    updatedAt: data.updated_at as unknown as string,
   }
 }
 
@@ -1163,20 +1170,20 @@ function mapPreferencesFromDB(data: Record<string, unknown>): NotificationPrefer
  */
 function mapCampaignFromDB(data: Record<string, unknown>): PushCampaign {
   return {
-    id: data.id,
-    name: data.name,
+    id: data.id as unknown as string,
+    name: data.name as unknown as string,
     description: data.description as string | undefined,
-    notifications: data.notifications as CreateNotificationInput['notifications'],
+    notifications: data.notifications as CreateCampaignInput['notifications'],
     targeting: data.targeting as CreateCampaignInput['targeting'],
     scheduledAt: data.scheduled_at as string | undefined,
     expiresAt: data.expires_at as string | undefined,
     timezone: data.timezone as string | undefined,
     status: data.status as PushCampaign['status'],
-    targetCount: data.target_count || 0,
-    sentCount: data.sent_count || 0,
-    deliveredCount: data.delivered_count || 0,
-    clickedCount: data.clicked_count || 0,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    targetCount: (data.target_count as number) || 0,
+    sentCount: (data.sent_count as number) || 0,
+    deliveredCount: (data.delivered_count as number) || 0,
+    clickedCount: (data.clicked_count as number) || 0,
+    createdAt: data.created_at as unknown as string,
+    updatedAt: data.updated_at as unknown as string,
   }
 }

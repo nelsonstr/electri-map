@@ -96,7 +96,7 @@
         "quickReport": {
             "title": "Quick Report",
             "description": "Report service status at the current map location",
-            "placeholder": "Add any additional information about the service status... (optional)",
+            "placeholder": "Describe what you're seeing (optional)...",
             "selectType": "Select Service Type"
         },
         "zoom": "Zoom to my location",
@@ -105,7 +105,10 @@
             "serviceType": "Service Type",
             "working": "Working",
             "issue": "Issue Reported"
-        }
+        },
+        "locationDetected": "Location Detected",
+        "mapCentered": "Map has been centered on your location",
+        "locationError": "Location Error"
     },
     "about": {
         "title": "About Services Status",
@@ -226,6 +229,36 @@
                     "If you or a family member relies on electric medical equipment, contact your utility provider. Many have 'priority reconnection' lists for life-sustaining equipment, though this is not a guarantee.",
                     "Have a backup plan for refrigerated medicines like insulin. a cooler with ice packs can keep meds safe for hours. Know where you can get more ice if the outage persists.",
                     "Talk to your doctor about an emergency plan. Ask if your medication can be stored at room temperature for a short period or if there are alternative treatments available during an emergency."
+                ]
+            },
+            "emergencyKit": {
+                "title": "Build Your 72-Hour Emergency Kit",
+                "excerpt": "A comprehensive guide to preparing your 72-hour survival kit, inspired by 72horas.pt.",
+                "slug": "72-hour-emergency-kit",
+                "content": [
+                    "In a major emergency, it may take up to 72 hours for help to arrive. Having a dedicated emergency kit is crucial for survival. The initiative 72horas.pt provides excellent guidance on what to include.",
+                    "Your kit should contain water (1 gallon per person per day), non-perishable food, a first aid kit, flashlights, batteries, and a battery-powered radio. Don't forget personal hygiene items and essential medications.",
+                    "Use a backpack that is easy to carry. Organize items by priority. For a complete checklist and interactive tools, visit [72horas.pt](https://72horas.pt/)."
+                ]
+            },
+            "volunteering": {
+                "title": "Portugal Ajuda: Connect to Help",
+                "excerpt": "Find out how to volunteer or request assistance during emergencies with Portugal Ajuda.",
+                "slug": "portugal-ajuda-volunteering",
+                "content": [
+                    "During crisis situations like wildfires, effective coordination of help is vital. 'Portugal Ajuda' is a civil society initiative designed to connect those in need with those who can help.",
+                    "The platform allows you to register as a volunteer to offer transport, accommodation, or supplies. Conversely, if you are affected by an emergency, you can request specific assistance directly through the site.",
+                    "Community solidarity is our strongest asset. Visite [Portugal Ajuda](https://www.portugalajuda.pt/) to sign up, offer help, or find support in your area."
+                ]
+            },
+            "weatherImpacts": {
+                "title": "Ajuda Portugal: Register Weather Impacts",
+                "excerpt": "A platform to register damages caused by extreme weather events.",
+                "slug": "ajuda-portugal-weather-impacts",
+                "content": [
+                    "Extreme weather events can have devastating effects on homes and businesses. 'Ajuda Portugal' provides a centralized form to register these impacts.",
+                    "By documenting damages, you help authorities and support organizations understand the scale of the disaster and coordinate relief efforts more effectively.",
+                    "If you have been affected by recent storms or other meteorological events, visit [Ajuda Portugal](https://ajudaportugal.com/) to report your situation."
                 ]
             }
         }
@@ -433,12 +466,16 @@
             "other": "Other"
         },
         "distance": "{distance} away",
+        "maxDistance": "Search Radius",
+        "nearbyIssues": "Issues nearby",
         "timeAgo": "{time} ago",
         "justNow": "Just now",
         "minutesAgo": "{count} min ago",
         "hoursAgo": "{count} hours ago",
         "activeUntil": "Active until",
         "viewOnMap": "View on Map",
+        "viewDetails": "View Details",
+        "reportedAt": "Reported at",
         "dismiss": "Dismiss",
         "settings": {
             "title": "Alert Settings",
@@ -482,6 +519,91 @@
             "enable": "Enable Notifications",
             "denied": "Notifications blocked",
             "deniedDesc": "Please enable notifications in your browser settings"
+        }
+    },
+    "alerts": {
+        "severity": {
+            "informational": "Informational",
+            "warning": "Warning",
+            "critical": "Critical"
+        },
+        "list": {
+            "title": "Community Alerts",
+            "filters": {
+                "title": "Filters",
+                "clear": "Clear Filters"
+            },
+            "severity": {
+                "informational": "Informational",
+                "warning": "Warning",
+                "critical": "Critical"
+            },
+            "sort": {
+                "label": "Sort by",
+                "distance": "Distance",
+                "severity": "Severity",
+                "date": "Date"
+            },
+            "empty": {
+                "title": "No alerts found",
+                "noAlerts": "There are no active alerts in your area.",
+                "filtersNoResults": "No alerts match your current filters."
+            },
+            "loading": "Loading alerts...",
+            "error": "Error loading alerts",
+            "retry": "Retry",
+            "refresh": "Refresh",
+            "critical": "Critical",
+            "warning": "Warning",
+            "informational": "Informational"
+        },
+        "settings": {
+            "title": "Alert Settings",
+            "description": "Customize your alert preferences",
+            "radius": {
+                "label": "Alert Radius",
+                "description": "Receive alerts within this distance"
+            },
+            "severity": {
+                "label": "Severity Levels",
+                "description": "Select which alert severities to receive",
+                "informational": "Informational",
+                "warning": "Warning",
+                "critical": "Critical"
+            },
+            "channels": {
+                "label": "Notification Channels",
+                "push": {
+                    "label": "Push Notifications",
+                    "notSubscribed": "Enable push notifications to receive alerts",
+                    "subscribed": "Push notifications enabled"
+                },
+                "sms": {
+                    "label": "SMS Notifications",
+                    "description": "Receive critical alerts via SMS",
+                    "phoneLabel": "Phone Number"
+                },
+                "email": {
+                    "label": "Email Notifications",
+                    "description": "Receive alert summaries via email"
+                }
+            },
+            "quietHours": {
+                "label": "Quiet Hours",
+                "description": "Silence notifications during specific times",
+                "start": "Start Time",
+                "end": "End Time"
+            },
+            "criticalOverride": {
+                "label": "Critical Alert Override",
+                "description": "Always play sound for critical alerts even in quiet hours"
+            },
+            "saveSuccess": "Settings saved successfully",
+            "errors": {
+                "loadFailed": "Failed to load preferences",
+                "pushSubscribeFailed": "Failed to subscribe to push notifications",
+                "saveFailed": "Failed to save settings"
+            }
         }
     }
 }

@@ -343,7 +343,10 @@ export async function sendNotification(input: NotificationInput): Promise<BulkNo
 
     for (const channel of channels) {
       try {
-        let sendResult: { success: boolean; messageId?: string; error?: string }
+        let sendResult: { success: boolean; messageId?: string; error?: string } = {
+          success: false,
+          error: 'Skipped',
+        }
         let recipientIdentifier = ''
 
         switch (channel) {
@@ -525,26 +528,26 @@ export async function getNotification(id: string): Promise<Notification | null> 
   }
 
   return {
-    id: data.id,
-    alertId: data.alert_id || undefined,
+    id: data.id as string,
+    alertId: (data.alert_id as string) || undefined,
     alertType: data.alert_type as AlertType,
-    title: data.title,
-    body: data.body,
+    title: data.title as string,
+    body: data.body as string,
     priority: data.priority as NotificationPriority,
     channel: data.channel as NotificationChannel,
-    recipientUserId: data.recipient_user_id || undefined,
-    recipientEmail: data.recipient_email || undefined,
-    recipientPhone: data.recipient_phone || undefined,
+    recipientUserId: (data.recipient_user_id as string) || undefined,
+    recipientEmail: (data.recipient_email as string) || undefined,
+    recipientPhone: (data.recipient_phone as string) || undefined,
     status: data.status as NotificationStatus,
-    metadata: data.metadata || undefined,
-    sentAt: data.sent_at || undefined,
-    deliveredAt: data.delivered_at || undefined,
-    readAt: data.read_at || undefined,
-    clickedAt: data.clicked_at || undefined,
-    errorMessage: data.error_message || undefined,
-    actionUrl: data.action_url || undefined,
-    imageUrl: data.image_url || undefined,
-    createdAt: data.created_at,
+    metadata: (data.metadata as Record<string, unknown>) || undefined,
+    sentAt: (data.sent_at as string) || undefined,
+    deliveredAt: (data.delivered_at as string) || undefined,
+    readAt: (data.read_at as string) || undefined,
+    clickedAt: (data.clicked_at as string) || undefined,
+    errorMessage: (data.error_message as string) || undefined,
+    actionUrl: (data.action_url as string) || undefined,
+    imageUrl: (data.image_url as string) || undefined,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -635,27 +638,27 @@ export async function listUserNotifications(
     return { notifications: [], total: 0 }
   }
 
-  const notifications: Notification[] = data.map(item => ({
-    id: item.id,
-    alertId: item.alert_id || undefined,
+  const notifications: Notification[] = (data || []).map(item => ({
+    id: item.id as string,
+    alertId: (item.alert_id as string) || undefined,
     alertType: item.alert_type as AlertType,
-    title: item.title,
-    body: item.body,
+    title: item.title as string,
+    body: item.body as string,
     priority: item.priority as NotificationPriority,
     channel: item.channel as NotificationChannel,
-    recipientUserId: item.recipient_user_id || undefined,
-    recipientEmail: item.recipient_email || undefined,
-    recipientPhone: item.recipient_phone || undefined,
+    recipientUserId: (item.recipient_user_id as string) || undefined,
+    recipientEmail: (item.recipient_email as string) || undefined,
+    recipientPhone: (item.recipient_phone as string) || undefined,
     status: item.status as NotificationStatus,
-    metadata: item.metadata || undefined,
-    sentAt: item.sent_at || undefined,
-    deliveredAt: item.delivered_at || undefined,
-    readAt: item.read_at || undefined,
-    clickedAt: item.clicked_at || undefined,
-    errorMessage: item.error_message || undefined,
-    actionUrl: item.action_url || undefined,
-    imageUrl: item.image_url || undefined,
-    createdAt: item.created_at,
+    metadata: (item.metadata as Record<string, unknown>) || undefined,
+    sentAt: (item.sent_at as string) || undefined,
+    deliveredAt: (item.delivered_at as string) || undefined,
+    readAt: (item.read_at as string) || undefined,
+    clickedAt: (item.clicked_at as string) || undefined,
+    errorMessage: (item.error_message as string) || undefined,
+    actionUrl: (item.action_url as string) || undefined,
+    imageUrl: (item.image_url as string) || undefined,
+    createdAt: item.created_at as string,
   }))
 
   return { notifications, total: count || 0 }
@@ -716,10 +719,10 @@ export async function sendEmergencyBroadcast(
     }
   }
 
-  const recipients = users.map(user => ({
-    userId: user.id,
-    email: user.email,
-    phone: user.phone,
+  const recipients = (users || []).map(user => ({
+    userId: user.id as string,
+    email: user.email as string,
+    phone: user.phone as string,
     channelPreferences: ['push', 'in_app'] as NotificationChannel[], // Default channels
   }))
 

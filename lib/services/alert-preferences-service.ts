@@ -709,7 +709,7 @@ export async function getPreferenceTemplates(): Promise<AlertPreferenceTemplate[
   }
 
   // If no templates in DB, return system defaults
-  if (!data || data.length === 0) {
+  if (!data || data.length as number === 0) {
     return getSystemTemplates()
   }
 
@@ -750,9 +750,9 @@ export async function applyPreferenceTemplate(
  */
 function mapPreferencesFromDB(data: Record<string, unknown>): AlertPreferences {
   return {
-    id: data.id,
-    userId: data.user_id,
-    enabled: data.enabled,
+    id: data.id as string,
+    userId: data.user_id as string,
+    enabled: data.enabled as boolean,
     globalFrequency: data.global_frequency as AlertFrequency,
     channels: data.channels as Record<NotificationChannel, boolean>,
     categories: data.categories as Record<AlertCategory, {
@@ -764,8 +764,8 @@ function mapPreferencesFromDB(data: Record<string, unknown>): AlertPreferences {
     geographic: data.geographic as GeographicPreference,
     dndSchedule: data.dnd_schedule as AlertPreferences['dndSchedule'],
     digestSettings: data.digest_settings as AlertPreferences['digestSettings'],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -774,11 +774,11 @@ function mapPreferencesFromDB(data: Record<string, unknown>): AlertPreferences {
  */
 function mapTemplateFromDB(data: Record<string, unknown>): AlertPreferenceTemplate {
   return {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    isDefault: data.is_default,
-    isSystem: data.is_system,
+    id: data.id as string,
+    name: data.name as string,
+    description: data.description as string,
+    isDefault: data.is_default as boolean,
+    isSystem: data.is_system as boolean,
     preferences: {
       enabled: data.preferences.enabled,
       globalFrequency: data.preferences.global_frequency,

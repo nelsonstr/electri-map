@@ -449,7 +449,7 @@ export async function getNearbySafeZones(
       ...item,
       distance: calculateDistance(
         { latitude, longitude },
-        { latitude: item.latitude, longitude: item.longitude }
+        { latitude: (item as any).latitude, longitude: (item as any).longitude }
       ),
     }))
     .filter(item => item.distance <= radiusKm * 1000)
@@ -539,11 +539,13 @@ export async function updateSafeZoneCapacity(
     .eq('id', safeZoneId)
     .single()
 
+  const zoneAny = zone as any
+
   if (!zone) {
     throw new Error('Safe zone not found')
   }
 
-  const maxCapacity = zone.capacity?.maximum || 0
+  const maxCapacity = zoneAny.capacity?.maximum || 0
   const status = currentOccupancy >= maxCapacity ? 'full' : 'active'
 
   const { data, error } = await supabase
@@ -625,11 +627,11 @@ export async function checkInToSafeZone(
   await updateSafeZoneCapacity(safeZoneId, count || 0)
 
   return {
-    id: data.id,
-    safeZoneId: data.safe_zone_id,
-    userId: data.user_id,
-    timestamp: data.timestamp,
-    status: data.status,
+    id: data.id as string,
+    safeZoneId: data.safe_zone_id as string,
+    userId: data.user_id as string,
+    timestamp: data.timestamp as string,
+    status: data.status as 'checked_in' | 'checked_out',
   }
 }
 
@@ -671,12 +673,12 @@ export async function checkOutFromSafeZone(
   await updateSafeZoneCapacity(safeZoneId, count || 0)
 
   return {
-    id: data.id,
-    safeZoneId: data.safe_zone_id,
-    userId: data.user_id,
-    timestamp: data.timestamp,
-    status: data.status,
-    notes: data.notes || undefined,
+    id: data.id as string,
+    safeZoneId: data.safe_zone_id as string,
+    userId: data.user_id as string,
+    timestamp: data.timestamp as string,
+    status: data.status as 'checked_in' | 'checked_out',
+    notes: (data.notes as string) || undefined,
   }
 }
 
@@ -703,11 +705,11 @@ export async function getUserCheckIn(userId: string): Promise<SafeZoneCheckIn | 
   }
 
   return {
-    id: data.id,
-    safeZoneId: data.safe_zone_id,
-    userId: data.user_id,
-    timestamp: data.timestamp,
-    status: data.status,
+    id: data.id as string,
+    safeZoneId: data.safe_zone_id as string,
+    userId: data.user_id as string,
+    timestamp: data.timestamp as string,
+    status: data.status as 'checked_in' | 'checked_out',
   }
 }
 
@@ -741,13 +743,13 @@ export async function reviewSafeZone(
   }
 
   return {
-    id: data.id,
-    safeZoneId: data.safe_zone_id,
-    userId: data.user_id,
-    rating: data.rating,
-    comment: data.comment || undefined,
-    categories: data.categories || undefined,
-    createdAt: data.created_at,
+    id: data.id as string,
+    safeZoneId: data.safe_zone_id as string,
+    userId: data.user_id as string,
+    rating: data.rating as number,
+    comment: data.comment as string | undefined,
+    categories: data.categories as Record<string, number> | undefined,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -773,13 +775,13 @@ export async function getSafeZoneReviews(
   }
 
   return (data || []).map(item => ({
-    id: item.id,
-    safeZoneId: item.safe_zone_id,
-    userId: item.user_id,
-    rating: item.rating,
-    comment: item.comment || undefined,
-    categories: item.categories || undefined,
-    createdAt: item.created_at,
+    id: (item as any).id,
+    safeZoneId: (item as any).safe_zone_id,
+    userId: (item as any).user_id,
+    rating: (item as any).rating,
+    comment: (item as any).comment || undefined,
+    categories: (item as any).categories || undefined,
+    createdAt: (item as any).created_at,
   }))
 }
 
@@ -804,7 +806,7 @@ export async function getSafeZoneAverageRating(
   const ratings = data || []
   const count = ratings.length
   const average = count > 0
-    ? ratings.reduce((sum, r) => sum + r.rating, 0) / count
+    ? ratings.reduce((sum, r) => sum + (r as any).rating, 0) / count
     : 0
 
   return { average: Math.round(average * 10) / 10, count }
@@ -829,10 +831,10 @@ export async function bookmarkSafeZone(
 
   if (existing) {
     return {
-      id: existing.id,
-      safeZoneId: existing.safe_zone_id,
-      userId: existing.user_id,
-      createdAt: existing.created_at,
+      id: existing.id as string,
+      safeZoneId: existing.safe_zone_id as string,
+      userId: existing.user_id as string,
+      createdAt: existing.created_at as string,
     }
   }
 
@@ -851,10 +853,10 @@ export async function bookmarkSafeZone(
   }
 
   return {
-    id: data.id,
-    safeZoneId: data.safe_zone_id,
-    userId: data.user_id,
-    createdAt: data.created_at,
+    id: data.id as string,
+    safeZoneId: data.safe_zone_id as string,
+    userId: data.user_id as string,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -875,9 +877,9 @@ export async function getBookmarkedSafeZones(userId: string): Promise<SafeZone[]
   }
 
   return (data || [])
-    .map(item => item.safe_zones)
+    .map(item => (item as any).safe_zones)
     .filter(Boolean)
-    .map(mapSafeZoneFromDB)
+    .map(zone => mapSafeZoneFromDB(zone as Record<string, unknown>))
 }
 
 /**
@@ -980,12 +982,15 @@ export async function getSafeZoneStats(): Promise<{
   }
 
   for (const zone of zones || []) {
+    const zoneType = (zone as any).type as SafeZoneType
+    const zoneMunicipality = (zone as any).municipality as string
+    
     // Count by type
-    stats.byType[zone.type as SafeZoneType] = 
-      (stats.byType[zone.type as SafeZoneType] || 0) + 1
+    stats.byType[zoneType] =
+      (stats.byType[zoneType] || 0) + 1
     // Count by municipality
-    stats.byMunicipality[zone.municipality] = 
-      (stats.byMunicipality[zone.municipality] || 0) + 1
+    stats.byMunicipality[zoneMunicipality] =
+      (stats.byMunicipality[zoneMunicipality] || 0) + 1
   }
 
   return stats
@@ -1000,31 +1005,31 @@ export async function getSafeZoneStats(): Promise<{
  */
 function mapSafeZoneFromDB(data: Record<string, unknown>): SafeZone {
   return {
-    id: data.id,
+    id: data.id as string,
     externalId: data.external_id as string | undefined,
-    name: data.name,
+    name: data.name as string,
     description: data.description as string | undefined,
     type: data.type as SafeZoneType,
     status: data.status as SafeZoneStatus,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    address: data.address,
-    municipality: data.municipality,
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
+    address: data.address as string,
+    municipality: data.municipality as string,
     parish: data.parish as string | undefined,
     capacity: data.capacity as CapacityInfo | undefined,
     operatingHours: data.operating_hours as OperatingHours | undefined,
     accessibility: data.accessibility as SafeZoneAccessibility,
     services: data.services as SafeZoneService[],
     contact: data.contact as SafeZoneContact | undefined,
-    isVerified: data.is_verified,
-    isTemporary: data.is_temporary,
+    isVerified: data.is_verified as boolean,
+    isTemporary: data.is_temporary as boolean,
     temporaryUntil: data.temporary_until as string | undefined,
     source: data.source as string | undefined,
     lastVerifiedAt: data.last_verified_at as string | undefined,
     notes: data.notes as string | undefined,
     imageUrl: data.image_url as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

@@ -109,7 +109,6 @@ export interface TemplateStatistics {
 
 // ============================================================================
 // Validation Schemas
-// ============================================================================
 
 export const createTemplateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -504,9 +503,11 @@ export async function duplicateTemplate(
 export async function getTemplateStatistics(): Promise<TemplateStatistics> {
   const supabase = createClient()
 
-  const { data: templates } = await supabase
+  const { data } = await supabase
     .from('notification_templates')
     .select('*')
+
+  const templates: NotificationTemplate[] = (data || []).map(mapTemplateFromDB)
 
   if (!templates || templates.length === 0) {
     return {
@@ -525,21 +526,39 @@ export async function getTemplateStatistics(): Promise<TemplateStatistics> {
     }
   }
 
-  const templatesByCategory = templates.reduce((acc, t) => {
-    acc[t.category as TemplateCategory] = (acc[t.category as TemplateCategory] || 0) + 1
+  const templatesByCategory = (templates || []).reduce<Record<TemplateCategory, number>>((acc, t) => {
+    const category = t.category as TemplateCategory
+    acc[category] = (acc[category] || 0) + 1
     return acc
-  }, {} as Record<TemplateCategory, number>)
+  }, {
+    emergency: 0,
+    power_outage: 0,
+    restoration: 0,
+    community_alert: 0,
+    safety_tip: 0,
+    system_notification: 0,
+    marketing: 0,
+  })
 
-  const { data: usageData } = await supabase
+  // Get usage data (simulated for now since group_by is not available)
+  const { data: logs } = await supabase
     .from('notification_logs')
-    .select('template_id, count')
-    .group_by('template_id')
+    .select('template_id')
 
-  const mostUsedTemplates = (usageData || [])
-    .map(u => ({
-      templateId: u.template_id,
-      name: templates.find(t => t.id === u.template_id)?.name || 'Unknown',
-      usageCount: u.count,
+  const usageCounts: Record<string, number> = {}
+  if (logs) {
+    for (const log of logs) {
+      if (log.template_id) {
+        usageCounts[log.template_id as string] = (usageCounts[log.template_id as string] || 0) + 1
+      }
+    }
+  }
+
+  const mostUsedTemplates = Object.entries(usageCounts)
+    .map(([templateId, count]) => ({
+      templateId,
+      name: templates.find(t => t.id === templateId)?.name || 'Unknown',
+      usageCount: count,
     }))
     .sort((a, b) => b.usageCount - a.usageCount)
     .slice(0, 10)
@@ -580,26 +599,26 @@ export async function searchTemplates(
 
 function mapTemplateFromDB(data: Record<string, unknown>): NotificationTemplate {
   return {
-    id: data.id,
-    name: data.name,
-    description: data.description as string | undefined,
+    id: data.id as string,
+    name: data.name as string,
+    description: (data.description as string) || undefined,
     category: data.category as TemplateCategory,
     status: data.status as TemplateStatus,
-    subject: data.subject as string | undefined,
-    body: data.body,
-    htmlBody: data.html_body as string | undefined,
+    subject: (data.subject as string) || undefined,
+    body: data.body as string,
+    htmlBody: (data.html_body as string) || undefined,
     channels: data.channels as DeliveryChannel[],
     priority: data.priority as 'low' | 'medium' | 'high' | 'critical',
-    language: data.language,
-    translations: data.translations as Record<string, {
+    language: data.language as string,
+    translations: (data.translations as Record<string, {
       subject?: string
       body: string
       htmlBody?: string
-    }> | undefined,
-    variables: data.variables as string[] | undefined,
-    createdBy: data.created_by,
-    updatedBy: data.updated_by as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    }>) || undefined,
+    variables: (data.variables as string[]) || undefined,
+    createdBy: data.created_by as string,
+    updatedBy: (data.updated_by as string) || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

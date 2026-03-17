@@ -27,7 +27,7 @@ const item = {
 export default function BlogPage() {
     const t = useTranslations('blog')
     
-    const postKeys = ['lighting', 'preserveFoodWater', 'stayInformed', 'conserveBattery', 'backupPower', 'stayComfortable', 'medicalNeeds']
+    const postKeys = ['lighting', 'preserveFoodWater', 'stayInformed', 'conserveBattery', 'backupPower', 'stayComfortable', 'medicalNeeds', 'emergencyKit', 'volunteering', 'weatherImpacts']
 
     return (
         <main className="min-h-screen bg-slate-50 dark:bg-slate-950">

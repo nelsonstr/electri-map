@@ -38,10 +38,13 @@ export function BoundaryLayer() {
     async function fetchBoundaries() {
       try {
         const data = await getBoundariesForLevel('PT', level);
+        if (!data || !data.features) {
+          setGeoData(null);
+          return;
+        }
         setGeoData(data);
         
         // Fetch stats for visible boundaries
-        // Simplified: Fetching for all features in the collection
         const details: Record<string, any> = {};
         for (const feature of data.features) {
           const id = feature.id as string || feature.properties?.id;

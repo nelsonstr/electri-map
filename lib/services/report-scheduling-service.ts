@@ -333,7 +333,7 @@ export async function createReportSchedule(
     timezone: input.timezone,
     scheduledTime: input.scheduledTime,
     recurrence: input.recurrence,
-    reportConfig: input.reportConfig,
+    reportConfig: input.reportConfig || {},
     deliveryConfig: input.deliveryConfig,
     createdBy: userId,
     totalRuns: 0,
@@ -356,7 +356,7 @@ export async function createReportSchedule(
       timezone: input.timezone,
       scheduled_time: input.scheduledTime,
       recurrence: input.recurrence,
-      report_config: input.reportConfig,
+      report_config: input.reportConfig || {},
       delivery_config: input.deliveryConfig,
       created_by: userId,
       total_runs: 0,
@@ -729,12 +729,12 @@ export async function getReportHistory(
     return []
   }
 
-  return (data || []).map(d => ({
-    id: d.id,
-    deliveredAt: d.delivered_at,
-    recipients: d.recipients,
-    format: d.format,
-    status: d.status,
+  return ((data || []) as any[]).map(d => ({
+    id: d.id as string,
+    deliveredAt: d.delivered_at as string,
+    recipients: d.recipients as string[],
+    format: d.format as DeliveryFormat,
+    status: d.status as string,
   }))
 }
 
@@ -768,23 +768,23 @@ export async function cloneReportSchedule(
 
 function mapReportScheduleFromDB(data: Record<string, unknown>): ReportSchedule {
   return {
-    id: data.id,
-    name: data.name,
+    id: data.id as string,
+    name: data.name as string,
     description: data.description as string | undefined,
     status: data.status as ReportStatus,
     reportType: data.report_type as ReportType,
-    startDate: data.start_date,
+    startDate: data.start_date as string,
     endDate: data.end_date as string | undefined,
-    timezone: data.timezone,
-    scheduledTime: data.scheduled_time,
+    timezone: data.timezone as string,
+    scheduledTime: data.scheduled_time as string,
     recurrence: data.recurrence as RecurrenceType,
-    reportConfig: data.report_config as ReportSchedule['reportConfig'] | undefined,
+    reportConfig: (data.report_config as ReportSchedule['reportConfig']) || {},
     deliveryConfig: data.delivery_config as ReportSchedule['deliveryConfig'],
-    createdBy: data.created_by,
+    createdBy: data.created_by as string,
     lastRunAt: data.last_run_at as string | undefined,
     nextRunAt: data.next_run_at as string | undefined,
-    totalRuns: data.total_runs,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    totalRuns: data.total_runs as number,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

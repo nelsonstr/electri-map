@@ -186,17 +186,18 @@ export async function updateUserLocation(
   let calculatedHeading: number | undefined
 
   if (lastLocation && validatedInput.speed === undefined) {
-    const timeDiff = (new Date().getTime() - new Date(lastLocation.timestamp).getTime()) / 1000
+    const loc = lastLocation as any
+    const timeDiff = (new Date().getTime() - new Date(loc.timestamp).getTime()) / 1000
     if (timeDiff > 0) {
       const distance = calculateDistance(
-        { latitude: lastLocation.latitude, longitude: lastLocation.longitude },
+        { latitude: loc.latitude, longitude: loc.longitude },
         { latitude: validatedInput.latitude, longitude: validatedInput.longitude }
       )
       calculatedSpeed = distance / timeDiff // m/s
 
       // Calculate heading
       calculatedHeading = calculateHeading(
-        { latitude: lastLocation.latitude, longitude: lastLocation.longitude },
+        { latitude: loc.latitude, longitude: loc.longitude },
         { latitude: validatedInput.latitude, longitude: validatedInput.longitude }
       )
     }
@@ -229,21 +230,21 @@ export async function updateUserLocation(
   await checkGeofenceEvents(userId, {
     latitude: validatedInput.latitude,
     longitude: validatedInput.longitude,
-    timestamp: data.timestamp,
+    timestamp: data.timestamp as string,
   })
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    accuracy: data.accuracy,
-    source: data.source,
-    altitude: data.altitude || undefined,
-    speed: data.speed || undefined,
-    heading: data.heading || undefined,
-    context: data.context || undefined,
-    timestamp: data.timestamp,
+    id: data.id as string,
+    userId: data.user_id as string,
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
+    accuracy: data.accuracy as LocationAccuracy,
+    source: data.source as LocationSource,
+    altitude: (data.altitude as number) || undefined,
+    speed: (data.speed as number) || undefined,
+    heading: (data.heading as number) || undefined,
+    context: (data.context as 'home' | 'work' | 'transit' | 'other' | undefined),
+    timestamp: data.timestamp as string,
   }
 }
 
@@ -271,17 +272,17 @@ export async function getLastLocation(userId: string): Promise<LocationEntry | n
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    accuracy: data.accuracy,
-    source: data.source,
-    altitude: data.altitude || undefined,
-    speed: data.speed || undefined,
-    heading: data.heading || undefined,
-    context: data.context || undefined,
-    timestamp: data.timestamp,
+    id: data.id as string,
+    userId: data.user_id as string,
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
+    accuracy: data.accuracy as LocationAccuracy,
+    source: data.source as LocationSource,
+    altitude: (data.altitude as number) || undefined,
+    speed: (data.speed as number) || undefined,
+    heading: (data.heading as number) || undefined,
+    context: (data.context as 'home' | 'work' | 'transit' | 'other' | undefined),
+    timestamp: data.timestamp as string,
   }
 }
 
@@ -323,7 +324,7 @@ export async function getLocationHistory(
     return []
   }
 
-  return data.map(item => ({
+  return ((data || []) as any[]).map(item => ({
     id: item.id,
     userId: item.user_id,
     latitude: item.latitude,
@@ -383,17 +384,17 @@ export async function createSavedLocation(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    name: data.name,
-    type: data.type,
-    latitude: data.latitude,
-    longitude: data.longitude,
-    address: data.address || undefined,
-    radius: data.radius || undefined,
-    isActive: data.is_active,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    userId: data.user_id as string,
+    name: data.name as string,
+    type: data.type as SavedLocation['type'],
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
+    address: (data.address as string) || undefined,
+    radius: (data.radius as number) || undefined,
+    isActive: data.is_active as boolean,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -416,7 +417,7 @@ export async function getSavedLocations(userId: string): Promise<SavedLocation[]
     return []
   }
 
-  return data.map(item => ({
+  return ((data || []) as any[]).map(item => ({
     id: item.id,
     userId: item.user_id,
     name: item.name,
@@ -453,15 +454,15 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
   }
 
   return {
-    userId: data.user_id,
-    shareLocation: data.share_location,
-    shareWithEmergencyContacts: data.share_with_emergency_contacts,
-    allowBackgroundUpdates: data.allow_background_updates,
-    updateInterval: data.update_interval,
-    accuracy: data.accuracy,
-    notifyOnGeofenceEvents: data.notify_on_geofence_events,
-    saveLocationHistory: data.save_location_history,
-    historyRetentionDays: data.history_retention_days,
+    userId: data.user_id as string,
+    shareLocation: data.share_location as boolean,
+    shareWithEmergencyContacts: data.share_with_emergency_contacts as boolean,
+    allowBackgroundUpdates: data.allow_background_updates as boolean,
+    updateInterval: data.update_interval as number,
+    accuracy: data.accuracy as LocationAccuracy,
+    notifyOnGeofenceEvents: data.notify_on_geofence_events as boolean,
+    saveLocationHistory: data.save_location_history as boolean,
+    historyRetentionDays: data.history_retention_days as number,
   }
 }
 
@@ -645,16 +646,16 @@ export async function createGeofence(
     throw new Error('Saved location not found')
   }
 
-  const geofenceRadius = radius || savedLocation.radius || 100 // Default 100m
+  const geofenceRadius = radius || (savedLocation as any).radius || 100 // Default 100m
 
   const { data, error } = await supabase
     .from('user_geofences')
     .insert({
       user_id: userId,
       saved_location_id: savedLocationId,
-      name: savedLocation.name,
-      latitude: savedLocation.latitude,
-      longitude: savedLocation.longitude,
+      name: (savedLocation as any).name,
+      latitude: (savedLocation as any).latitude,
+      longitude: (savedLocation as any).longitude,
       radius: geofenceRadius,
       is_active: true,
     })
@@ -667,9 +668,9 @@ export async function createGeofence(
   }
 
   return {
-    id: data.id,
-    name: data.name,
-    radius: data.radius,
+    id: data.id as string,
+    name: data.name as string,
+    radius: data.radius as number,
   }
 }
 
@@ -698,7 +699,7 @@ export async function getUserGeofences(userId: string): Promise<Array<{
     return []
   }
 
-  return data.map(item => ({
+  return ((data || []) as any[]).map(item => ({
     id: item.id,
     savedLocationId: item.saved_location_id,
     name: item.name,
@@ -724,18 +725,18 @@ async function checkGeofenceEvents(
     .eq('user_id', userId)
     .eq('is_active', true)
 
-  if (!geofences || geofences.length === 0) return
+  if (!geofences || (geofences as any[]).length === 0) return
 
   // Get last geofence event for each geofence
   const { data: lastEvents } = await supabase
     .from('geofence_events')
     .select('*')
     .eq('user_id', userId)
-    .in('geofence_id', geofences.map(g => g.id))
+    .in('geofence_id', (geofences as any[]).map(g => g.id))
     .order('timestamp', { ascending: false })
 
   const lastEventByGeofence = new Map<string, GeofenceEvent>()
-  for (const event of lastEvents || []) {
+  for (const event of (lastEvents || []) as any[]) {
     if (!lastEventByGeofence.has(event.geofence_id)) {
       lastEventByGeofence.set(event.geofence_id, {
         id: event.id,
@@ -761,7 +762,7 @@ async function checkGeofenceEvents(
     duration_seconds?: number
   }> = []
 
-  for (const geofence of geofences) {
+  for (const geofence of (geofences as any[])) {
     const distance = calculateDistance(
       { latitude: geofence.latitude, longitude: geofence.longitude },
       location
@@ -835,7 +836,7 @@ export async function getGeofenceEvents(
     return []
   }
 
-  return data.map(item => ({
+  return ((data || []) as any[]).map(item => ({
     id: item.id,
     userId: item.user_id,
     geofenceId: item.geofence_id,

@@ -524,8 +524,8 @@ export async function updateSessionActivity(
       event_data: eventData || null,
       timestamp: new Date().toISOString(),
     })
-    .catch(error => {
-      console.error('Error logging activity:', error)
+    .then(({ error }) => {
+      if (error) console.error('Error logging activity:', error)
     })
 
   // Update session
@@ -652,24 +652,25 @@ export async function getSessionSettings(
     }
   }
 
+  const settings = data as any
   return {
-    id: data.id,
-    userId: data.user_id,
-    absoluteTimeoutMinutes: data.absolute_timeout_minutes,
-    inactivityTimeoutMinutes: data.inactivity_timeout_minutes,
-    slidingExpiration: data.sliding_expiration,
-    maxConcurrentSessions: data.max_concurrent_sessions,
-    allowMultipleDevices: data.allow_multiple_devices,
-    requireReauthentication: data.require_reauthentication,
-    reauthTimeoutMinutes: data.reauth_timeout_minutes,
-    bindToIp: data.bind_to_ip,
-    allowedIpRanges: data.allowed_ip_ranges || undefined,
-    deviceTrustEnabled: data.device_trust_enabled,
-    trustedDevicesOnly: data.trusted_devices_only,
-    newSessionNotification: data.new_session_notification,
-    suspiciousActivityNotification: data.suspicious_activity_notification,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: settings.id,
+    userId: settings.user_id,
+    absoluteTimeoutMinutes: settings.absolute_timeout_minutes,
+    inactivityTimeoutMinutes: settings.inactivity_timeout_minutes,
+    slidingExpiration: settings.sliding_expiration,
+    maxConcurrentSessions: settings.max_concurrent_sessions,
+    allowMultipleDevices: settings.allow_multiple_devices,
+    requireReauthentication: settings.require_reauthentication,
+    reauthTimeoutMinutes: settings.reauth_timeout_minutes,
+    bindToIp: settings.bind_to_ip,
+    allowedIpRanges: settings.allowed_ip_ranges || undefined,
+    deviceTrustEnabled: settings.device_trust_enabled,
+    trustedDevicesOnly: settings.trusted_devices_only,
+    newSessionNotification: settings.new_session_notification,
+    suspiciousActivityNotification: settings.suspicious_activity_notification,
+    createdAt: settings.created_at,
+    updatedAt: settings.updated_at,
   }
 }
 
@@ -710,24 +711,25 @@ export async function updateSessionSettings(
     throw new Error(`Failed to update settings: ${error.message}`)
   }
 
+  const settings = data as any
   return {
-    id: data.id,
-    userId: data.user_id,
-    absoluteTimeoutMinutes: data.absolute_timeout_minutes,
-    inactivityTimeoutMinutes: data.inactivity_timeout_minutes,
-    slidingExpiration: data.sliding_expiration,
-    maxConcurrentSessions: data.max_concurrent_sessions,
-    allowMultipleDevices: data.allow_multiple_devices,
-    requireReauthentication: data.require_reauthentication,
-    reauthTimeoutMinutes: data.reauth_timeout_minutes,
-    bindToIp: data.bind_to_ip,
-    allowedIpRanges: data.allowed_ip_ranges || undefined,
-    deviceTrustEnabled: data.device_trust_enabled,
-    trustedDevicesOnly: data.trusted_devices_only,
-    newSessionNotification: data.new_session_notification,
-    suspiciousActivityNotification: data.suspicious_activity_notification,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: settings.id,
+    userId: settings.user_id,
+    absoluteTimeoutMinutes: settings.absolute_timeout_minutes,
+    inactivityTimeoutMinutes: settings.inactivity_timeout_minutes,
+    slidingExpiration: settings.sliding_expiration,
+    maxConcurrentSessions: settings.max_concurrent_sessions,
+    allowMultipleDevices: settings.allow_multiple_devices,
+    requireReauthentication: settings.require_reauthentication,
+    reauthTimeoutMinutes: settings.reauth_timeout_minutes,
+    bindToIp: settings.bind_to_ip,
+    allowedIpRanges: settings.allowed_ip_ranges || undefined,
+    deviceTrustEnabled: settings.device_trust_enabled,
+    trustedDevicesOnly: settings.trusted_devices_only,
+    newSessionNotification: settings.new_session_notification,
+    suspiciousActivityNotification: settings.suspicious_activity_notification,
+    createdAt: settings.created_at,
+    updatedAt: settings.updated_at,
   }
 }
 
@@ -751,11 +753,13 @@ export async function isSessionValid(
     return false
   }
 
-  if (data.status !== 'active') {
+  const session = data as any
+
+  if (session.status !== 'active') {
     return false
   }
 
-  if (new Date(data.expires_at) < new Date()) {
+  if (new Date(session.expires_at) < new Date()) {
     return false
   }
 
@@ -791,7 +795,8 @@ export async function getSessionStatistics(
     }
 
     if (session.status === 'expired' || session.status === 'revoked') {
-      const duration = calculateSessionDuration(session.createdAt, session.endedAt)
+      const endTime = session.revokedAt || session.expiresAt
+      const duration = calculateSessionDuration(session.createdAt, endTime)
       totalDuration += duration
       completedSessions++
     }
@@ -829,7 +834,7 @@ export async function reportSuspiciousActivity(
     throw new Error('Session not found')
   }
 
-  const activities = session.suspicious_activity || []
+  const activities = (session.suspicious_activity as any[]) || []
   activities.push({
     type: activityType,
     timestamp: new Date().toISOString(),
@@ -898,33 +903,34 @@ async function hashToken(token: string): Promise<string> {
  * Maps database record to UserSession
  */
 function mapSessionFromDB(data: Record<string, unknown>): UserSession {
+  const session = data as any
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: session.id,
+    userId: session.user_id,
     sessionToken: '', // Never return raw token
-    type: data.type as SessionType,
-    status: data.status as SessionStatus,
-    deviceId: data.device_id as string | undefined,
-    deviceName: data.device_name as string | undefined,
-    deviceType: data.device_type as 'desktop' | 'mobile' | 'tablet' | 'other' | undefined,
-    os: data.os as string | undefined,
-    browser: data.browser as string | undefined,
-    ipAddress: data.ip_address as string | undefined,
-    location: data.location as string | undefined,
-    country: data.country as string | undefined,
-    createdAt: data.created_at,
-    lastActivityAt: data.last_activity_at,
-    expiresAt: data.expires_at,
-    revokedAt: data.revoked_at as string | undefined,
-    revokedBy: data.revoked_by as string | undefined,
-    revocationReason: data.revocation_reason as string | undefined,
-    pageViews: data.page_views,
-    actions: data.actions,
-    threatLevel: data.threat_level as SessionThreatLevel,
-    suspiciousActivity: data.suspicious_activity as UserSession['suspiciousActivity'] | undefined,
-    userAgent: data.user_agent as string | undefined,
-    referer: data.referer as string | undefined,
-    initialPath: data.initial_path as string | undefined,
+    type: session.type as SessionType,
+    status: session.status as SessionStatus,
+    deviceId: session.device_id as string | undefined,
+    deviceName: session.device_name as string | undefined,
+    deviceType: session.device_type as 'desktop' | 'mobile' | 'tablet' | 'other' | undefined,
+    os: session.os as string | undefined,
+    browser: session.browser as string | undefined,
+    ipAddress: session.ip_address as string | undefined,
+    location: session.location as string | undefined,
+    country: session.country as string | undefined,
+    createdAt: session.created_at,
+    lastActivityAt: session.last_activity_at,
+    expiresAt: session.expires_at,
+    revokedAt: session.revoked_at as string | undefined,
+    revokedBy: session.revoked_by as string | undefined,
+    revocationReason: session.revocation_reason as string | undefined,
+    pageViews: session.page_views,
+    actions: session.actions,
+    threatLevel: session.threat_level as SessionThreatLevel,
+    suspiciousActivity: session.suspicious_activity as UserSession['suspiciousActivity'] | undefined,
+    userAgent: session.user_agent as string | undefined,
+    referer: session.referer as string | undefined,
+    initialPath: session.initial_path as string | undefined,
   }
 }
 

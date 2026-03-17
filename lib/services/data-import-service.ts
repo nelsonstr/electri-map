@@ -355,7 +355,7 @@ export async function validateImportData(
   const errors: Array<{ row: number; field: string; error: string }> = []
   let invalidRows = 0
 
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length as number; i++) {
     const row = data[i]
     const rowNum = i + 1
     
@@ -379,17 +379,17 @@ export async function validateImportData(
   await supabase
     .from('data_imports')
     .update({
-      validated_rows: data.length - invalidRows,
+      validated_rows: data.length as number - invalidRows,
       invalid_rows: invalidRows,
       validation_errors: errors.slice(0, 100), // Limit stored errors
-      total_rows: data.length,
+      total_rows: data.length as number,
       updated_at: new Date().toISOString(),
     })
     .eq('id', importId)
 
   return {
     valid: invalidRows === 0,
-    validatedRows: data.length - invalidRows,
+    validatedRows: data.length as number - invalidRows,
     invalidRows,
     errors,
   }
@@ -546,7 +546,7 @@ export async function previewImportData(
   // In production, this would fetch from file storage
   const data: Array<Record<string, unknown>> = []
   
-  if (data.length === 0) {
+  if (data.length as number === 0) {
     return {
       headers: [],
       rows: [],
@@ -561,7 +561,7 @@ export async function previewImportData(
   return {
     headers,
     rows: data.slice(0, limit),
-    totalRows: data.length,
+    totalRows: data.length as number,
     sampleErrors,
   }
 }
@@ -840,14 +840,14 @@ async function logImportError(
 
 function mapDataImportFromDB(data: Record<string, unknown>): DataImport {
   return {
-    id: data.id,
-    name: data.name,
+    id: data.id as string,
+    name: data.name as string,
     description: data.description as string | undefined,
     importType: data.import_type as ImportType,
     status: data.status as ImportStatus,
     format: data.format as ImportFormat,
-    fileName: data.file_name,
-    fileSize: data.file_size,
+    fileName: data.file_name as string,
+    fileSize: data.file_size as number,
     config: data.config as DataImport['config'],
     validatedRows: data.validated_rows,
     invalidRows: data.invalid_rows,
@@ -860,7 +860,7 @@ function mapDataImportFromDB(data: Record<string, unknown>): DataImport {
     completedAt: data.completed_at as string | undefined,
     createdBy: data.created_by,
     results: data.results as ImportResult | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

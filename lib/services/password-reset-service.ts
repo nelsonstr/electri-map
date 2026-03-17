@@ -395,7 +395,7 @@ export async function createPasswordResetRequest(
   const { data: existingRequest } = await supabase
     .from('password_reset_requests')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', (user as any).id)
     .eq('status', 'pending')
     .gt('expires_at', new Date().toISOString())
     .single()
@@ -403,8 +403,8 @@ export async function createPasswordResetRequest(
   if (existingRequest) {
     // Don't send duplicate
     return {
-      requestId: existingRequest.id,
-      expiresAt: existingRequest.expires_at,
+      requestId: existingRequest.id as string,
+      expiresAt: existingRequest.expires_at as string,
     }
   }
 
@@ -476,7 +476,7 @@ export async function verifyResetToken(
   }
 
   // Check attempts
-  if (request.attempts >= request.max_attempts) {
+  if ((request.attempts as number) >= (request.max_attempts as number)) {
     return { valid: false, error: 'Maximum verification attempts exceeded' }
   }
 
@@ -519,15 +519,15 @@ export async function completePasswordReset(
     return { success: false, error: 'Invalid or expired reset token' }
   }
 
-  if (request.attempts >= request.max_attempts) {
+  if ((request.attempts as number) >= (request.max_attempts as number)) {
     return { success: false, error: 'Maximum attempts exceeded' }
   }
 
   // Increment attempts
   await supabase
     .from('password_reset_requests')
-    .update({ attempts: request.attempts + 1 })
-    .eq('id', request.id)
+    .update({ attempts: (request.attempts as number) + 1 })
+    .eq('id', request.id as string)
 
   // Hash new password
   const newPasswordHash = await hashPassword(input.newPassword)
@@ -578,7 +578,7 @@ export async function completePasswordReset(
       completed_at: new Date().toISOString(),
       new_password_hash: newPasswordHash,
     })
-    .eq('id', request.id)
+    .eq('id', request.id as string)
 
   // Invalidate all other sessions
   await invalidateUserSessions(input.userId)
@@ -651,10 +651,10 @@ export async function getPasswordHistory(
   }
 
   return (data || []).map(entry => ({
-    id: entry.id,
-    userId: entry.user_id,
-    passwordHash: entry.password_hash,
-    createdAt: entry.created_at,
+    id: entry.id as string,
+    userId: entry.user_id as string,
+    passwordHash: entry.password_hash as string,
+    createdAt: entry.created_at as string,
   }))
 }
 
@@ -677,7 +677,7 @@ export async function isPasswordExpired(
     return true // Never changed
   }
 
-  const changedAt = new Date(user.password_changed_at)
+  const changedAt = new Date(user.password_changed_at as string)
   const expiryDate = new Date()
   expiryDate.setDate(expiryDate.getDate() - maxAgeDays)
 
@@ -702,7 +702,7 @@ export async function getPasswordAge(
     return null
   }
 
-  const changedAt = new Date(user.password_changed_at)
+  const changedAt = new Date(user.password_changed_at as string)
   const now = new Date()
   const diffMs = now.getTime() - changedAt.getTime()
   return Math.floor(diffMs / (1000 * 60 * 60 * 24))
@@ -763,7 +763,7 @@ export async function getResetStatistics(
     totalRequests: requests?.length || 0,
     completedResets: completed.length,
     expiredRequests: expired.length,
-    lastResetAt: completed[0]?.completed_at,
+    lastResetAt: completed[0]?.completed_at as string,
   }
 }
 
@@ -776,18 +776,18 @@ export async function getResetStatistics(
  */
 function mapRequestFromDB(data: Record<string, unknown>): PasswordResetRequest {
   return {
-    id: data.id,
-    userId: data.user_id,
-    email: data.email,
-    resetToken: data.reset_token,
-    tokenHash: data.token_hash,
+    id: data.id as string,
+    userId: data.user_id as string,
+    email: data.email as string,
+    resetToken: data.reset_token as string,
+    tokenHash: data.token_hash as string,
     status: data.status as PasswordResetStatus,
     verifiedAt: data.verified_at as string | undefined,
     verificationMethod: data.verification_method as 'email' | 'sms' | 'mfa' | undefined,
-    attempts: data.attempts,
-    maxAttempts: data.max_attempts,
-    createdAt: data.created_at,
-    expiresAt: data.expires_at,
+    attempts: data.attempts as number,
+    maxAttempts: data.max_attempts as number,
+    createdAt: data.created_at as string,
+    expiresAt: data.expires_at as string,
     completedAt: data.completed_at as string | undefined,
     ipAddress: data.ip_address as string | undefined,
     userAgent: data.user_agent as string | undefined,

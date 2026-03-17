@@ -386,7 +386,7 @@ export async function isEmailVerified(userId: string, email?: string): Promise<b
 
   const { data, error } = await query
 
-  if (error || !data || data.length === 0) {
+  if (error || !data || data.length as number === 0) {
     return false
   }
 
@@ -485,7 +485,7 @@ export async function getVerificationStatistics(
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
-  if (!data || data.length === 0) {
+  if (!data || data.length as number === 0) {
     return {
       totalRequests: 0,
       successfulVerifications: 0,
@@ -511,12 +511,12 @@ export async function getVerificationStatistics(
   }
 
   return {
-    totalRequests: data.length,
+    totalRequests: data.length as number,
     successfulVerifications: successful.length,
     expiredRequests: expired.length,
     failedAttempts: failed.reduce((sum, d) => sum + d.attempts, 0),
     averageVerificationTime: avgTime,
-    successRate: (successful.length / data.length) * 100,
+    successRate: (successful.length / data.length as number) * 100,
   }
 }
 
@@ -548,17 +548,17 @@ export async function hasVerifiedEmail(userId: string): Promise<boolean> {
 
 function mapRequestFromDB(data: Record<string, unknown>): EmailVerificationRequest {
   return {
-    id: data.id,
-    userId: data.user_id,
-    email: data.email,
-    verificationToken: data.verification_token,
+    id: data.id as string,
+    userId: data.user_id as string,
+    email: data.email as string,
+    verificationToken: data.verification_token as string,
     tokenHash: data.token_hash,
     type: data.type as VerificationType,
     status: data.status as VerificationStatus,
-    attempts: data.attempts,
-    maxAttempts: data.max_attempts,
-    createdAt: data.created_at,
-    expiresAt: data.expires_at,
+    attempts: data.attempts as number,
+    maxAttempts: data.max_attempts as number,
+    createdAt: data.created_at as string,
+    expiresAt: data.expires_at as string,
     verifiedAt: data.verified_at as string | undefined,
     ipAddress: data.ip_address as string | undefined,
     userAgent: data.user_agent as string | undefined,
@@ -568,13 +568,13 @@ function mapRequestFromDB(data: Record<string, unknown>): EmailVerificationReque
 
 function mapVerifiedEmailFromDB(data: Record<string, unknown>): VerifiedEmail {
   return {
-    id: data.id,
-    userId: data.user_id,
-    email: data.email,
-    isPrimary: data.is_primary,
-    isVerified: data.is_verified,
+    id: data.id as string,
+    userId: data.user_id as string,
+    email: data.email as string,
+    isPrimary: data.is_primary as boolean,
+    isVerified: data.is_verified as boolean,
     verifiedAt: data.verified_at as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

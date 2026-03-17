@@ -873,15 +873,15 @@ export async function addWitnessStatement(
   }
 
   return {
-    id: data.id,
-    reportId: data.report_id,
-    witnessId: data.witness_id || undefined,
+    id: data.id as string,
+    reportId: data.report_id as string,
+    witnessId: data.witness_id as string || undefined,
     witnessAnonymous: data.witness_anonymous,
     statement: data.statement,
-    contactInfo: data.contact_info || undefined,
+    contactInfo: data.contact_info as string || undefined,
     willingToTestify: data.willing_to_testify,
-    witnessedAt: data.witnessed_at,
-    createdAt: data.created_at,
+    witnessedAt: data.witnessed_at as string,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -987,19 +987,19 @@ export async function getReportTemplates(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
+    id: data.id as string,
     type: data.type as ReportType,
-    title: data.title,
-    description: data.description,
+    title: data.title as string,
+    description: data.description as string,
     requiredFields: data.required_fields,
     optionalFields: data.optional_fields,
     mediaRequired: data.media_required,
-    mediaTypes: data.media_types || undefined,
+    mediaTypes: data.media_types as any[] || undefined,
     instructions: data.instructions || undefined,
     examples: data.examples || undefined,
-    isActive: data.is_active,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    isActive: data.is_active as boolean,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }))
 }
 
@@ -1098,12 +1098,12 @@ function getEmptyStats(): ReportStatistics {
  */
 function mapReportFromDB(data: Record<string, unknown>): CommunityReport {
   return {
-    id: data.id,
+    id: data.id as string,
     type: data.type as ReportType,
-    title: data.title,
-    description: data.description,
-    latitude: data.latitude,
-    longitude: data.longitude,
+    title: data.title as string,
+    description: data.description as string,
+    latitude: data.latitude as number,
+    longitude: data.longitude as number,
     address: data.address as string | undefined,
     landmark: data.landmark as string | undefined,
     media: data.media as CommunityReport['media'] | undefined,
@@ -1112,20 +1112,20 @@ function mapReportFromDB(data: Record<string, unknown>): CommunityReport {
     priority: data.priority as ReportPriority,
     verificationStatus: data.verification_status as 'unverified' | 'pending' | 'verified' | 'disputed',
     verificationMethod: data.verification_method as VerificationMethod | undefined,
-    verificationCount: data.verification_count,
+    verificationCount: data.verification_count as number,
     reporterId: data.reporter_id as string | undefined,
     reporterAnonymous: data.reporter_anonymous,
     attributionScore: data.attribution_score as number | undefined,
-    isAnonymousAllowed: data.is_anonymous_allowed,
+    isAnonymousAllowed: data.is_anonymous_allowed as boolean,
     tags: data.tags as string[] | undefined,
     category: data.category as string | undefined,
-    moderationStatus: data.moderation_status,
+    moderationStatus: data.moderation_status as string,
     moderatedBy: data.moderated_by as string | undefined,
     moderatedAt: data.moderated_at as string | undefined,
     resolution: data.resolution as string | undefined,
     resolvedAt: data.resolved_at as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1134,8 +1134,8 @@ function mapReportFromDB(data: Record<string, unknown>): CommunityReport {
  */
 function mapVoteFromDB(data: Record<string, unknown>): VerificationVote {
   return {
-    id: data.id,
-    reportId: data.report_id,
+    id: data.id as string,
+    reportId: data.report_id as string,
     voterId: data.voter_id as string | undefined,
     voterAnonymous: data.voter_anonymous,
     vote: data.vote as 'verify' | 'dispute' | 'neutral',
@@ -1143,6 +1143,6 @@ function mapVoteFromDB(data: Record<string, unknown>): VerificationVote {
     verificationMethod: data.verification_method as VerificationMethod | undefined,
     comment: data.comment as string | undefined,
     supportingMedia: data.supporting_media as VerificationVote['supportingMedia'] | undefined,
-    createdAt: data.created_at,
+    createdAt: data.created_at as string,
   }
 }

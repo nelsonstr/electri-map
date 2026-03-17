@@ -571,15 +571,15 @@ export async function addFeedbackResponse(
     .eq('id', feedbackId)
 
   return {
-    id: data.id,
-    feedbackId: data.feedback_id,
-    responderId: data.responder_id,
-    responderType: data.responder_type,
-    message: data.message,
-    isInternal: data.is_internal,
-    parentResponseId: data.parent_response_id || undefined,
-    attachments: data.attachments || [],
-    createdAt: data.created_at,
+    id: data.id as string,
+    feedbackId: data.feedback_id as string,
+    responderId: data.responder_id as string,
+    responderType: data.responder_type as FeedbackResponse['responderType'],
+    message: data.message as string,
+    isInternal: data.is_internal as boolean,
+    parentResponseId: (data.parent_response_id as string) || undefined,
+    attachments: (data.attachments as string[]) || [],
+    createdAt: data.created_at as string,
   }
 }
 
@@ -603,15 +603,15 @@ export async function getFeedbackResponses(
   }
 
   return (data || []).map(r => ({
-    id: r.id,
-    feedbackId: r.feedback_id,
-    responderId: r.responder_id,
-    responderType: r.responder_type,
-    message: r.message,
-    isInternal: r.is_internal,
-    parentResponseId: r.parent_response_id || undefined,
-    attachments: r.attachments || [],
-    createdAt: r.created_at,
+    id: r.id as string,
+    feedbackId: r.feedback_id as string,
+    responderId: r.responder_id as string,
+    responderType: r.responder_type as FeedbackResponse['responderType'],
+    message: r.message as string,
+    isInternal: r.is_internal as boolean,
+    parentResponseId: (r.parent_response_id as string) || undefined,
+    attachments: (r.attachments as string[]) || [],
+    createdAt: r.created_at as string,
   }))
 }
 
@@ -650,16 +650,16 @@ export async function createExperienceRating(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    alertId: data.alert_id || undefined,
-    alertType: data.alert_type || undefined,
-    overallRating: data.overall_rating,
-    accuracyRating: data.accuracy_rating || undefined,
-    timelinessRating: data.timeliness_rating || undefined,
-    usefulnessRating: data.usefulness_rating || undefined,
-    comment: data.comment || undefined,
-    createdAt: data.created_at,
+    id: data.id as string,
+    userId: data.user_id as string,
+    alertId: (data.alert_id as string) || undefined,
+    alertType: (data.alert_type as string) || undefined,
+    overallRating: data.overall_rating as number,
+    accuracyRating: (data.accuracy_rating as number) || undefined,
+    timelinessRating: (data.timeliness_rating as number) || undefined,
+    usefulnessRating: (data.usefulness_rating as number) || undefined,
+    comment: (data.comment as string) || undefined,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -685,16 +685,16 @@ export async function getUserRatings(
   }
 
   return (data || []).map(r => ({
-    id: r.id,
-    userId: r.user_id,
-    alertId: r.alert_id || undefined,
-    alertType: r.alert_type || undefined,
-    overallRating: r.overall_rating,
-    accuracyRating: r.accuracy_rating || undefined,
-    timelinessRating: r.timeliness_rating || undefined,
-    usefulnessRating: r.usefulness_rating || undefined,
-    comment: r.comment || undefined,
-    createdAt: r.created_at,
+    id: r.id as string,
+    userId: r.user_id as string,
+    alertId: (r.alert_id as string) || undefined,
+    alertType: (r.alert_type as string) || undefined,
+    overallRating: r.overall_rating as number,
+    accuracyRating: (r.accuracy_rating as number) || undefined,
+    timelinessRating: (r.timeliness_rating as number) || undefined,
+    usefulnessRating: (r.usefulness_rating as number) || undefined,
+    comment: (r.comment as string) || undefined,
+    createdAt: r.created_at as string,
   }))
 }
 
@@ -722,20 +722,20 @@ export async function getAlertRatings(
   }
 
   const ratings = (data || []).map(r => ({
-    id: r.id,
-    userId: r.user_id,
-    alertId: r.alert_id || undefined,
-    alertType: r.alert_type || undefined,
-    overallRating: r.overall_rating,
-    accuracyRating: r.accuracy_rating || undefined,
-    timelinessRating: r.timeliness_rating || undefined,
-    usefulnessRating: r.usefulness_rating || undefined,
-    comment: r.comment || undefined,
-    createdAt: r.created_at,
+    id: r.id as string,
+    userId: r.user_id as string,
+    alertId: (r.alert_id as string) || undefined,
+    alertType: (r.alert_type as string) || undefined,
+    overallRating: r.overall_rating as number,
+    accuracyRating: (r.accuracy_rating as number) || undefined,
+    timelinessRating: (r.timeliness_rating as number) || undefined,
+    usefulnessRating: (r.usefulness_rating as number) || undefined,
+    comment: (r.comment as string) || undefined,
+    createdAt: r.created_at as string,
   }))
 
   const averageRating = ratings.length > 0
-    ? ratings.reduce((sum, r) => sum + r.overallRating, 0) / ratings.length
+    ? ratings.reduce((sum, r) => sum + (r.overallRating as number), 0) / ratings.length
     : 0
 
   return {
@@ -817,10 +817,10 @@ export async function getFeedbackSummary(
   let totalRating = 0
 
   for (const r of ratings || []) {
-    const rounded = Math.round(r.overall_rating)
+    const rounded = Math.round(r.overall_rating as number)
     if (rounded >= 1 && rounded <= 5) {
       ratingDistribution[rounded]++
-      totalRating += r.overall_rating
+      totalRating += r.overall_rating as number
     }
   }
 
@@ -892,8 +892,8 @@ export async function getNPSScore(): Promise<{
   let detractors = 0
 
   for (const r of ratings || []) {
-    if (r.overall_rating >= 9) promoters++
-    else if (r.overall_rating >= 7) passives++
+    if ((r.overall_rating as number) >= 9) promoters++
+    else if ((r.overall_rating as number) >= 7) passives++
     else detractors++
   }
 
@@ -1018,24 +1018,24 @@ export async function archiveOldFeedback(
  */
 function mapFeedbackFromDB(data: Record<string, unknown>): Feedback {
   return {
-    id: data.id,
+    id: data.id as string,
     userId: data.user_id as string | undefined,
     type: data.type as FeedbackType,
     category: data.category as ExperienceCategory | undefined,
-    title: data.title,
-    description: data.description,
+    title: data.title as string,
+    description: data.description as string,
     pageUrl: data.page_url as string | undefined,
     deviceInfo: data.device_info as DeviceInfo | undefined,
     alertId: data.alert_id as string | undefined,
     attachments: (data.attachments as string[]) || [],
     status: data.status as FeedbackStatus,
     priority: data.priority as FeedbackPriority,
-    flagged: data.flagged,
+    flagged: data.flagged as boolean,
     flagReason: data.flag_reason as string | undefined,
-    responseCount: data.response_count || 0,
+    responseCount: (data.response_count as number) || 0,
     lastResponseAt: data.last_response_at as string | undefined,
     tags: (data.tags as string[]) || [],
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

@@ -630,7 +630,7 @@ export async function addRestorationUpdate(
   const updateData: Record<string, unknown> = {
     last_updated: new Date().toISOString(),
     last_update_description: input.description,
-    update_count: (current.update_count || 0) + 1,
+    update_count: ((current.update_count as number) || 0) + 1,
     updated_at: new Date().toISOString(),
   }
 
@@ -656,20 +656,20 @@ export async function addRestorationUpdate(
     .eq('id', input.restorationId)
 
   return {
-    id: update.id,
-    restorationId: update.restoration_id,
-    title: update.title || undefined,
-    description: update.description,
-    previousStatus: update.previous_status,
-    newStatus: update.new_status,
-    progressPercentage: update.progress_percentage || undefined,
-    estimatedRestoration: update.estimated_restoration || undefined,
-    source: update.source || undefined,
-    sourceName: update.source_name || undefined,
-    affectedCustomers: update.affected_customers || undefined,
-    crewsDeployed: update.crews_deployed || undefined,
-    metadata: update.metadata,
-    createdAt: update.created_at,
+    id: update.id as string,
+    restorationId: update.restoration_id as string,
+    title: (update.title as string) || undefined,
+    description: update.description as string,
+    previousStatus: (update.previous_status as RestorationStatus) || undefined,
+    newStatus: update.new_status as RestorationStatus,
+    progressPercentage: (update.progress_percentage as number) || undefined,
+    estimatedRestoration: (update.estimated_restoration as string) || undefined,
+    source: (update.source as UpdateSource) || undefined,
+    sourceName: (update.source_name as string) || undefined,
+    affectedCustomers: (update.affected_customers as number) || undefined,
+    crewsDeployed: (update.crews_deployed as number) || undefined,
+    metadata: update.metadata as Record<string, unknown> | undefined,
+    createdAt: update.created_at as string,
   }
 }
 
@@ -694,21 +694,21 @@ export async function getRestorationUpdates(
     return []
   }
 
-  return (data || []).map(update => ({
-    id: update.id,
-    restorationId: update.restoration_id,
-    title: update.title || undefined,
-    description: update.description,
-    previousStatus: update.previous_status || undefined,
-    newStatus: update.new_status,
-    progressPercentage: update.progress_percentage || undefined,
-    estimatedRestoration: update.estimated_restoration || undefined,
-    source: update.source || undefined,
-    sourceName: update.source_name || undefined,
-    affectedCustomers: update.affected_customers || undefined,
-    crewsDeployed: update.crews_deployed || undefined,
-    metadata: update.metadata,
-    createdAt: update.created_at,
+  return ((data || []) as any[]).map(update => ({
+    id: update.id as string,
+    restorationId: update.restoration_id as string,
+    title: (update.title as string) || undefined,
+    description: update.description as string,
+    previousStatus: (update.previous_status as RestorationStatus) || undefined,
+    newStatus: update.new_status as RestorationStatus,
+    progressPercentage: (update.progress_percentage as number) || undefined,
+    estimatedRestoration: (update.estimated_restoration as string) || undefined,
+    source: (update.source as UpdateSource) || undefined,
+    sourceName: (update.source_name as string) || undefined,
+    affectedCustomers: (update.affected_customers as number) || undefined,
+    crewsDeployed: (update.crews_deployed as number) || undefined,
+    metadata: update.metadata as Record<string, unknown> | undefined,
+    createdAt: update.created_at as string,
   }))
 }
 
@@ -761,7 +761,7 @@ export async function getMunicipalityRestorations(
 
   return getRestorationEntries({
     municipality,
-    status: statuses,
+    status: statuses as RestorationStatus[] | undefined,
   })
 }
 
@@ -816,7 +816,7 @@ export async function getRestorationStats(
   let totalProgress = 0
   let progressCount = 0
 
-  for (const entry of data || []) {
+  for (const entry of (data || []) as any[]) {
     stats.totalEntries++
     stats.byStatus[entry.status as RestorationStatus]++
     stats.byServiceType[entry.service_type as RestorationServiceType]++
@@ -962,7 +962,7 @@ export async function getServiceSummary(): Promise<{
   const summaries = []
 
   for (const type of serviceTypes) {
-    const entries = (data || []).filter(e => e.service_type === type)
+    const entries = ((data || []) as any[]).filter(e => e.service_type === type)
 
     if (entries.length === 0) {
       continue
@@ -1010,7 +1010,7 @@ export async function getServiceSummary(): Promise<{
  */
 function mapRestorationFromDB(data: Record<string, unknown>): RestorationEntry {
   return {
-    id: data.id,
+    id: data.id as string,
     externalId: data.external_id as string | undefined,
     serviceType: data.service_type as RestorationServiceType,
     serviceProvider: data.service_provider as string | undefined,
@@ -1036,13 +1036,13 @@ function mapRestorationFromDB(data: Record<string, unknown>): RestorationEntry {
     source: data.source as UpdateSource | undefined,
     sourceId: data.source_id as string | undefined,
     sourceName: data.source_name as string | undefined,
-    updateCount: data.update_count || 0,
+    updateCount: data.update_count as number || 0,
     latestUpdate: data.latest_update as string | undefined,
     relatedEntryIds: data.related_entry_ids as string[] | undefined,
     parentEntryId: data.parent_entry_id as string | undefined,
     metadata: data.metadata as Record<string, unknown> | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

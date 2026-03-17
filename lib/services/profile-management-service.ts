@@ -323,12 +323,12 @@ export async function getPublicProfile(
   }
 
   return {
-    id: data.id,
-    displayName: data.display_name,
-    avatarUrl: data.avatar_url,
-    bio: data.bio,
-    location: data.location,
-    isVerified: data.is_verified,
+    id: data.id as string,
+    displayName: data.display_name as string,
+    avatarUrl: (data.avatar_url as string) || undefined,
+    bio: (data.bio as string) || undefined,
+    location: (data.location as Profile['location']) || undefined,
+    isVerified: data.is_verified as boolean,
   }
 }
 
@@ -439,7 +439,7 @@ export async function getNearbyProfiles(
     return []
   }
 
-  return (data || []).map(mapProfileFromDB)
+  return ((data || []) as any[]).map(mapProfileFromDB)
 }
 
 // ============================================================================
@@ -448,23 +448,28 @@ export async function getNearbyProfiles(
 
 function mapProfileFromDB(data: Record<string, unknown>): Profile {
   return {
-    id: data.id,
-    userId: data.user_id || data.id,
-    displayName: data.display_name,
-    email: data.email,
-    phone: data.phone as string | undefined,
-    avatarUrl: data.avatar_url as string | undefined,
-    bio: data.bio as string | undefined,
-    location: data.location as Profile['location'] | undefined,
-    language: data.language,
-    timezone: data.timezone,
-    notifications: data.notifications as Profile['notifications'],
-    visibility: data.visibility as ProfileVisibility,
-    showOnlineStatus: data.show_online_status,
-    emergencyContact: data.emergency_contact as Profile['emergencyContact'] | undefined,
-    isVerified: data.is_verified,
-    verifiedAt: data.verified_at as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    userId: (data.user_id as string) || (data.id as string),
+    displayName: data.display_name as string,
+    email: data.email as string,
+    phone: (data.phone as string) || undefined,
+    avatarUrl: (data.avatar_url as string) || undefined,
+    bio: (data.bio as string) || undefined,
+    location: (data.location as Profile['location']) || undefined,
+    language: (data.language as string) || 'en',
+    timezone: (data.timezone as string) || 'UTC',
+    notifications: (data.notifications as Profile['notifications']) || {
+      email: true,
+      push: true,
+      sms: false,
+      frequency: 'realtime',
+    },
+    visibility: (data.visibility as ProfileVisibility) || 'public',
+    showOnlineStatus: (data.show_online_status as boolean) || false,
+    emergencyContact: (data.emergency_contact as Profile['emergencyContact']) || undefined,
+    isVerified: (data.is_verified as boolean) || false,
+    verifiedAt: (data.verified_at as string) || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

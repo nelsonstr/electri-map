@@ -71,6 +71,13 @@ export default function AddLocationForm() {
     form.setValue('user_id', userId)
   }, [])
 
+  // Auto-detect location on mount
+  useEffect(() => {
+    if (!mapPosition && !form.getValues('latitude')) {
+      detectLocation();
+    }
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -208,6 +215,9 @@ export default function AddLocationForm() {
         variant: "default",
         className: "bg-green-500 text-white border-none"
       })
+
+      // Notify the map to refresh locations immediately
+      window.dispatchEvent(new Event("location-submitted"))
 
       form.reset({
         has_electricity: values.has_electricity,

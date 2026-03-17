@@ -387,7 +387,7 @@ CREATE TABLE emergency.alerts (
   -- Metadata
   cap_identifier VARCHAR(255),
   source VARCHAR(100),
-  references UUID[] DEFAULT '{}',
+  "references" UUID[] DEFAULT '{}',
   
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

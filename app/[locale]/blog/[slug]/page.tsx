@@ -10,7 +10,10 @@ const postKeys = [
     'conserveBattery', 
     'backupPower', 
     'stayComfortable', 
-    'medicalNeeds'
+    'medicalNeeds',
+    'emergencyKit',
+    'volunteering',
+    'weatherImpacts'
 ];
 
 const postImages: Record<string, string> = {
@@ -20,7 +23,10 @@ const postImages: Record<string, string> = {
     'conserveBattery': "https://source.unsplash.com/featured/?phone,battery",
     'backupPower': "https://source.unsplash.com/featured/?generator",
     'stayComfortable': "https://source.unsplash.com/featured/?blanket,fan",
-    'medicalNeeds': "https://source.unsplash.com/featured/?medical"
+    'medicalNeeds': "https://source.unsplash.com/featured/?medical",
+    'emergencyKit': "https://source.unsplash.com/featured/?backpack,survival",
+    'volunteering': "https://source.unsplash.com/featured/?community,help",
+    'weatherImpacts': "https://source.unsplash.com/featured/?storm,damage"
 };
 
 async function getPostKey(slug: string): Promise<string | undefined> {

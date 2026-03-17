@@ -55,8 +55,10 @@ export interface CommunityAlert {
   subcategory?: string
   
   // Location
-  latitude: number
-  longitude: number
+  location: {
+    latitude: number
+    longitude: number
+  }
   address?: string
   municipality?: string
   parish?: string
@@ -406,7 +408,7 @@ export async function getCommunityAlert(
   // Increment view count
   await supabase
     .from('community_alerts')
-    .update({ view_count: (data.view_count || 0) + 1 })
+    .update({ view_count: (data.view_count as number || 0) + 1 })
     .eq('id', alertId)
 
   return mapCommunityAlertFromDB(data)
@@ -479,7 +481,7 @@ export async function getCommunityAlerts(
     alerts = alerts.filter(alert => {
       const distance = calculateDistance(
         { latitude: filters.centerLat!, longitude: filters.centerLon! },
-        { latitude: alert.latitude, longitude: alert.longitude }
+        { latitude: alert.location.latitude, longitude: alert.location.longitude }
       )
       return distance <= filters.radius!
     })
@@ -675,14 +677,14 @@ export async function addAlertComment(
   }
 
   return {
-    id: data.id,
-    alertId: data.alert_id,
-    userId: data.user_id,
-    content: data.content,
-    isOfficial: data.is_official,
-    parentCommentId: data.parent_comment_id || undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: data.id as string,
+    alertId: data.alert_id as string,
+    userId: data.user_id as string,
+    content: data.content as string,
+    isOfficial: data.is_official as boolean,
+    parentCommentId: data.parent_comment_id as string || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -710,7 +712,7 @@ export async function getAlertComments(
 
   // Fetch replies for each comment
   const comments: AlertComment[] = []
-  for (const comment of data || []) {
+  for (const comment of (data || []) as any[]) {
     const { data: replies } = await supabase
       .from('alert_comments')
       .select('*')
@@ -729,7 +731,7 @@ export async function getAlertComments(
     })
 
     // Add replies
-    for (const reply of replies || []) {
+    for (const reply of (replies || []) as any[]) {
       comments.push({
         id: reply.id,
         alertId: reply.alert_id,
@@ -787,10 +789,10 @@ export async function subscribeToAlert(
   }
 
   return {
-    id: data.id,
-    alertId: data.alert_id,
-    userId: data.user_id,
-    createdAt: data.created_at,
+    id: data.id as string,
+    alertId: data.alert_id as string,
+    userId: data.user_id as string,
+    createdAt: data.created_at as string,
   }
 }
 
@@ -836,7 +838,7 @@ export async function getUserSubscriptions(
   }
 
   return (data || [])
-    .map(item => item.community_alerts)
+    .map((item: any) => item.community_alerts as Record<string, unknown>)
     .filter(Boolean)
     .map(mapCommunityAlertFromDB)
 }
@@ -892,11 +894,11 @@ export async function voteOnAlert(
 
     await updateVoteScore(alertId)
     return {
-      id: data.id,
-      alertId: data.alert_id,
-      userId: data.user_id,
-      voteType: data.vote_type,
-      createdAt: data.created_at,
+      id: data.id as string,
+      alertId: data.alert_id as string,
+      userId: data.user_id as string,
+      voteType: data.vote_type as 'up' | 'down',
+      createdAt: data.created_at as string,
     }
   }
 
@@ -918,11 +920,11 @@ export async function voteOnAlert(
 
   await updateVoteScore(alertId)
   return {
-    id: data.id,
-    alertId: data.alert_id,
-    userId: data.user_id,
-    voteType: data.vote_type,
-    createdAt: data.created_at,
+    id: data.id as string,
+    alertId: data.alert_id as string,
+    userId: data.user_id as string,
+    voteType: data.vote_type as 'up' | 'down',
+    createdAt: data.created_at as string,
   }
 }
 
@@ -946,11 +948,11 @@ export async function getNearbyAlerts(
   return alerts.sort((a, b) => {
     const distA = calculateDistance(
       { latitude, longitude },
-      { latitude: a.latitude, longitude: a.longitude }
+      { latitude: a.location.latitude, longitude: a.location.longitude }
     )
     const distB = calculateDistance(
       { latitude, longitude },
-      { latitude: b.latitude, longitude: b.longitude }
+      { latitude: b.location.latitude, longitude: b.location.longitude }
     )
     return distA - distB
   })
@@ -980,7 +982,7 @@ export async function getAlertStats(): Promise<{
     byMunicipality: {} as Record<string, number>,
   }
 
-  for (const alert of data || []) {
+  for (const alert of (data || []) as any[]) {
     stats.totalAlerts++
     if (alert.status === 'pending' || alert.status === 'under_review') {
       stats.pendingReview++
@@ -1049,14 +1051,16 @@ export async function searchAlerts(
  */
 function mapCommunityAlertFromDB(data: Record<string, unknown>): CommunityAlert {
   return {
-    id: data.id,
+    id: data.id as string,
     externalId: data.external_id as string | undefined,
-    title: data.title,
-    description: data.description,
-    category: data.category,
+    title: data.title as string,
+    description: data.description as string,
+    category: data.category as string,
     subcategory: data.subcategory as string | undefined,
-    latitude: data.latitude,
-    longitude: data.longitude,
+    location: {
+      latitude: data.latitude as number,
+      longitude: data.longitude as number,
+    },
     address: data.address as string | undefined,
     municipality: data.municipality as string | undefined,
     parish: data.parish as string | undefined,
@@ -1068,10 +1072,11 @@ function mapCommunityAlertFromDB(data: Record<string, unknown>): CommunityAlert 
     priority: data.priority as CommunityAlertPriority,
     verificationStatus: data.verification_status as VerificationStatus,
     mediaUrls: data.media_urls as string[] | undefined,
-    mediaCount: data.media_count || 0,
+    mediaCount: (data.media_count as number) || 0,
     impactRadius: data.impact_radius as number | undefined,
     affectedPeople: data.affected_people as number | undefined,
-    incidentTime: data.incident_time,
+    estimatedDuration: data.estimated_duration as string | undefined,
+    incidentTime: data.incident_time as string,
     expiresAt: data.expires_at as string | undefined,
     verifiedBy: data.verified_by as string | undefined,
     verifiedAt: data.verified_at as string | undefined,
@@ -1083,11 +1088,11 @@ function mapCommunityAlertFromDB(data: Record<string, unknown>): CommunityAlert 
     escalatedAt: data.escalated_at as string | undefined,
     relatedAlertIds: data.related_alert_ids as string[] | undefined,
     parentAlertId: data.parent_alert_id as string | undefined,
-    viewCount: data.view_count || 0,
-    confirmationCount: data.confirmation_count || 0,
-    denialCount: data.denial_count || 0,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    viewCount: (data.view_count as number) || 0,
+    confirmationCount: (data.confirmation_count as number) || 0,
+    denialCount: (data.denial_count as number) || 0,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1096,13 +1101,13 @@ function mapCommunityAlertFromDB(data: Record<string, unknown>): CommunityAlert 
  */
 function mapConfirmationFromDB(data: Record<string, unknown>): AlertConfirmation {
   return {
-    id: data.id,
-    alertId: data.alert_id,
-    userId: data.user_id,
+    id: data.id as string,
+    alertId: data.alert_id as string,
+    userId: data.user_id as string,
     action: data.action as 'confirmed' | 'denied' | 'help_needed',
     notes: data.notes as string | undefined,
     distance: data.distance as number | undefined,
-    createdAt: data.created_at,
+    createdAt: data.created_at as string,
   }
 }
 

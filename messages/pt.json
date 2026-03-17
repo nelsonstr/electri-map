@@ -105,7 +105,10 @@
             "serviceType": "Tipo de Serviço",
             "working": "Funcionando",
             "issue": "Problema Reportado"
-        }
+        },
+        "locationDetected": "Localização Detectada",
+        "mapCentered": "O mapa foi centrado na sua localização",
+        "locationError": "Erro de Localização"
     },
     "about": {
         "title": "Sobre o Status de Serviços",
@@ -432,12 +435,16 @@
             "other": "Outro"
         },
         "distance": "{distance} de distância",
+        "maxDistance": "Raio de Pesquisa",
+        "nearbyIssues": "Problemas próximos",
         "timeAgo": "{time} atrás",
         "justNow": "Agora mesmo",
         "minutesAgo": "{count} min atrás",
         "hoursAgo": "{count} horas atrás",
         "activeUntil": "Ativo até",
         "viewOnMap": "Ver no Mapa",
+        "viewDetails": "Ver Detalhes",
+        "reportedAt": "Reportado em",
         "dismiss": "Dispensar",
         "settings": {
             "title": "Configurações de Alertas",

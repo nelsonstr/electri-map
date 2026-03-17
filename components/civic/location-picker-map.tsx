@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, MapPin, Navigation, Search } from 'lucide-react';
 import type { IssueLocation } from '@/types/civic-issue';
+import { useToast } from '@/components/ui/use-toast';
 
 // Fix for default marker icon in Leaflet with Webpack/Next.js
 const createCustomIcon = (color: string = '#3b82f6') => {
@@ -79,6 +80,7 @@ function CurrentLocationMarker({
 }) {
   const [position, setPosition] = useState<LatLngExpression | null>(null);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useMapEvents({
     click(e) {
@@ -88,7 +90,11 @@ function CurrentLocationMarker({
 
   const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      toast({
+        variant: "destructive",
+        title: "Geolocation Error",
+        description: "Geolocation is not supported by your browser",
+      });
       return;
     }
 
@@ -103,7 +109,11 @@ function CurrentLocationMarker({
       (error) => {
         console.error('Error getting location:', error);
         setLoading(false);
-        alert('Unable to retrieve your location. Please enable location services.');
+        toast({
+          variant: "destructive",
+          title: "Geolocation Error",
+          description: "Unable to retrieve your location. Please enable location services.",
+        });
       },
       {
         enableHighAccuracy: true,
@@ -142,6 +152,7 @@ export function LocationPickerMap({
   const [address, setAddress] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const { toast } = useToast();
 
   // Update position when selectedLocation changes
   useEffect(() => {
@@ -190,11 +201,19 @@ export function LocationPickerMap({
         handlePositionChange(latNum, lngNum);
         setSearchQuery('');
       } else {
-        alert('Location not found. Please try a different search term.');
+        toast({
+          variant: "destructive",
+          title: "Location Not Found",
+          description: "Location not found. Please try a different search term.",
+        });
       }
     } catch (error) {
       console.error('Error searching location:', error);
-      alert('Error searching location. Please try again.');
+      toast({
+        variant: "destructive",
+        title: "Search Error",
+        description: "Error searching location. Please try again.",
+      });
     } finally {
       setIsSearching(false);
     }
@@ -226,7 +245,11 @@ export function LocationPickerMap({
                 },
                 () => {
                   setIsSearching(false);
-                  alert('Unable to get your location');
+                  toast({
+                    variant: "destructive",
+                    title: "Geolocation Error",
+                    description: "Unable to get your location",
+                  });
                 }
               );
             }

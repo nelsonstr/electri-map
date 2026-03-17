@@ -1,14 +1,33 @@
 
--- 1. Add is_sos column to incidents if it doesn't exist
+-- 1. Create incidents table if it doesn't exist
+CREATE TABLE IF NOT EXISTS public.incidents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    incident_number VARCHAR(50) UNIQUE NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    priority VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
+    address TEXT,
+    description TEXT,
+    is_sos BOOLEAN DEFAULT FALSE,
+    notifications_sent BOOLEAN DEFAULT FALSE,
+    emergency_services_dispatched BOOLEAN DEFAULT FALSE,
+    created_by UUID,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Ensure is_sos column exists (if table was created elsewhere)
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                   WHERE table_name = 'incidents' AND column_name = 'is_sos') THEN
+                   WHERE table_schema = 'public' AND table_name = 'incidents' AND column_name = 'is_sos') THEN
         ALTER TABLE public.incidents ADD COLUMN is_sos BOOLEAN DEFAULT FALSE;
     END IF;
 END $$;
 
--- 2. Create community_alerts table
+-- 3. Create community_alerts table
 CREATE TABLE IF NOT EXISTS public.community_alerts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     alert_number VARCHAR(50) UNIQUE NOT NULL,
@@ -28,15 +47,21 @@ CREATE TABLE IF NOT EXISTS public.community_alerts (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Enable RLS and add policies
+-- 4. Enable RLS and add policies
+ALTER TABLE public.incidents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_alerts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read access to incidents" ON public.incidents;
+CREATE POLICY "Allow public read access to incidents" 
+ON public.incidents FOR SELECT 
+USING (true);
 
 DROP POLICY IF EXISTS "Allow public read access to community_alerts" ON public.community_alerts;
 CREATE POLICY "Allow public read access to community_alerts" 
 ON public.community_alerts FOR SELECT 
 USING (true);
 
--- 4. Seed a test alert near Lisbon (38.7223, -9.1393)
+-- 5. Seed a test alert near Lisbon (38.7223, -9.1393)
 INSERT INTO public.community_alerts (
     alert_number, title, message, instructions, severity, alert_type, location, radius, place_name, expires_at
 ) VALUES (

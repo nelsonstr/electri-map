@@ -418,29 +418,3 @@ export function getServiceStatusColor(status: ServiceStatus): string {
   return colors[status]
 }
 
-// ============================================================================
-// Type Exports
-// ============================================================================
-
-export type {
-  SafeZone,
-  SafeZoneFilters,
-  SafeZoneSortOption,
-  SafeZoneCategory,
-  ServiceStatus,
-  Coordinates,
-  SafeZoneServices,
-  OperatingHours,
-  SafeZoneContact,
-}
-
-export {
-  coordinatesSchema,
-  serviceStatusSchema,
-  safeZoneServicesSchema,
-  operatingHoursSchema,
-  safeZoneContactSchema,
-  safeZoneSchema,
-  safeZoneFiltersSchema,
-  SAFE_ZONE_CATEGORIES,
-}

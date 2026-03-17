@@ -135,13 +135,22 @@ function transformToUserPreferences(
 // ============================================================================
 
 export class AlertService {
+  private static instance: AlertService | null = null
+
+  public static getInstance(): AlertService {
+    if (!AlertService.instance) {
+      AlertService.instance = new AlertService()
+    }
+    return AlertService.instance
+  }
+
   private _supabase: ReturnType<typeof createClient> | null = null
 
-  private get supabase() {
+  private get supabase(): ReturnType<typeof createClient> {
     if (!this._supabase) {
       this._supabase = createClient()
     }
-    return this._supabase
+    return this._supabase!
   }
 
   // ========================================================================
@@ -158,55 +167,97 @@ export class AlertService {
     filters?: CommunityAlertFilters,
     sortOptions?: AlertSortOptions
   ): Promise<CommunityAlert[]> {
+    // DEBUG: Log environment check
+    // console.log('[DEBUG] getNearbyAlerts - Environment check: supabaseUrl=' + 
+    //   (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'MISSING') + ', supabaseAnonKey=' + 
+    //   (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'MISSING'))
+
+    // DEBUG: Log Supabase client status
+    // console.log('[DEBUG] getNearbyAlerts - Supabase client exists: ' + !!this.supabase)
+
     // Ensure radius is within bounds
     const boundedRadius = Math.max(MIN_ALERT_RADIUS, Math.min(MAX_ALERT_RADIUS, radius))
 
+    // DEBUG: Log input parameters
+    // console.log('[DEBUG] getNearbyAlerts - Inputs: lat=' + latitude + ', lng=' + longitude + ', radius=' + boundedRadius + ', hasFilters=' + !!filters)
+
     // Build query with PostGIS for spatial filtering
-    let query = this.supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
       .from('community_alerts')
       .select('*')
       .eq('is_active', true)
       .lte('created_at', new Date().toISOString())
       .gte('expires_at', new Date().toISOString())
 
+    // DEBUG: Log initial query state
+    // console.log('[DEBUG] getNearbyAlerts - Initial query built: ' + (query ? 'success' : 'NULL'))
+
     // Apply severity filter if provided
-    if (filters?.severity && filters.severity.length > 0) {
-      query = query.in('severity', filters.severity)
+    try {
+      if (filters?.severity && filters.severity.length > 0) {
+        query = query.in('severity', filters.severity)
+      }
+
+      // Apply alert type filter if provided
+      // DEBUG: Log before alert type filter
+      // console.log('[DEBUG] getNearbyAlerts - Before alertType filter: query exists=' + !!query)
+      if (filters?.alertType && filters.alertType.length > 0) {
+        // console.log('[DEBUG] getNearbyAlerts - Applying alertType filter: ' + JSON.stringify(filters.alertType))
+        query = query.in('alert_type', filters.alertType)
+        // console.log('[DEBUG] getNearbyAlerts - After alertType filter: query exists=' + !!query)
+      }
+
+      // Apply read status filter if provided
+      if (filters?.isRead !== undefined) {
+        query = query.eq('is_read', filters.isRead)
+      }
+
+      // Apply date filters
+      if (filters?.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom.toISOString())
+      }
+      if (filters?.dateTo) {
+        query = query.lte('created_at', filters.dateTo.toISOString())
+      }
+    } catch (filterError) {
+      // console.log('[DEBUG] getNearbyAlerts - Filter error: ' + (filterError as Error).message)
+      console.error('Filter application error:', filterError)
+      throw new Error('Failed to apply filters: ' + (filterError as Error).message)
     }
 
-    // Apply alert type filter if provided
-    if (filters?.alertType && filters.alertType.length > 0) {
-      query = query.in('alert_type', filters.alertType)
+    // DEBUG: Log query before execution
+    // console.log('[DEBUG] getNearbyAlerts - Before query execution')
+
+    // Declare data outside try block so it's accessible later
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any[] | null = null
+    
+    try {
+      const { data: queryData, error } = await query
+      data = queryData
+
+      // DEBUG: Log query result
+      // console.log('[DEBUG] getNearbyAlerts - Query result: error=' + (error ? error.message : 'null') + ', data.length=' + (data ? data.length : 0))
+
+      if (error) {
+        console.error('Error fetching nearby alerts (full error):', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        throw new Error(`Failed to fetch nearby alerts: ${error.message}`)
+      }
+    } catch (queryError) {
+      // console.log('[DEBUG] getNearbyAlerts - Query execution error: ' + (queryError as Error).message)
+      throw new Error(`Failed to fetch nearby alerts: ${(queryError as Error).message}`)
     }
 
-    // Apply read status filter if provided
-    if (filters?.isRead !== undefined) {
-      query = query.eq('is_read', filters.isRead)
-    }
-
-    // Apply date filters
-    if (filters?.dateFrom) {
-      query = query.gte('created_at', filters.dateFrom.toISOString())
-    }
-    if (filters?.dateTo) {
-      query = query.lte('created_at', filters.dateTo.toISOString())
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error fetching nearby alerts (full error):', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      })
-      throw new Error(`Failed to fetch nearby alerts: ${error.message}`)
-    }
-
-    console.log(`Alert fetching result: ${data?.length || 0} alerts found`)
+    // console.log('[DEBUG] getNearbyAlerts - Alert fetching result: ' + (data?.length || 0) + ' alerts found')
 
     if (!data || data.length === 0) {
+      // console.log('[DEBUG] getNearbyAlerts - No data returned')
       return []
     }
 

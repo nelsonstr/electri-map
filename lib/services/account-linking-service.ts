@@ -434,7 +434,7 @@ export async function verifyAccountLink(
   }
 
   // Check expiration
-  if (new Date(data.verification_expires_at) < new Date()) {
+  if (new Date(data.verification_expires_at as string) < new Date()) {
     throw new Error('Verification token expired')
   }
 
@@ -446,7 +446,7 @@ export async function verifyAccountLink(
       verification_token: null,
       verification_expires_at: null,
     })
-    .eq('id', data.id)
+    .eq('id', data.id as string)
     .select('*')
     .single()
 
@@ -663,17 +663,17 @@ export async function getLinkingSettings(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    allowNewLinks: data.allow_new_links,
+    id: data.id as string,
+    userId: data.user_id as string,
+    allowNewLinks: data.allow_new_links as any[],
     requireVerification: data.require_verification,
     preferredProvider: data.preferred_provider as AccountProvider | undefined,
     notifyOnNewLink: data.notify_on_new_link,
     notifyOnUnlink: data.notify_on_unlink,
     requirePasswordForUnlink: data.require_password_for_unlink,
     maxLinkedAccounts: data.max_linked_accounts,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -714,17 +714,17 @@ export async function updateLinkingSettings(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id,
-    allowNewLinks: data.allow_new_links,
+    id: data.id as string,
+    userId: data.user_id as string,
+    allowNewLinks: data.allow_new_links as any[],
     requireVerification: data.require_verification,
     preferredProvider: data.preferred_provider as AccountProvider | undefined,
     notifyOnNewLink: data.notify_on_new_link,
     notifyOnUnlink: data.notify_on_unlink,
     requirePasswordForUnlink: data.require_password_for_unlink,
     maxLinkedAccounts: data.max_linked_accounts,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -851,10 +851,10 @@ export async function removeAllLinkedAccounts(
  */
 function mapLinkFromDB(data: Record<string, unknown>): AccountLink {
   return {
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     provider: data.provider as AccountProvider,
-    providerId: data.provider_id,
+    providerId: data.provider_id as string,
     providerEmail: data.provider_email as string | undefined,
     providerName: data.provider_name as string | undefined,
     status: data.status as AccountLinkStatus,
@@ -866,10 +866,10 @@ function mapLinkFromDB(data: Record<string, unknown>): AccountLink {
     tokenExpiresAt: data.token_expires_at as string | undefined,
     providerMetadata: data.provider_metadata as Record<string, unknown> | undefined,
     lastUsedAt: data.last_used_at as string | undefined,
-    usageCount: data.usage_count,
+    usageCount: data.usage_count as number,
     lastError: data.last_error as string | undefined,
-    errorCount: data.error_count,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    errorCount: data.error_count as number,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }

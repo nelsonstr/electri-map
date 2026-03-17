@@ -832,19 +832,19 @@ export async function updateConsentPreference(
   }
 
   return {
-    id: data.id,
-    consentType: data.consent_type,
+    id: data.id as string,
+    consentType: data.consent_type as string,
     version: data.version,
-    userId: data.user_id || undefined,
+    userId: data.user_id as string || undefined,
     granted: data.granted,
-    grantedAt: data.granted_at || undefined,
-    revokedAt: data.revoked_at || undefined,
+    grantedAt: data.granted_at as string || undefined,
+    revokedAt: data.revoked_at as string || undefined,
     granularConsents: data.granular_consents || undefined,
     purpose: data.purpose || undefined,
     legalBasis: data.legal_basis || undefined,
     retentionPeriod: data.retention_period || undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -868,19 +868,19 @@ export async function getUserConsentPreferences(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    consentType: data.consent_type,
+    id: data.id as string,
+    consentType: data.consent_type as string,
     version: data.version,
-    userId: data.user_id || undefined,
+    userId: data.user_id as string || undefined,
     granted: data.granted,
-    grantedAt: data.granted_at || undefined,
-    revokedAt: data.revoked_at || undefined,
+    grantedAt: data.granted_at as string || undefined,
+    revokedAt: data.revoked_at as string || undefined,
     granularConsents: data.granular_consents || undefined,
     purpose: data.purpose || undefined,
     legalBasis: data.legal_basis || undefined,
     retentionPeriod: data.retention_period || undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }))
 }
 
@@ -933,20 +933,20 @@ export async function createDataBreachIncident(
   }
 
   return {
-    id: data.id,
-    incidentType: data.incident_type,
-    severity: data.severity,
-    discoveredAt: data.discovered_at,
+    id: data.id as string,
+    incidentType: data.incident_type as string,
+    severity: data.severity as number,
+    discoveredAt: data.discovered_at as string,
     discoveredBy: data.discovered_by || undefined,
-    description: data.description,
+    description: data.description as string,
     affectedSystems: data.affected_systems || undefined,
-    affectedDataCategories: data.affected_data_categories,
+    affectedDataCategories: data.affected_data_categories as any[],
     estimatedAffectedRecords: data.estimated_affected_records || undefined,
     authorityNotified: data.authority_notified,
     individualsNotified: data.individuals_notified,
-    status: data.status,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    status: data.status as string,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -995,11 +995,11 @@ export async function getDataProcessingActivities(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    name: data.name,
-    description: data.description,
+    id: data.id as string,
+    name: data.name as string,
+    description: data.description as string,
     purpose: data.purpose,
-    dataCategories: data.data_categories,
+    dataCategories: data.data_categories as any[],
     dataSubjects: data.data_subjects,
     legalBasis: data.legal_basis,
     legalBasisDetails: data.legal_basis_details || undefined,
@@ -1009,11 +1009,11 @@ export async function getDataProcessingActivities(
     retentionPolicy: data.retention_policy || undefined,
     securityMeasures: data.security_measures || undefined,
     dpoContact: data.dpo_contact || undefined,
-    isActive: data.is_active,
-    lastReviewDate: data.last_review_date || undefined,
-    nextReviewDate: data.next_review_date || undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    isActive: data.is_active as boolean,
+    lastReviewDate: data.last_review_date as string || undefined,
+    nextReviewDate: data.next_review_date as string || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }))
 }
 
@@ -1172,17 +1172,17 @@ export async function getGDPRComplianceSummary(): Promise<{
  */
 function mapRequestFromDB(data: Record<string, unknown>): GDPRDataSubjectRequest {
   return {
-    id: data.id,
+    id: data.id as string,
     requestType: data.request_type as GDPRRequestType,
     referenceNumber: data.reference_number,
     userId: data.user_id as string | undefined,
-    email: data.email,
+    email: data.email as string,
     fullName: data.full_name as string | undefined,
     dataCategories: data.data_categories as GDPRDataCategory[],
     description: data.description as string | undefined,
     status: data.status as GDPRRequestStatus,
     priority: data.priority as 'normal' | 'high' | 'urgent',
-    identityVerified: data.identity_verified,
+    identityVerified: data.identity_verified as boolean,
     verifiedAt: data.verified_at as string | undefined,
     verifiedBy: data.verified_by as string | undefined,
     assignedTo: data.assigned_to as string | undefined,
@@ -1193,8 +1193,8 @@ function mapRequestFromDB(data: Record<string, unknown>): GDPRDataSubjectRequest
     legalDeadline: data.legal_deadline,
     extended: data.extended,
     extensionReason: data.extension_reason as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1203,11 +1203,11 @@ function mapRequestFromDB(data: Record<string, unknown>): GDPRDataSubjectRequest
  */
 function mapDPIAFromDB(data: Record<string, unknown>): DPIA {
   return {
-    id: data.id,
-    name: data.name,
-    description: data.description,
+    id: data.id as string,
+    name: data.name as string,
+    description: data.description as string,
     project: data.project as string | undefined,
-    assessmentDate: data.assessment_date,
+    assessmentDate: data.assessment_date as string,
     reviewDate: data.review_date as string | undefined,
     dataCategories: data.data_categories as GDPRDataCategory[],
     processingMethods: data.processing_methods as string[] | undefined,
@@ -1222,10 +1222,10 @@ function mapDPIAFromDB(data: Record<string, unknown>): DPIA {
     approvalRequired: data.approval_required as string | undefined,
     approvedBy: data.approved_by as string | undefined,
     approvedAt: data.approved_at as string | undefined,
-    isCompleted: data.is_completed,
+    isCompleted: data.is_completed as boolean,
     nextReviewDate: data.next_review_date as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 

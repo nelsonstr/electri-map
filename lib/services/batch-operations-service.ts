@@ -494,7 +494,7 @@ export async function updateBatchItem(
 ): Promise<void> {
   const supabase = createClient()
 
-  const { updateError } = await supabase
+  const { error: updateError } = await supabase
     .from('batch_items')
     .update({
       status,
@@ -592,7 +592,7 @@ export async function getBatchStatistics(
   failedOperations: number
   averageSuccessRate: number
   totalItemsProcessed: number
-}>> {
+}> {
   const supabase = createClient()
 
   let query = supabase.from('batch_operations').select('*')
@@ -723,32 +723,32 @@ export async function processBulkStatusUpdate(
 
 function mapBatchOperationFromDB(data: Record<string, unknown>): BatchOperation {
   return {
-    id: data.id,
-    name: data.name,
+    id: data.id as string,
+    name: data.name as string,
     description: data.description as string | undefined,
     operationType: data.operation_type as OperationType,
     status: data.status as BatchStatus,
-    config: (data.config as Record<string, unknown>) || {},
-    totalItems: data.total_items,
-    processedItems: data.processed_items,
-    successfulItems: data.successful_items,
-    failedItems: data.failed_items,
-    skippedItems: data.skipped_items,
+    config: (data.config as BatchOperation['config']) || {},
+    totalItems: data.total_items as number,
+    processedItems: data.processed_items as number,
+    successfulItems: data.successful_items as number,
+    failedItems: data.failed_items as number,
+    skippedItems: data.skipped_items as number,
     startedAt: data.started_at as string | undefined,
     completedAt: data.completed_at as string | undefined,
     estimatedTimeRemaining: data.estimated_time_remaining as number | undefined,
-    createdBy: data.created_by,
-    results: data.results as BatchOperationResult | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdBy: data.created_by as string,
+    results: (data.results as unknown as BatchOperationResult) || undefined,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
 function mapBatchItemFromDB(data: Record<string, unknown>): BatchItem {
   return {
-    id: data.id,
-    batchId: data.batch_id,
-    itemId: data.item_id,
+    id: data.id as string,
+    batchId: data.batch_id as string,
+    itemId: data.item_id as string,
     itemData: (data.item_data as Record<string, unknown>) || {},
     status: data.status as BatchItemStatus,
     result: data.result as Record<string, unknown> | undefined,

@@ -349,20 +349,20 @@ export async function getOfflineCapabilities(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
+    id: data.id as string,
     capability: data.capability as OfflineCapability,
-    isEnabled: data.is_enabled,
-    isDownloaded: data.is_downloaded,
-    version: data.version,
-    size: data.size,
-    lastUpdated: data.last_updated,
-    downloadProgress: data.download_progress,
-    downloadStarted: data.download_started || undefined,
-    downloadCompleted: data.download_completed || undefined,
-    expiresAt: data.expires_at || undefined,
-    autoUpdate: data.auto_update,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    isEnabled: data.is_enabled as boolean,
+    isDownloaded: data.is_downloaded as boolean,
+    version: data.version as string,
+    size: data.size as number,
+    lastUpdated: data.last_updated as string,
+    downloadProgress: data.download_progress as number,
+    downloadStarted: data.download_started as string || undefined,
+    downloadCompleted: data.download_completed as string || undefined,
+    expiresAt: data.expires_at as string || undefined,
+    autoUpdate: data.auto_update as boolean,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }))
 }
 
@@ -391,7 +391,7 @@ export async function setOfflineCapability(
         auto_update: input.autoUpdate,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', existing.id)
+      .eq('id', (existing as any).id)
       .select('*')
       .single()
 
@@ -401,20 +401,20 @@ export async function setOfflineCapability(
     }
 
     return {
-      id: data.id,
+      id: data.id as string,
       capability: data.capability as OfflineCapability,
-      isEnabled: data.is_enabled,
-      isDownloaded: data.is_downloaded,
-      version: data.version,
-      size: data.size,
-      lastUpdated: data.last_updated,
-      downloadProgress: data.download_progress,
-      downloadStarted: data.download_started || undefined,
-      downloadCompleted: data.download_completed || undefined,
-      expiresAt: data.expires_at || undefined,
-      autoUpdate: data.auto_update,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      isEnabled: data.is_enabled as boolean,
+      isDownloaded: data.is_downloaded as boolean,
+      version: data.version as string,
+      size: data.size as number,
+      lastUpdated: data.last_updated as string,
+      downloadProgress: data.download_progress as number,
+      downloadStarted: data.download_started as string || undefined,
+      downloadCompleted: data.download_completed as string || undefined,
+      expiresAt: data.expires_at as string || undefined,
+      autoUpdate: data.auto_update as boolean,
+      createdAt: data.created_at as string,
+      updatedAt: data.updated_at as string,
     }
   }
 
@@ -440,17 +440,17 @@ export async function setOfflineCapability(
   }
 
   return {
-    id: data.id,
+    id: data.id as string,
     capability: data.capability as OfflineCapability,
-    isEnabled: data.is_enabled,
-    isDownloaded: data.is_downloaded,
-    version: data.version,
-    size: data.size,
-    lastUpdated: data.last_updated,
-    downloadProgress: data.download_progress,
-    autoUpdate: data.auto_update,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    isEnabled: data.is_enabled as boolean,
+    isDownloaded: data.is_downloaded as boolean,
+    version: data.version as string,
+    size: data.size as number,
+    lastUpdated: data.last_updated as string,
+    downloadProgress: data.download_progress as number,
+    autoUpdate: data.auto_update as boolean,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -494,18 +494,18 @@ export async function queueOfflineAction(
   }
 
   return {
-    id: data.id,
-    userId: data.user_id || undefined,
+    id: data.id as string,
+    userId: data.user_id as string || undefined,
     action: data.action as 'create' | 'update' | 'delete',
-    entity: data.entity,
-    entityId: data.entity_id || undefined,
-    data: data.data,
+    entity: data.entity as string,
+    entityId: data.entity_id as string || undefined,
+    data: data.data as Record<string, unknown>,
     status: data.status as QueueItemStatus,
-    retryCount: data.retry_count,
-    maxRetries: data.max_retries,
-    priority: data.priority,
-    dependsOn: data.depends_on,
-    createdAt: data.created_at,
+    retryCount: data.retry_count as number,
+    maxRetries: data.max_retries as number,
+    priority: data.priority as number,
+    dependsOn: data.depends_on as string[],
+    createdAt: data.created_at as string,
   }
 }
 
@@ -538,20 +538,20 @@ export async function getPendingQueueItems(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    userId: data.user_id || undefined,
+    id: data.id as string,
+    userId: data.user_id as string || undefined,
     action: data.action as 'create' | 'update' | 'delete',
-    entity: data.entity,
-    entityId: data.entity_id || undefined,
-    data: data.data,
+    entity: data.entity as string,
+    entityId: data.entity_id as string || undefined,
+    data: data.data as Record<string, unknown>,
     status: data.status as QueueItemStatus,
-    retryCount: data.retry_count,
-    maxRetries: data.max_retries,
-    errorMessage: data.error_message || undefined,
-    priority: data.priority,
-    dependsOn: data.depends_on,
-    createdAt: data.created_at,
-    lastAttemptAt: data.last_attempt_at || undefined,
+    retryCount: data.retry_count as number,
+    maxRetries: data.max_retries as number,
+    errorMessage: data.error_message as string || undefined,
+    priority: data.priority as number,
+    dependsOn: data.depends_on as string[],
+    createdAt: data.created_at as string,
+    lastAttemptAt: data.last_attempt_at as string || undefined,
   }))
 }
 
@@ -661,10 +661,10 @@ export async function processSyncQueue(
   }
 
   return {
-    id: session.id,
-    userId: session.user_id,
+    id: session.id as string,
+    userId: session.user_id as string,
     status: itemsFailed === 0 ? 'synced' : 'error',
-    startedAt: session.started_at,
+    startedAt: session.started_at as string,
     completedAt: new Date().toISOString(),
     itemsProcessed: itemsSucceeded + itemsFailed,
     itemsSucceeded,
@@ -787,19 +787,19 @@ export async function getSyncSessions(
   }
 
   return (data || []).map(data => ({
-    id: data.id,
-    userId: data.user_id,
+    id: data.id as string,
+    userId: data.user_id as string,
     status: data.status as SyncStatus,
-    startedAt: data.started_at,
-    completedAt: data.completed_at || undefined,
-    itemsProcessed: data.items_processed,
-    itemsSucceeded: data.items_succeeded,
-    itemsFailed: data.items_failed,
-    bytesUploaded: data.bytes_uploaded,
-    bytesDownloaded: data.bytes_downloaded,
-    errors: data.errors || [],
-    deviceInfo: data.device_info || undefined,
-    networkType: data.network_type || undefined,
+    startedAt: data.started_at as string,
+    completedAt: data.completed_at as string || undefined,
+    itemsProcessed: data.items_processed as number,
+    itemsSucceeded: data.items_succeeded as number,
+    itemsFailed: data.items_failed as number,
+    bytesUploaded: data.bytes_uploaded as number,
+    bytesDownloaded: data.bytes_downloaded as number,
+    errors: data.errors as any[] || [],
+    deviceInfo: data.device_info as string || undefined,
+    networkType: data.network_type as string || undefined,
   }))
 }
 
@@ -833,7 +833,7 @@ export async function getLastSyncStatus(
     .in('status', ['pending', 'failed'])
 
   return {
-    lastSync: session?.started_at || null,
+    lastSync: session?.started_at as string || null,
     pendingItems: pendingCount || 0,
     status: (session?.status as SyncStatus) || 'pending',
   }
@@ -875,15 +875,15 @@ export async function cacheData(
   }
 
   return {
-    id: cached.id,
-    key: cached.key,
-    data: cached.data,
-    version: cached.version || undefined,
-    lastSynced: cached.updated_at,
-    expiresAt: cached.expires_at || undefined,
+    id: cached.id as string,
+    key: cached.key as string,
+    data: cached.data as Record<string, unknown>,
+    version: cached.version as string || undefined,
+    lastSynced: cached.updated_at as string,
+    expiresAt: cached.expires_at as string || undefined,
     size: JSON.stringify(cached.data).length,
-    createdAt: cached.created_at,
-    updatedAt: cached.updated_at,
+    createdAt: cached.created_at as string,
+    updatedAt: cached.updated_at as string,
   }
 }
 
@@ -906,20 +906,20 @@ export async function getCachedData(
   }
 
   // Check expiration
-  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+  if (data.expires_at as string && new Date(data.expires_at as string) < new Date()) {
     return null
   }
 
   return {
-    id: data.id,
-    key: data.key,
-    data: data.data,
-    version: data.version || undefined,
-    lastSynced: data.updated_at,
-    expiresAt: data.expires_at || undefined,
+    id: data.id as string,
+    key: data.key as string,
+    data: data.data as Record<string, unknown>,
+    version: data.version as string || undefined,
+    lastSynced: data.updated_at as string,
+    expiresAt: data.expires_at as string || undefined,
     size: JSON.stringify(data.data).length,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -986,19 +986,19 @@ export async function downloadOfflineResource(
     .eq('id', downloadId)
 
   return {
-    id: data.id,
+    id: data.id as string,
     type: resourceDef.type as OfflineResource['type'],
-    key: resourceDef.key,
-    title: resourceDef.title,
-    description: resourceDef.description || undefined,
-    content: resourceDef.content,
-    language: resourceDef.language,
-    version: resourceDef.version,
-    size: resourceDef.size,
+    key: resourceDef.key as string,
+    title: resourceDef.title as string,
+    description: resourceDef.description as string || undefined,
+    content: resourceDef.content as Record<string, unknown>,
+    language: resourceDef.language as string,
+    version: resourceDef.version as string,
+    size: resourceDef.size as number,
     isDownloaded: true,
     downloadProgress: 100,
     downloadedAt: new Date().toISOString(),
-    createdAt: resourceDef.created_at,
+    createdAt: resourceDef.created_at as string,
   }
 }
 
@@ -1023,7 +1023,7 @@ export async function getOfflineResources(
 
   const resources: OfflineResource[] = []
 
-  for (const download of downloads || []) {
+  for (const download of (downloads || []) as any[]) {
     const { data: resourceDef } = await supabase
       .from('offline_resources')
       .select('*')
@@ -1034,18 +1034,18 @@ export async function getOfflineResources(
       resources.push({
         id: download.id,
         type: resourceDef.type as OfflineResource['type'],
-        key: resourceDef.key,
-        title: resourceDef.title,
-        description: resourceDef.description || undefined,
-        content: resourceDef.content,
-        language: resourceDef.language,
-        version: resourceDef.version,
-        size: resourceDef.size,
+        key: resourceDef.key as string,
+        title: resourceDef.title as string,
+        description: resourceDef.description as string || undefined,
+        content: resourceDef.content as Record<string, unknown>,
+        language: resourceDef.language as string,
+        version: resourceDef.version as string,
+        size: resourceDef.size as number,
         isDownloaded: download.status === 'completed',
         downloadProgress: download.status === 'completed' ? 100 : 0,
         downloadedAt: download.downloaded_at || undefined,
-        expiresAt: resourceDef.expires_at || undefined,
-        createdAt: resourceDef.created_at,
+        expiresAt: resourceDef.expires_at as string || undefined,
+        createdAt: resourceDef.created_at as string,
       })
     }
   }
@@ -1126,11 +1126,11 @@ export async function updateNetworkStatus(
   }
 
   return {
-    isOnline: data?.is_online ?? input.isOnline,
+    isOnline: (data?.is_online as boolean) ?? input.isOnline,
     connectionType: (data?.connection_type as NetworkStatus['connectionType']) || input.connectionType || 'unknown',
-    downlink: data?.downlink,
-    rtt: data?.rtt,
-    lastChecked: data?.last_checked || new Date().toISOString(),
+    downlink: data?.downlink as number | undefined,
+    rtt: data?.rtt as number | undefined,
+    lastChecked: (data?.last_checked as string) || new Date().toISOString(),
   }
 }
 
@@ -1153,10 +1153,10 @@ export async function getNetworkStatus(
   }
 
   return {
-    isOnline: data.is_online,
+    isOnline: data.is_online as boolean,
     connectionType: data.connection_type as NetworkStatus['connectionType'],
-    downlink: data.downlink,
-    rtt: data.rtt,
-    lastChecked: data.last_checked,
+    downlink: data.downlink as number | undefined,
+    rtt: data.rtt as number | undefined,
+    lastChecked: data.last_checked as string,
   }
 }

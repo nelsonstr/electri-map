@@ -2,20 +2,22 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef, useMemo } from "react"
+import { createPortal } from "react-dom"
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import * as L from "leaflet"
 import { useTranslations } from "next-intl"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus, Wifi, Droplets, Smartphone, AlertTriangle, Siren } from "lucide-react"
+import { AlertCircle, Zap, ZapOff, Locate, Search, Loader2, Plus, Minus, Maximize2, Minimize2, Wifi, Droplets, Smartphone, AlertTriangle, Siren } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input" 
+import { Slider } from "@/components/ui/slider" 
 import { useToast } from "@/components/ui/use-toast"
 import { Shield, ShieldCheck } from "lucide-react"
 import {
@@ -241,6 +243,7 @@ const formatDistance = (meters: number): string => {
 function LocationControl({ onLocationFoundCallback }: { onLocationFoundCallback?: (pos: [number, number]) => void }) {
   const map = useMap()
   const [locating, setLocating] = useState(false)
+  const { toast: toast } = useToast()
 
   const handleLocate = () => {
     setLocating(true)
@@ -265,7 +268,11 @@ function LocationControl({ onLocationFoundCallback }: { onLocationFoundCallback?
         setLocating(false)
         console.log("Location error:", e.message)
         // Alert the user that location couldn't be found
-        alert("Could not find your location. Please use the search or navigate manually.")
+        toast({
+          variant: "destructive",
+          title: "Location Error",
+          description: "Could not find your location. Please use the search or navigate manually.",
+        })
       }
 
       map.once("locationfound", onLocationFound)
@@ -280,7 +287,11 @@ function LocationControl({ onLocationFoundCallback }: { onLocationFoundCallback?
     } catch (error) {
       console.log("Geolocation exception:", error)
       setLocating(false)
-      alert("Location services are not available. Please use the search or navigate manually.")
+      toast({
+        variant: "destructive",
+        title: "Location Error",
+        description: "Location services are not available. Please use the search or navigate manually.",
+      })
     }
   }
 
@@ -309,7 +320,7 @@ function SearchControl() {
   const map = useMap()
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
-  const { toast } = useToast()
+  const { toast: toast } = useToast()
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -387,7 +398,7 @@ function SearchControl() {
 }
 
 // Quick Report Button
-function QuickReportControl() {
+function QuickReportControl({ existingReports }: { existingReports: Location[] }) {
   const map = useMap()
   const [open, setOpen] = useState(false)
   const [hasElectricity, setHasElectricity] = useState<boolean | null>(null)
@@ -395,10 +406,34 @@ function QuickReportControl() {
   const [comment, setComment] = useState("")
   const [loading, setLoading] = useState(false)
   const [currentPosition, setCurrentPosition] = useState<[number, number] | null>(null)
-  const { toast } = useToast()
+  const { toast: toast } = useToast()
+  const [nearbyReports, setNearbyReports] = useState<Location[]>([])
+  const [showNearbyList, setShowNearbyList] = useState(false)
   const supabase = createClient()
   const t = useTranslations("map.quickReport")
   const tForm = useTranslations("form")
+
+  // Check for nearby reports when dialog opens
+  useEffect(() => {
+    if (open && currentPosition && map) {
+      const nearby = (existingReports || []).filter(loc => {
+        try {
+          const dist = map.distance(
+            [loc.latitude, loc.longitude],
+            currentPosition
+          )
+          return dist < 100 // 100 meters
+        } catch (e) { return false }
+      })
+      
+      if (nearby.length > 0) {
+        setNearbyReports(nearby)
+        setShowNearbyList(true)
+      } else {
+        setShowNearbyList(false)
+      }
+    }
+  }, [open, currentPosition, existingReports, map])
 
   // Get current map center when dialog opens
   useEffect(() => {
@@ -433,8 +468,8 @@ function QuickReportControl() {
         description: "Thank you for contributing to the community status map!",
       })
 
-      // No page reload; realtime subscription will append new report
-      // debugger removed
+      // Notify the map to refresh locations immediately
+      window.dispatchEvent(new Event("location-submitted"))
 
       setOpen(false)
       setHasElectricity(null)
@@ -460,10 +495,46 @@ function QuickReportControl() {
             <Plus className="h-6 w-6" />
           </Button>
         </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("quickReport.title")}</DialogTitle>
-            <DialogDescription>{t("quickReport.description")}</DialogDescription>
+        <DialogContent aria-describedby="quick-report-description">
+          {showNearbyList ? (
+            <div className="space-y-4">
+              <div className="space-y-1.5 text-center sm:text-left">
+                <h2 className="text-lg font-semibold leading-none tracking-tight">Similar Reports Nearby</h2>
+                <p className="text-sm text-muted-foreground">We found {nearbyReports.length} existing reports near you.</p>
+              </div>
+              <div className="max-h-[300px] overflow-y-auto space-y-3 py-2">
+                {nearbyReports.map(report => (
+                  <div key={report.id} className="border p-3 rounded-md bg-muted/40">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="font-medium capitalize flex items-center gap-2">
+                         {report.service_type === 'electrical' && <Zap className="h-3 w-3" />}
+                         {report.service_type || 'Electrical'}
+                      </span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDistanceToNow(new Date(report.created_at))} ago</span>
+                    </div>
+                    {report.comment && <p className="text-sm mb-2 text-foreground/90">{report.comment}</p>}
+                    <div className="flex items-center gap-2 text-xs">
+                       <span className={report.has_electricity ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                         {report.has_electricity ? "Working" : "Issue Reported"}
+                       </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col gap-2 pt-2">
+                <Button onClick={() => setOpen(false)} variant="outline" className="w-full">
+                  My report is already listed
+                </Button>
+                <Button onClick={() => setShowNearbyList(false)} className="w-full">
+                  Report New Issue
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <DialogHeader>
+            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogDescription id="quick-report-description">{t("description")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -543,7 +614,7 @@ function QuickReportControl() {
 
             <div>
               <Textarea
-                placeholder={t("quickReport.placeholder")}
+                placeholder={t("placeholder")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="resize-none"
@@ -571,7 +642,9 @@ function QuickReportControl() {
                 "Submit Report"
               )}
             </Button>
-          </div>
+            </div>
+          </>
+        )}
         </DialogContent>
       </Dialog>
     </div>
@@ -579,11 +652,32 @@ function QuickReportControl() {
 }
 
 // Component to recenter map when position changes
-function RecenterMap({ position }: { position: [number, number] | null }) {
+function RecenterMap({ position, zoom }: { position: [number, number] | null, zoom: number }) {
   const map = useMap()
   useEffect(() => {
-    if (position) map.setView(position, 10)
-  }, [position, map])
+    if (position) map.setView(position, zoom)
+  }, [position, map]) // Only recenter on position change, zoom is handled separately
+  return null
+}
+
+// Component to sync zoom state with map
+function ZoomHandler({ zoom, onZoomChange }: { zoom: number, onZoomChange: (zoom: number) => void }) {
+  const map = useMap()
+  
+  useEffect(() => {
+    map.setZoom(zoom)
+  }, [zoom, map])
+
+  useEffect(() => {
+    const handleZoomEnd = () => {
+      onZoomChange(map.getZoom())
+    }
+    map.on('zoomend', handleZoomEnd)
+    return () => {
+      map.off('zoomend', handleZoomEnd)
+    }
+  }, [map, onZoomChange])
+
   return null
 }
 
@@ -649,10 +743,20 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
   const [alertSheetOpen, setAlertSheetOpen] = useState(false)
   const [showSafeZones, setShowSafeZones] = useState(true)
   const [showCommunityAlerts, setShowCommunityAlerts] = useState(true)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("map-zoom")
+      return saved ? Math.floor(Number.parseFloat(saved)) : 10
+    }
+    return 10
+  })
   const router = useRouter()
   const supabase = createClient()
   const t = useTranslations("map")
   const tRoot = useTranslations()
+  const { toast: toast } = useToast()
 
   // Fetch SOS alerts
   const fetchSOSAlerts = useCallback(async () => {
@@ -700,29 +804,48 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
     }
   }, [position, alertFilters])
 
-  useEffect(() => {
-    // Get user location once on mount
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { latitude, longitude } }) => {
-          setPosition([latitude, longitude])
-        },
-        (error) => {
-          console.error("Geolocation error:", error.message)
-           // Fallback to default location
-           setPosition([37.7749, -122.4194])
-        },
-        { timeout: 10000, enableHighAccuracy: false }
-      )
-    } else {
-       console.log("Geolocation not supported, using default location")
-        // Default to a central location (e.g., San Francisco for demo purposes)
-       setPosition([37.7749, -122.4194]) 
-    }
+    // Auto-detect location on mount
+    useEffect(() => {
+      if (!position) {
+      if (typeof window !== 'undefined' && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const { latitude, longitude } = pos.coords;
+                setPosition([latitude, longitude]);
+                toast({ 
+                  title: t("locationDetected"), 
+                  description: t("mapCentered"),
+                  duration: 3000
+                })
+            },
+            (err) => {
+                console.warn("Auto-location failed:", err);
+                // Fallback to Lisbon (User's context) instead of SF
+                setPosition([38.736946, -9.142685]); 
+                
+                let errorMsg = "Could not access location.";
+                if (err.code === 1) errorMsg = "Location permission denied.";
+                if (err.code === 3) errorMsg = "Location request timed out.";
+                
+                toast({
+                  variant: "destructive",
+                  title: t("locationError"),
+                  description: `${errorMsg} Defaulting to Lisbon.`,
+                })
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+      } else {
+        // Fallback to Lisbon if no geolocation support
+        setPosition([38.736946, -9.142685]) 
+      }
+      }
+    }, [])
 
     // Fetch locations from last 24 hours from Supabase
-    const threshold = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    const fetchLocations = async () => {
+    // Fetch locations function - extracted so it can be called on demand
+    const fetchLocations = useCallback(async () => {
+      const threshold = new Date(Date.now() - 24 * 60 * 60 * 1000)
       try {
         const { data, error } = await supabase
           .from("locations")
@@ -739,12 +862,16 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
         setError("Failed to load locations. Please try again later.")
         setLoading(false)
       }
-    }
+    }, [supabase])
 
+    // Initial data fetch and realtime subscriptions
+    useEffect(() => {
     fetchLocations()
     fetchSOSAlerts()
     fetchSafeZones()
     fetchCommunityAlerts()
+
+    const threshold = new Date(Date.now() - 24 * 60 * 60 * 1000)
 
     // Set up real-time subscription for locations
     const channel = supabase
@@ -786,19 +913,97 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
       )
       .subscribe()
 
+    // Set up real-time subscription for Community Alerts
+    const alertsChannel = supabase
+      .channel("community-alerts-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "community_alerts",
+        },
+        () => {
+          // Refetch alerts when changes occur
+          fetchCommunityAlerts()
+        }
+      )
+      .subscribe()
+
+    // Listen for custom event dispatched after form submission (fallback for realtime)
+    const handleLocationSubmitted = () => {
+      fetchLocations()
+    }
+    window.addEventListener("location-submitted", handleLocationSubmitted)
+
     return () => {
       supabase.removeChannel(channel)
       supabase.removeChannel(sosChannel)
+      supabase.removeChannel(alertsChannel)
+      window.removeEventListener("location-submitted", handleLocationSubmitted)
     }
-  }, [supabase, fetchSOSAlerts, fetchSafeZones])
+  }, [supabase, fetchLocations, fetchSOSAlerts, fetchSafeZones, fetchCommunityAlerts])
 
-    // If error (e.g. location denied), we still want to show the map, just with a default view and maybe a toast 
-    if (error && !position) {
-         // Default location if we really can't get one and haven't set a fallback yet
-         setPosition([37.7749, -122.4194])
-         // We can clear the error so the map renders
-         setError(null)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("map-zoom", Math.floor(zoom).toString())
     }
+  }, [zoom])
+
+  const toggleFullScreen = () => {
+    if (!mapContainerRef.current) return
+
+    if (!document.fullscreenElement) {
+      mapContainerRef.current.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`)
+        // Fallback to internal state if API fails
+        setIsFullScreen(true)
+      })
+    } else {
+      document.exitFullscreen()
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement)
+    }
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+  }, [])
+
+  // Group locations by coordinates to handle overlapping markers
+  const groupedLocations = useMemo(() => {
+    const groups: Record<string, Location[]> = {}
+    locations.forEach((loc) => {
+      // Group by coordinates with 4 decimal precision (~11m) to catch "same location" reports
+      const key = `${loc.latitude.toFixed(4)},${loc.longitude.toFixed(4)}`
+      if (!groups[key]) groups[key] = []
+      groups[key].push(loc)
+    })
+    return Object.values(groups)
+  }, [locations])
+
+  // Calculate nearby issues count based on current radius
+  const nearbyIssuesCount = useMemo(() => {
+    if (!position) return 0
+    let count = 0
+    
+    // Count user reports with issues within radius
+    locations.forEach(loc => {
+      if (!loc.has_electricity) {
+        const dist = L.latLng(loc.latitude, loc.longitude).distanceTo(L.latLng(position[0], position[1]))
+        if (dist <= alertFilters.maxRadius) {
+          count++
+        }
+      }
+    })
+
+    // Add community alerts count (already filtered by radius in fetch)
+    count += communityAlerts.length
+
+    return count
+  }, [locations, communityAlerts, position, alertFilters.maxRadius])
 
   return (
     <>
@@ -856,8 +1061,15 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
       {/* Show loader until position is available */}
       {!position && <div>Loading map...</div>}
       {position && (
-        <MapContainer center={position} zoom={10} style={{ height: "100%", width: "100%" }}>
-          <RecenterMap position={position} />
+        <div ref={mapContainerRef} className={`relative w-full h-full ${isFullScreen ? 'bg-background' : ''}`}>
+        <MapContainer 
+          center={position} 
+          zoom={zoom} 
+          style={{ height: "100%", width: "100%" }}
+          zoomControl={false} // Disable default zoom controls
+        >
+          <RecenterMap position={position} zoom={zoom} />
+          <ZoomHandler zoom={zoom} onZoomChange={setZoom} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -865,56 +1077,163 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
 
           <LocationControl onLocationFoundCallback={(pos) => setPosition(pos)} />
           <SearchControl />
-          <QuickReportControl />
+          <QuickReportControl existingReports={locations} />
           <BoundaryLayer />
           
-          {/* SOS Button floating on map */}
-          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, margin: "10px" }}>
-            <SOSButton onSOSClick={() => setSosDialogOpen(true)} />
+          {/* Viewport Controls: Fullscreen and Zoom */}
+          <div className="leaflet-top leaflet-right" style={{ zIndex: 1000, margin: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={toggleFullScreen}
+              title={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              aria-label={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            >
+              {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+
+            <div className="flex flex-col bg-background/80 backdrop-blur-sm border rounded-md shadow-sm overflow-hidden">
+               <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom(prev => Math.min(18, prev + 1))}
+                disabled={zoom >= 18}
+                title="Zoom In"
+                aria-label="Zoom In"
+                className="rounded-none border-b"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center justify-center py-1 px-2 min-w-[40px]" role="status" aria-live="polite">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase mr-1">Zoom</span>
+                <span className="text-sm font-mono font-bold">{Math.floor(zoom)}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom(prev => Math.max(3, prev - 1))}
+                disabled={zoom <= 3}
+                title="Zoom Out"
+                aria-label="Zoom Out"
+                className="rounded-none border-t"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
-          {/* Safe Zone Toggle Button */}
-          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, marginTop: "80px", marginLeft: "10px" }}>
+          {/* Top-Left Controls: SOS and Toggles */}
+          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, margin: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <SOSButton onSOSClick={() => setSosDialogOpen(true)} />
+            
             <Button
               variant={showSafeZones ? "default" : "outline"}
               size="sm"
               onClick={() => setShowSafeZones(!showSafeZones)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 shadow-md bg-background/80 backdrop-blur-sm transition-all"
             >
               <ShieldCheck className="h-4 w-4" />
               {showSafeZones ? tRoot("safeZone.hide") : tRoot("safeZone.show")}
             </Button>
-          </div>
 
-          {/* Community Alert Toggle Button */}
-          <div className="leaflet-top leaflet-left" style={{ zIndex: 1000, marginTop: showSafeZones ? "120px" : "80px", marginLeft: "10px" }}>
             <Button
               variant={showCommunityAlerts ? "default" : "outline"}
               size="sm"
               onClick={() => setShowCommunityAlerts(!showCommunityAlerts)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 shadow-md bg-background/80 backdrop-blur-sm transition-all"
             >
               <AlertCircle className="h-4 w-4" />
               {showCommunityAlerts ? tRoot("communityAlert.hide") : tRoot("communityAlert.show")}
               {communityAlerts.length > 0 && (
-                <Badge variant="secondary" className="ml-1">
+                <Badge variant="secondary" className="ml-1 bg-secondary/50">
                   {communityAlerts.filter(a => a.severity === 'critical').length > 0 && (
-                    <span className="mr-1 text-red-500">●</span>
+                    <span className="mr-1 text-red-500 animate-pulse">●</span>
                   )}
                   {communityAlerts.length}
                 </Badge>
               )}
             </Button>
+
+            {/* Radius Control Panel */}
+            <div className="bg-background/90 backdrop-blur-sm p-3 rounded-md shadow-md w-[200px] border transition-all pointer-events-auto">
+               <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold">Search Radius</span>
+                  <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
+                    {alertFilters.maxRadius >= 1000
+                      ? `${(alertFilters.maxRadius / 1000).toFixed(1)} km`
+                      : `${alertFilters.maxRadius} m`}
+                  </span>
+               </div>
+               <input
+                 type="range"
+                 min={500}
+                 max={10000}
+                 step={500}
+                 value={alertFilters.maxRadius}
+                 onChange={(e) => setAlertFilters(prev => ({ ...prev, maxRadius: Number(e.target.value) }))}
+                 className="w-full mb-2"
+               />
+               <div className="text-[10px] text-muted-foreground flex justify-between items-center pt-1 border-t">
+                  <span className="font-medium">Issues nearby:</span>
+                  <Badge variant={nearbyIssuesCount > 0 ? "destructive" : "secondary"} className="h-5 px-1.5 ml-auto">
+                    {nearbyIssuesCount}
+                  </Badge>
+               </div>
+            </div>
           </div>
 
-          {locations.map((location) => (
+          {groupedLocations.map((group, index) => {
+            // Determine representative status for the group
+            const anyIssue = group.some(l => !l.has_electricity)
+            const types = new Set(group.map(l => l.service_type || 'electrical'))
+            const isMultiType = types.size > 1
+            const effectiveType = isMultiType ? 'multi-issue' : (group[0].service_type || 'electrical')
+            const effectiveStatus = !anyIssue // true if all working, false if any broken
+            const location = group[0] // Use first location for position
+
+            return (
             <Marker
-              key={location.id}
+              key={`group-${index}-${location.id}`}
               position={[location.latitude, location.longitude]}
-              icon={DefaultIcon(location.has_electricity, location.service_type)}
+              icon={DefaultIcon(effectiveStatus, effectiveType)}
             >
               <Popup>
-                <div className="p-1">
+                {group.length > 1 ? (
+                  <div className="min-w-[250px] max-h-[300px] overflow-y-auto">
+                    <div className="sticky top-0 bg-background pb-2 mb-2 border-b z-10 flex flex-col gap-1">
+                       <h3 className="font-semibold text-sm">
+                         {group.length} Reports at this location
+                       </h3>
+                       <p className="text-xs text-muted-foreground">{location.city || 'Unknown City'}, {location.country || 'Unknown Country'}</p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                    {group.map((item) => (
+                      <div key={item.id} className="pb-3 border-b last:border-0 last:pb-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          {item.has_electricity ? (
+                            <Badge className="bg-green-500 h-5 text-[10px]">Working</Badge>
+                          ) : (
+                            <Badge variant="destructive" className="h-5 text-[10px]">Issue</Badge>
+                          )}
+                          {item.service_type && (
+                            <Badge variant="outline" className="ml-1 capitalize h-5 text-[10px]">
+                              {item.service_type}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {item.comment && <p className="text-sm mb-2 leading-snug">{item.comment}</p>}
+
+                        <div className="text-xs text-muted-foreground">
+                          Reported {formatDistanceToNow(new Date(item.created_at))} ago
+                        </div>
+                      </div>
+                    ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-1">
                   <div className="flex items-center gap-2 mb-2">
                     {location.has_electricity ? (
                       <Badge className="bg-green-500">
@@ -942,9 +1261,10 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
                     Reported {formatDistanceToNow(new Date(location.created_at))} ago
                   </p>
                 </div>
+                )}
               </Popup>
             </Marker>
-          ))}
+          )})}
 
           {/* SOS Alert Markers */}
           {sosAlerts.map((alert) => (
@@ -1043,7 +1363,7 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
           {showCommunityAlerts && communityAlerts.map((alert) => (
             <React.Fragment key={alert.id}>
               <Marker
-                position={[alert.latitude, alert.longitude]}
+                position={[alert.location.latitude, alert.location.longitude]}
                 icon={CommunityAlertIcon(alert.severity)}
                 eventHandlers={{
                   click: () => {
@@ -1087,7 +1407,7 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
               </Marker>
               {/* Alert Radius Circle */}
               <Circle
-                center={[alert.latitude, alert.longitude]}
+                center={[alert.location.latitude, alert.location.longitude]}
                 radius={alert.radius}
                 pathOptions={{
                   color: alert.severity === 'critical' ? '#ef4444' : 
@@ -1101,7 +1421,21 @@ export default function NeighborPulseMap({ className }: NeighborPulseMapProps) {
               />
             </React.Fragment>
           ))}
+
+          {/* User Radius Circle */}
+          <Circle
+            center={position}
+            radius={alertFilters.maxRadius}
+            pathOptions={{
+              color: '#3b82f6',
+              fillColor: '#3b82f6',
+              fillOpacity: 0.03,
+              weight: 1,
+              dashArray: '4, 8',
+            }}
+          />
         </MapContainer>
+        </div>
       )}
       
       {/* SOS Alert Dialog */}

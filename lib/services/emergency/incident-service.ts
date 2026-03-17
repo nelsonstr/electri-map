@@ -9,7 +9,9 @@ import type {
   UpdateIncidentInput,
   IncidentFilters,
   IncidentStatus,
-  IncidentSeverity
+  IncidentSeverity,
+  IncidentType,
+  IncidentPriority
 } from '@/types/emergency'
 
 // ============================================================================
@@ -26,8 +28,8 @@ export async function createIncident(input: CreateIncidentInput): Promise<Emerge
       p_incident_type: input.incidentType,
       p_severity: input.severity,
       p_priority: input.priority,
-      p_location_lat: input.location.latitude,
-      p_location_lng: input.location.longitude,
+      p_location_lat: input.location.coordinates.latitude,
+      p_location_lng: input.location.coordinates.longitude,
       p_location_address: input.location.address,
       p_location_city: input.location.city,
       p_location_municipality: input.location.municipality,
@@ -54,7 +56,7 @@ export async function getIncidentById(id: string): Promise<EmergencyIncident | n
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('*')
     .eq('id', id)
     .single()
@@ -77,7 +79,7 @@ export async function getIncidentByNumber(incidentNumber: string): Promise<Emerg
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('*')
     .eq('incident_number', incidentNumber)
     .single()
@@ -100,7 +102,7 @@ export async function listIncidents(filters?: IncidentFilters): Promise<Emergenc
   const supabase = createClient()
   
   let query = supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('*')
     .order('detected_at', { ascending: false })
   
@@ -129,12 +131,10 @@ export async function listIncidents(filters?: IncidentFilters): Promise<Emergenc
     query = query.not('status', 'in', `('closed', 'resolved')`)
   }
   
-  if (filters?.limit) {
-    query = query.limit(filters.limit)
-  }
-  
-  if (filters?.offset) {
-    query = query.offset(filters.offset)
+  if (filters?.offset !== undefined || filters?.limit !== undefined) {
+    const from = filters?.offset || 0
+    const to = filters?.limit ? from + filters.limit - 1 : from + 99
+    query = query.range(from, to)
   }
   
   // Date range filter
@@ -186,8 +186,8 @@ export async function updateIncident(input: UpdateIncidentInput): Promise<Emerge
   if (input.severity !== undefined) updateData.severity = input.severity
   if (input.status !== undefined) updateData.status = input.status
   if (input.priority !== undefined) updateData.priority = input.priority
-  if (input.location !== undefined) {
-    updateData.location_point = `POINT(${input.location.longitude} ${input.location.latitude})`
+  if (input.location !== undefined && input.location.coordinates) {
+    updateData.location_point = `POINT(${input.location.coordinates.longitude} ${input.location.coordinates.latitude})`
     if (input.location.address !== undefined) updateData.location_address = input.location.address
     if (input.location.city !== undefined) updateData.location_city = input.location.city
   }
@@ -213,7 +213,7 @@ export async function updateIncident(input: UpdateIncidentInput): Promise<Emerge
   // Add to status history
   if (input.status !== undefined) {
     const { data: currentData } = await supabase
-      .from('emergency.incidents')
+      .from('incidents')
       .select('status_history')
       .eq('id', input.id)
       .single()
@@ -227,7 +227,7 @@ export async function updateIncident(input: UpdateIncidentInput): Promise<Emerge
   }
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .update(updateData)
     .eq('id', input.id)
     .select()
@@ -286,7 +286,7 @@ export async function addTimelineEvent(
   
   // Get current timeline
   const { data: currentData } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('timeline')
     .eq('id', incidentId)
     .single()
@@ -300,7 +300,7 @@ export async function addTimelineEvent(
   })
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .update({ 
       timeline,
       updated_at: new Date().toISOString()
@@ -327,7 +327,7 @@ export async function assignIncidentCommander(
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .update({
       incident_commander_id: commanderId,
       updated_at: new Date().toISOString()
@@ -355,7 +355,7 @@ export async function addAgencyToIncident(
   
   // Get current agencies
   const { data: currentData } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('agencies_involved')
     .eq('id', incidentId)
     .single()
@@ -368,7 +368,7 @@ export async function addAgencyToIncident(
   }
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .update({
       agencies_involved: agencies,
       updated_at: new Date().toISOString()
@@ -396,7 +396,7 @@ export async function getActiveIncidentsCount(): Promise<{
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('severity, incident_type')
     .not('status', 'in', `('closed', 'resolved')`)
   
@@ -431,7 +431,7 @@ export async function searchIncidents(query: string): Promise<EmergencyIncident[
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('emergency.incidents')
+    .from('incidents')
     .select('*')
     .or(`title.ilike.%${query}%,description.ilike.%${query}%,incident_number.ilike.%${query}%`)
     .order('detected_at', { ascending: false })
@@ -479,13 +479,17 @@ export async function getIncidentsNearLocation(
 function mapIncidentRow(row: Record<string, unknown>): EmergencyIncident {
   const locationPoint = row.location_point as string | null
   
-  let location = null
+  let coords = {
+    latitude: (row.latitude as number) || 0,
+    longitude: (row.longitude as number) || 0
+  }
+
   if (locationPoint && locationPoint.startsWith('POINT(')) {
-    const coords = locationPoint.match(/POINT\(([-\d.]+) ([-\d.]+)\)/)
-    if (coords) {
-      location = {
-        latitude: parseFloat(coords[2]),
-        longitude: parseFloat(coords[1])
+    const matches = locationPoint.match(/POINT\(([-\d.]+) ([-\d.]+)\)/)
+    if (matches) {
+      coords = {
+        latitude: parseFloat(matches[2]),
+        longitude: parseFloat(matches[1])
       }
     }
   }
@@ -494,39 +498,31 @@ function mapIncidentRow(row: Record<string, unknown>): EmergencyIncident {
     id: row.id as string,
     incidentNumber: row.incident_number as string,
     title: row.title as string,
-    description: row.description as string | null,
-    incidentType: row.incident_type as string,
-    severity: row.severity as IncidentSeverity,
-    status: row.status as IncidentStatus,
-    priority: row.priority as string,
-    location: location,
-    locationAddress: row.location_address as string | null,
-    locationCity: row.location_city as string | null,
-    locationMunicipality: row.location_municipality as string | null,
-    locationDistrict: row.location_district as string | null,
-    detectedAt: new Date(row.detected_at as string),
-    reportedAt: row.reported_at ? new Date(row.reported_at as string) : null,
-    respondedAt: row.responded_at ? new Date(row.responded_at as string) : null,
-    containedAt: row.contained_at ? new Date(row.contained_at as string) : null,
-    resolvedAt: row.resolved_at ? new Date(row.resolved_at as string) : null,
-    closedAt: row.closed_at ? new Date(row.closed_at as string) : null,
-    reportingUserId: row.reporting_user_id as string | null,
-    incidentCommanderId: row.incident_commander_id as string | null,
-    assignedUnitId: row.assigned_unit_id as string | null,
+    description: row.description as string || '',
+    incidentType: (row.incident_type as IncidentType) || 'other',
+    severity: (row.severity as IncidentSeverity) || 'moderate',
+    status: (row.status as IncidentStatus) || 'detected',
+    priority: (row.priority as IncidentPriority) || 3,
+    location: {
+      coordinates: coords,
+      city: (row.location_city as string) || undefined,
+      address: (row.location_address as string) || undefined,
+      municipality: (row.location_municipality as string) || undefined,
+      district: (row.location_district as string) || undefined,
+      country: 'Portugal'
+    },
+    detectedAt: row.detected_at ? new Date(row.detected_at as string) : new Date(),
+    reportedAt: row.reported_at ? new Date(row.reported_at as string) : undefined,
+    closedAt: row.closed_at ? new Date(row.closed_at as string) : undefined,
+    reportingUserId: (row.reporting_user_id as string) || '',
+    reportingUserName: (row.reporting_user_name as string) || 'Anonymous',
     agenciesInvolved: (row.agencies_involved as string[]) || [],
     resourcesAllocated: (row.resources_allocated as number) || 0,
     resourcesRequired: (row.resources_required as number) || 0,
-    affectedPopulation: row.affected_population as number | null,
-    estimatedDamage: row.estimated_damage as number | null,
-    weatherConditions: row.weather_conditions as Record<string, unknown> | null,
-    timeline: (row.timeline as Array<Record<string, unknown>>) || [],
-    statusHistory: (row.status_history as Array<Record<string, unknown>>) || [],
-    source: row.source as string | null,
-    externalReferenceId: row.external_reference_id as string | null,
-    notes: row.notes as string | null,
-    createdBy: row.created_by as string | null,
-    createdAt: new Date(row.created_at as string),
-    updatedAt: new Date(row.updated_at as string)
+    tags: (row.tags as string[]) || [],
+    createdAt: row.created_at ? new Date(row.created_at as string) : new Date(),
+    updatedAt: row.updated_at ? new Date(row.updated_at as string) : new Date(),
+    lastUpdatedBy: (row.last_updated_by as string) || ''
   }
 }
 
@@ -545,7 +541,7 @@ export function subscribeToIncidents(
       'postgres_changes',
       {
         event: '*',
-        schema: 'emergency',
+        schema: 'public',
         table: 'incidents'
       },
       (payload) => {

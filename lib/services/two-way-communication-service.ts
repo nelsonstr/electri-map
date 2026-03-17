@@ -397,7 +397,7 @@ export async function createConversation(
   // Add initial message if provided
   if (input.initialMessage) {
     await createMessage({
-      conversationId: conversation.id,
+      conversationId: conversation.id as string,
       content: input.initialMessage,
       senderId: input.userId,
       senderType: 'user',
@@ -753,7 +753,7 @@ export async function getUserUnreadCount(userId: string): Promise<number> {
     .eq('user_id', userId)
     .in('status', ['active', 'escalated'])
 
-  return (conversations || []).reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
+  return (conversations || []).reduce((sum, conv) => sum + ((conv.unread_count as number) || 0), 0)
 }
 
 /**
@@ -805,11 +805,11 @@ export async function getActiveTypers(
   }
 
   return (data || []).map(item => ({
-    conversationId: item.conversation_id,
-    userId: item.user_id,
-    participantType: item.participant_type,
-    isTyping: item.is_typing,
-    updatedAt: item.updated_at,
+    conversationId: item.conversation_id as string,
+    userId: item.user_id as string,
+    participantType: item.participant_type as ParticipantType,
+    isTyping: item.is_typing as boolean,
+    updatedAt: item.updated_at as string,
   }))
 }
 
@@ -905,15 +905,15 @@ export async function addConversationParticipant(
   }
 
   return {
-    id: data.id,
-    conversationId: data.conversation_id,
-    userId: data.user_id,
-    participantType: data.participant_type,
-    name: data.name || undefined,
-    avatarUrl: data.avatar_url || undefined,
-    isActive: data.is_active,
-    joinedAt: data.joined_at,
-    leftAt: data.left_at || undefined,
+    id: data.id as string,
+    conversationId: data.conversation_id as string,
+    userId: data.user_id as string,
+    participantType: data.participant_type as ParticipantType,
+    name: (data.name as string) || undefined,
+    avatarUrl: (data.avatar_url as string) || undefined,
+    isActive: data.is_active as boolean,
+    joinedAt: data.joined_at as string,
+    leftAt: (data.left_at as string) || undefined,
   }
 }
 
@@ -1010,27 +1010,27 @@ export async function searchConversations(
  */
 function mapConversationFromDB(data: Record<string, unknown>): Conversation {
   return {
-    id: data.id,
+    id: data.id as string,
     externalId: data.external_id as string | undefined,
-    userId: data.user_id,
+    userId: data.user_id as string,
     assignedOperatorId: data.assigned_operator_id as string | undefined,
-    subject: data.subject,
-    category: data.category,
+    subject: data.subject as string,
+    category: data.category as Conversation['category'],
     subcategory: data.subcategory as string | undefined,
     status: data.status as ConversationStatus,
     priority: data.priority as MessagePriority,
     alertId: data.alert_id as string | undefined,
     incidentId: data.incident_id as string | undefined,
     location: data.location as { latitude: number; longitude: number; address?: string } | undefined,
-    messageCount: data.message_count || 0,
-    unreadCount: data.unread_count || 0,
+    messageCount: (data.message_count as number) || 0,
+    unreadCount: (data.unread_count as number) || 0,
     resolvedAt: data.resolved_at as string | undefined,
     resolution: data.resolution as string | undefined,
-    startedAt: data.started_at,
-    lastMessageAt: data.last_message_at,
+    startedAt: data.started_at as string,
+    lastMessageAt: data.last_message_at as string,
     closedAt: data.closed_at as string | undefined,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdAt: data.created_at as string,
+    updatedAt: data.updated_at as string,
   }
 }
 
@@ -1039,9 +1039,9 @@ function mapConversationFromDB(data: Record<string, unknown>): Conversation {
  */
 function mapMessageFromDB(data: Record<string, unknown>): Message {
   return {
-    id: data.id,
-    conversationId: data.conversation_id,
-    content: data.content,
+    id: data.id as string,
+    conversationId: data.conversation_id as string,
+    content: data.content as string,
     type: data.type as MessageType,
     mediaUrl: data.media_url as string | undefined,
     mediaThumbnail: data.media_thumbnail as string | undefined,
@@ -1049,7 +1049,7 @@ function mapMessageFromDB(data: Record<string, unknown>): Message {
     mediaMimeType: data.media_mime_type as string | undefined,
     priority: data.priority as MessagePriority,
     metadata: data.metadata as Record<string, unknown> | undefined,
-    senderId: data.sender_id,
+    senderId: data.sender_id as string,
     senderType: data.sender_type as ParticipantType,
     senderName: data.sender_name as string | undefined,
     status: data.status as MessageStatus,
@@ -1057,6 +1057,6 @@ function mapMessageFromDB(data: Record<string, unknown>): Message {
     deliveredAt: data.delivered_at as string | undefined,
     readAt: data.read_at as string | undefined,
     replyToId: data.reply_to_id as string | undefined,
-    createdAt: data.created_at,
+    createdAt: data.created_at as string,
   }
 }

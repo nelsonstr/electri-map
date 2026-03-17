@@ -30,7 +30,7 @@ export type IncidentType =
   | 'hazmat'                  // Hazardous materials
   | 'search_and_rescue'       // Missing person or rescue
   | 'transport_accident'      // Vehicle accident
-  | 'civil       // Public_disturbance' order incident
+  | 'civil_disturbance'       // Public order incident
   | 'infrastructure_failure'  // Utility or structural failure
   | 'other'                   // Other emergency type
 
@@ -91,6 +91,7 @@ export interface EmergencyIncident {
   
   // Timeline
   detectedAt: Date
+  reportedAt?: Date
   acknowledgedAt?: Date
   firstResponseAt?: Date
   containedAt?: Date
@@ -101,17 +102,18 @@ export interface EmergencyIncident {
   incidentCommanderId?: string
   incidentCommanderName?: string
   primaryResponderId?: string
+  assignedUnitId?: string
   reportingUserId: string
   reportingUserName: string
   
   // Related Information
-  affectedPeople?: number     // Number of people affected
+  affectedPopulation?: number     // Number of people affected
   injuries?: number
   fatalities?: number
   evacuated?: number         // Number evacuated
   
   // Damage Assessment
-  damageEstimate?: number    // Currency value
+  estimatedDamage?: number    // Currency value
   infrastructureAffected?: string[]
   
   // Resources
@@ -147,11 +149,14 @@ export interface CreateIncidentInput {
   description: string
   incidentType: IncidentType
   severity: IncidentSeverity
+  priority: IncidentPriority
   location: IncidentLocation
-  affectedPeople?: number
+  affectedPopulation?: number
   reportingUserId: string
   reportingUserName: string
   externalIncidentId?: string
+  source?: string
+  notes?: string
   tags?: string[]
 }
 
@@ -161,17 +166,22 @@ export interface UpdateIncidentInput {
   description?: string
   incidentType?: IncidentType
   severity?: IncidentSeverity
+  priority?: IncidentPriority
   status?: IncidentStatus
   location?: Partial<IncidentLocation>
-  affectedPeople?: number
+  affectedPopulation?: number
   injuries?: number
   fatalities?: number
   evacuated?: number
-  damageEstimate?: number
+  estimatedDamage?: number
   infrastructureAffected?: string[]
   incidentCommanderId?: string
   incidentCommanderName?: string
   primaryResponderId?: string
+  assignedUnitId?: string
+  agenciesInvolved?: string[]
+  resourcesRequired?: number
+  notes?: string
   tags?: string[]
   lastUpdatedBy: string
 }
@@ -188,6 +198,11 @@ export interface IncidentFilters {
   dateTo?: Date
   assignedTo?: string
   agenciesInvolved?: string[]
+  agencyId?: string
+  incidentCommanderId?: string
+  activeOnly?: boolean
+  limit?: number
+  offset?: number
   boundingBox?: {
     north: number
     south: number
