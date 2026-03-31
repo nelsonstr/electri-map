@@ -1,6 +1,7 @@
 import { EscalationDashboard, Escalation } from '@/components/escalation/escalation-dashboard';
 import { createClient } from '@/lib/supabase/server';
 import { resolveEscalation, dismissEscalation } from '@/app/backoffice/actions';
+import { getSLAMetricsForDashboard, getSLAComplianceSummary } from '@/lib/services/sla-metrics-service';
 
 async function getEscalations(): Promise<Escalation[]> {
   const supabase = createClient();
@@ -52,12 +53,14 @@ async function getEscalations(): Promise<Escalation[]> {
 
 export default async function EscalationPage() {
   const escalations = await getEscalations();
+  const slaMetrics = await getSLAMetricsForDashboard();
+  const complianceSummary = await getSLAComplianceSummary();
 
   return (
     <div className="space-y-6">
-      <EscalationDashboard 
+      <EscalationDashboard
         escalations={escalations}
-        slaMetrics={[]} // TODO: Fetch SLA metrics
+        slaMetrics={slaMetrics}
         onResolve={async (id) => {
           'use server';
           const type = escalations.find(e => e.id === id)?.entity_type || 'service_request';

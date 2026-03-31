@@ -1,0 +1,88 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+env:
+  NODE_ENV: production
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests before deploy
+        run: pnpm test
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Setup SSH for deployment
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Deploy to server
+        run: |
+          # Clone repository on server
+          # cd /path/to/deployment
+          # git fetch origin
+          # git reset --hard origin/main
+          # pnpm install --frozen-lockfile
+          # pnpm build
+          # pm2 restart all || npm start
+
+          echo "Deployment script would execute here"
+          echo "Configure SSH keys and deployment paths in your secrets"
+
+      - name: Verify deployment
+        run: |
+          # Health check endpoint
+          # curl -f https://your-domain.com/api/health || exit 1
+          echo "Deployment verification would execute here"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Deployment completed successfully!"
+          echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "Deployment failed!"
+          echo "Please check the logs and fix any issues."
+          exit 1

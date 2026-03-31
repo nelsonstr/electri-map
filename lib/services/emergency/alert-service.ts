@@ -167,19 +167,19 @@ export class AlertService {
     filters?: CommunityAlertFilters,
     sortOptions?: AlertSortOptions
   ): Promise<CommunityAlert[]> {
-    // DEBUG: Log environment check
-    // console.log('[DEBUG] getNearbyAlerts - Environment check: supabaseUrl=' + 
-    //   (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'MISSING') + ', supabaseAnonKey=' + 
-    //   (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'MISSING'))
-
-    // DEBUG: Log Supabase client status
-    // console.log('[DEBUG] getNearbyAlerts - Supabase client exists: ' + !!this.supabase)
+    // DEBUG: Log environment check (uncomment for development)
+    // if (process.env.NODE_ENV === 'development') {
+    //   console.log('[DEBUG] getNearbyAlerts - Environment check: supabaseUrl=' +
+    //     (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'MISSING'))
+    // }
 
     // Ensure radius is within bounds
     const boundedRadius = Math.max(MIN_ALERT_RADIUS, Math.min(MAX_ALERT_RADIUS, radius))
 
-    // DEBUG: Log input parameters
-    // console.log('[DEBUG] getNearbyAlerts - Inputs: lat=' + latitude + ', lng=' + longitude + ', radius=' + boundedRadius + ', hasFilters=' + !!filters)
+    // DEBUG: Log input parameters (uncomment for development)
+    // if (process.env.NODE_ENV === 'development') {
+    //   console.log('[DEBUG] getNearbyAlerts - Inputs: lat=' + latitude + ', lng=' + longitude + ', radius=' + boundedRadius + ', hasFilters=' + !!filters)
+    // }
 
     // Build query with PostGIS for spatial filtering
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,8 +190,10 @@ export class AlertService {
       .lte('created_at', new Date().toISOString())
       .gte('expires_at', new Date().toISOString())
 
-    // DEBUG: Log initial query state
-    // console.log('[DEBUG] getNearbyAlerts - Initial query built: ' + (query ? 'success' : 'NULL'))
+    // DEBUG: Log initial query state (uncomment for development)
+    // if (process.env.NODE_ENV === 'development') {
+    //   console.log('[DEBUG] getNearbyAlerts - Initial query built: ' + (query ? 'success' : 'NULL'))
+    // }
 
     // Apply severity filter if provided
     try {
@@ -200,12 +202,14 @@ export class AlertService {
       }
 
       // Apply alert type filter if provided
-      // DEBUG: Log before alert type filter
-      // console.log('[DEBUG] getNearbyAlerts - Before alertType filter: query exists=' + !!query)
+      // DEBUG: Log before alert type filter (uncomment for development)
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log('[DEBUG] getNearbyAlerts - Before alertType filter: query exists=' + !!query)
+      //   console.log('[DEBUG] getNearbyAlerts - Applying alertType filter: ' + JSON.stringify(filters.alertType))
+      //   console.log('[DEBUG] getNearbyAlerts - After alertType filter: query exists=' + !!query)
+      // }
       if (filters?.alertType && filters.alertType.length > 0) {
-        // console.log('[DEBUG] getNearbyAlerts - Applying alertType filter: ' + JSON.stringify(filters.alertType))
         query = query.in('alert_type', filters.alertType)
-        // console.log('[DEBUG] getNearbyAlerts - After alertType filter: query exists=' + !!query)
       }
 
       // Apply read status filter if provided
@@ -221,13 +225,18 @@ export class AlertService {
         query = query.lte('created_at', filters.dateTo.toISOString())
       }
     } catch (filterError) {
-      // console.log('[DEBUG] getNearbyAlerts - Filter error: ' + (filterError as Error).message)
+      // DEBUG: Log filter error (uncomment for development)
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log('[DEBUG] getNearbyAlerts - Filter error: ' + (filterError as Error).message)
+      // }
       console.error('Filter application error:', filterError)
       throw new Error('Failed to apply filters: ' + (filterError as Error).message)
     }
 
-    // DEBUG: Log query before execution
-    // console.log('[DEBUG] getNearbyAlerts - Before query execution')
+    // DEBUG: Log query before execution (uncomment for development)
+    // if (process.env.NODE_ENV === 'development') {
+    //   console.log('[DEBUG] getNearbyAlerts - Before query execution')
+    // }
 
     // Declare data outside try block so it's accessible later
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -237,8 +246,10 @@ export class AlertService {
       const { data: queryData, error } = await query
       data = queryData
 
-      // DEBUG: Log query result
-      // console.log('[DEBUG] getNearbyAlerts - Query result: error=' + (error ? error.message : 'null') + ', data.length=' + (data ? data.length : 0))
+      // DEBUG: Log query result (uncomment for development)
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log('[DEBUG] getNearbyAlerts - Query result: error=' + (error ? error.message : 'null') + ', data.length=' + (data ? data.length : 0))
+      // }
 
       if (error) {
         console.error('Error fetching nearby alerts (full error):', {
@@ -250,7 +261,10 @@ export class AlertService {
         throw new Error(`Failed to fetch nearby alerts: ${error.message}`)
       }
     } catch (queryError) {
-      // console.log('[DEBUG] getNearbyAlerts - Query execution error: ' + (queryError as Error).message)
+      // DEBUG: Log query execution error (uncomment for development)
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log('[DEBUG] getNearbyAlerts - Query execution error: ' + (queryError as Error).message)
+      // }
       throw new Error(`Failed to fetch nearby alerts: ${(queryError as Error).message}`)
     }
 

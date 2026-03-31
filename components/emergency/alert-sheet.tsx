@@ -298,6 +298,11 @@ export function AlertSheet({
         <p className="text-xs text-muted-foreground text-center mt-4">
           {t('dataMayBeInaccurate')}
         </p>
+
+        {/* Accessibility Note */}
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          {t('dataMayBeInaccurate')}
+        </p>
       </SheetContent>
     </Sheet>
   )

@@ -9,12 +9,12 @@ export type SOSStatus = 'active' | 'acknowledged' | 'resolved' | 'cancelled' | '
 
 export type SOSPriority = 'critical' | 'high' | 'medium' | 'low'
 
-export type VitalSignType = 
-  | 'heart_rate' 
-  | 'blood_pressure' 
-  | 'oxygen_saturation' 
-  | 'temperature' 
-  | 'respiratory_rate' 
+export type VitalSignType =
+  | 'heart_rate'
+  | 'blood_pressure'
+  | 'oxygen_saturation'
+  | 'temperature'
+  | 'respiratory_rate'
   | 'blood_glucose'
   | 'heart_rhythm'
 
@@ -38,11 +38,11 @@ export interface VitalSignsSOS {
   alertId?: string
   status: SOSStatus
   priority: SOSPriority
-  
+
   // Triggering Vitals
   triggerReadings: VitalSignsReading[]
   primaryTrigger: VitalSignType
-  
+
   // Location
   location?: {
     latitude: number
@@ -50,16 +50,16 @@ export interface VitalSignsSOS {
     accuracy?: number
     address?: string
   }
-  
+
   // Response
   assignedTo?: string
   responseNotes?: string
   resolvedAt?: string
-  
+
   // Escalation
   escalationLevel: number
   escalatedAt?: string
-  
+
   // Notifications
   notificationsSent: Array<{
     type: string
@@ -67,7 +67,7 @@ export interface VitalSignsSOS {
     sentAt: string
     status: 'sent' | 'delivered' | 'failed'
   }>
-  
+
   // Timestamps
   createdAt: string
   updatedAt: string
@@ -97,56 +97,147 @@ export interface SOSFilters {
 }
 
 // ============================================================================
-// Vital Sign Thresholds
+// Medical Alert Templates
 // ============================================================================
 
+export const MEDICAL_ALERT_TEMPLATES: Record<SOSPriority, MedicalAlertTemplate> = {
+  critical: {
+    title: 'CRITICAL MEDICAL EMERGENCY',
+    message: 'A critical medical emergency has been detected. Help is on the way.',
+    severity: 'critical',
+    instructions: 'Call emergency services immediately and stay on the line.',
+  },
+  high: {
+    title: 'URGENT MEDICAL ALERT',
+    message: 'An urgent medical situation has been detected. Assistance has been notified.',
+    severity: 'high',
+    instructions: 'Monitor the situation and be prepared to assist.',
+  },
+  medium: {
+    title: 'MEDICAL ALERT',
+    message: 'A medical alert has been detected. Assistance has been dispatched.',
+    severity: 'medium',
+    instructions: 'Follow the provided instructions and wait for assistance.',
+  },
+  low: {
+    title: 'HEALTH MONITORING ALERT',
+    message: 'A health monitoring alert has been recorded. No immediate action required.',
+    severity: 'low',
+    instructions: 'Continue monitoring and update if the situation changes.',
+  },
+}
+
+// ============================================================================
+// Real-Time Configuration
+// ============================================================================
+
+export interface VitalSignsWebSocketConfig {
+  channelId?: string
+  autoAcknowledgeTime?: number // seconds before auto-ack
+  autoResolveTime?: number // seconds before auto-resolve
+  escalationInterval?: number // seconds between auto-escalations
+}
+
+export interface MedicalAlertTemplate {
+  title: string
+  message: string
+  instructions?: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+}
+
+// ============================================================================
+// Vital Sign Thresholds (Medical Grade)
+// ============================================================================
+
+/**
+ * Comprehensive vital sign thresholds based on medical guidelines
+ */
 export const VITAL_SIGN_THRESHOLDS: Record<VitalSignType, {
   unit: string
   normal: { min: number; max: number }
   elevated: { min: number; max: number }
   critical: { min: number; max: number }
+  low: { min: number; max: number }
 }> = {
   heart_rate: {
     unit: 'bpm',
     normal: { min: 60, max: 100 },
     elevated: { min: 100, max: 120 },
-    critical: { min: 0, max: 40 },
+    critical: { min: 0, max: 40 }, // Bradycardia (<40) or tachycardia (>200)
+    low: { min: 0, max: 40 }, // Bradycardia
   },
   blood_pressure: {
     unit: 'mmHg',
-    normal: { min: 90, max: 120 },
-    elevated: { min: 120, max: 140 },
-    critical: { min: 0, max: 60 },
+    normal: { min: 90, max: 140 }, // Systolic
+    elevated: { min: 140, max: 180 }, // Hypertension Stage 1-2
+    critical: { min: 0, max: 90 }, // Severe hypotension
   },
   oxygen_saturation: {
     unit: '%',
     normal: { min: 95, max: 100 },
-    elevated: { min: 90, max: 95 },
-    critical: { min: 0, max: 85 },
+    elevated: { min: 90, max: 95 }, // Not elevated, just normal range
+    critical: { min: 85, max: 89 }, // Hypoxemia requiring attention
+    low: { min: 80, max: 84 }, // Severe hypoxemia
   },
   temperature: {
     unit: '°C',
-    normal: { min: 36.1, max: 37.2 },
-    elevated: { min: 37.2, max: 39.0 },
-    critical: { min: 35.0, max: 32.0 },
+    normal: { min: 36.1, max: 37.8 },
+    elevated: { min: 37.8, max: 39.0 }, // Low-grade fever
+    critical: { min: 32.0, max: 35.0 }, // Hypothermia
   },
   respiratory_rate: {
     unit: 'breaths/min',
     normal: { min: 12, max: 20 },
-    elevated: { min: 20, max: 30 },
-    critical: { min: 0, max: 8 },
+    elevated: { min: 20, max: 30 }, // Tachypnea
+    critical: { min: 0, max: 8 }, // Severe respiratory depression
   },
   blood_glucose: {
     unit: 'mg/dL',
-    normal: { min: 70, max: 100 },
-    elevated: { min: 180, max: 250 },
-    critical: { min: 0, max: 54 },
+    normal: { min: 70, max: 140 },
+    elevated: { min: 140, max: 250 }, // Hyperglycemia
+    critical: { min: 0, max: 60 }, // Hypoglycemia
+    low: { min: 54, max: 59 }, // Mild hypoglycemia
   },
   heart_rhythm: {
     unit: 'bpm',
     normal: { min: 60, max: 100 },
-    elevated: { min: 100, max: 150 },
-    critical: { min: 0, max: 40 },
+    elevated: { min: 100, max: 150 }, // Sinus tachycardia
+    critical: { min: 0, max: 40 }, // Severe bradycardia
+  },
+}
+
+/**
+ * Extended conditions for specific medical alerts
+ */
+export const EXTENDED_MEDICAL_CONDITIONS: Record<string, {
+  threshold: number
+  unit: string
+  alertMessage: string
+  recommendedAction: string
+}> = {
+  arrhythmia: {
+    threshold: 120, // Heart rate variability
+    unit: 'ms',
+    alertMessage: 'Abnormal heart rhythm detected',
+    recommendedAction: 'Seek immediate medical attention',
+  },
+  hypoxemia: {
+    threshold: 90,
+    unit: '%',
+    alertMessage: 'Low oxygen levels detected',
+    recommendedAction: 'Administer oxygen and monitor breathing',
+  },
+  hyperthermia: {
+    threshold: 39,
+    unit: '°C',
+    alertMessage: 'High fever detected',
+    recommendedAction: 'Administer antipyretics and cool body',
+  },
+  shock: {
+    threshold: 60,
+    unit: 'mmHg',
+    alertMessage: 'Signs of shock detected',
+    recommendedAction: 'Lay patient flat, elevate legs, provide fluids',
   },
 }
 
@@ -552,14 +643,311 @@ export async function getActiveSOSForUser(userId: string): Promise<VitalSignsSOS
   return sosList[0] || null
 }
 
+/**
+ * Auto-resolve SOS after period of normal vitals
+ */
+export async function autoResolveSOS(
+  sosId: string,
+  resolvedPeriodSeconds: number = 300 // 5 minutes
+): Promise<boolean> {
+  const supabase = createClient()
+
+  // Get current SOS status
+  const sos = await getSOS(sosId)
+
+  if (!sos) return false
+
+  if (sos.status !== 'active') {
+    console.log(`SOS ${sosId} is not active, skipping auto-resolve`)
+    return false
+  }
+
+  // Check if SOS is eligible for auto-resolve
+  const now = new Date()
+  const elapsedSeconds = Math.floor((now.getTime() - new Date(sos.createdAt).getTime()) / 1000)
+
+  if (elapsedSeconds < resolvedPeriodSeconds) {
+    console.log(`SOS ${sosId} hasn't been active for ${resolvedPeriodSeconds} seconds, skipping auto-resolve`)
+    return false
+  }
+
+  // Get recent readings to verify stable vitals
+  const { data: recentReadings } = await supabase
+    .from('vital_sign_readings')
+    .select('value, status, type')
+    .eq('user_id', sos.userId)
+    .gte('timestamp', new Date(now.getTime() - 3 * 60 * 1000).toISOString()) // Last 3 minutes
+    .order('timestamp', { ascending: true })
+
+  // Check if most recent readings are normal
+  const normalReadings = recentReadings?.filter(r =>
+    r.status === 'normal'
+  )?.length
+
+  if (!normalReadings || normalReadings < recentReadings?.length * 0.7) {
+    console.log(`SOS ${sosId}: Recent readings not stable, skipping auto-resolve`)
+    return false
+  }
+
+  // Auto-resolve the SOS
+  const { error } = await supabase
+    .from('vital_signs_sos')
+    .update({
+      status: 'resolved',
+      resolved_at: new Date().toISOString(),
+      response_notes: `Auto-resolved after ${resolvedPeriodSeconds} seconds of stable vitals`,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', sosId)
+
+  if (error) {
+    console.error('Error auto-resolving SOS:', error)
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Get trending vital sign data
+ */
+export async function getVitalSignTrends(
+  userId: string,
+  type?: VitalSignType,
+  hours: number = 24
+): Promise<{
+  current: VitalSignsReading[]
+  average: Record<string, number>
+  range: Record<string, { min: number; max: number }>
+  trend: 'improving' | 'stable' | 'deteriorating'
+}> {
+  const supabase = createClient()
+
+  const since = new Date()
+  since.setHours(since.getHours() - hours)
+
+  const { data: readings } = await supabase
+    .from('vital_sign_readings')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('timestamp', since.toISOString())
+    .order('timestamp', { ascending: false })
+
+  if (!readings || readings.length === 0) {
+    return {
+      current: [],
+      average: {},
+      range: {},
+      trend: 'stable',
+    }
+  }
+
+  // Group by type
+  const grouped: Record<string, VitalSignsReading[]> = {}
+  for (const reading of readings) {
+    const type = reading.type || 'unknown'
+    if (!grouped[type]) {
+      grouped[type] = []
+    }
+    grouped[type].push(reading)
+  }
+
+  // Calculate averages and ranges
+  const averages: Record<string, number> = {}
+  const ranges: Record<string, { min: number; max: number }> = {}
+
+  for (const [type, typeReadings] of Object.entries(grouped)) {
+    const values = typeReadings.map(r => r.value)
+    const avg = values.reduce((sum, v) => sum + v, 0) / values.length
+    averages[type] = Math.round(avg)
+
+    ranges[type] = {
+      min: Math.min(...values),
+      max: Math.max(...values),
+    }
+  }
+
+  // Determine trend (compare current vs previous average)
+  const recentAverage: Record<string, number> = {}
+  const olderAverage: Record<string, number> = {}
+
+  for (const [type, typeReadings] of Object.entries(grouped)) {
+    const recent = typeReadings.slice(0, Math.floor(typeReadings.length * 0.2)) // Most recent 20%
+    const older = typeReadings.slice(-Math.floor(typeReadings.length * 0.2)) // Oldest 20%
+
+    recentAverage[type] = recentAverage[type] ||
+      recent.reduce((sum, v) => sum + v.value, 0) / recent.length
+    olderAverage[type] = olderAverage[type] ||
+      older.reduce((sum, v) => sum + v.value, 0) / older.length
+  }
+
+  // Determine overall trend
+  let trend: 'improving' | 'stable' | 'deteriorating' = 'stable'
+
+  for (const [type, recentAvg] of Object.entries(recentAverage)) {
+    const olderAvg = olderAverage[type] || recentAvg
+    const diff = recentAvg - olderAvg
+
+    if (Math.abs(diff) > 5) {
+      if (diff < 0) {
+        trend = 'improving'
+      } else {
+        trend = 'deteriorating'
+      }
+    }
+  }
+
+  return {
+    current: readings,
+    average: averages,
+    range: ranges,
+    trend,
+  }
+}
+
+/**
+ * Subscribe to vital signs real-time updates via Supabase real-time
+ */
+export function subscribeToVitalSignsUpdates(
+  userId: string,
+  type?: VitalSignType,
+  callback: (
+    reading: VitalSignsReading,
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+  ) => void
+): () => void {
+  const supabase = createClient()
+
+  const filter: Record<string, unknown> = {
+    event: '*',
+    schema: 'public',
+    table: 'vital_sign_readings',
+  }
+
+  if (type) {
+    filter.filter = { field: 'type', value: type }
+  }
+
+  const subscription = supabase
+    .channel(`vital-signs-${userId}`)
+    .on(
+      'postgres_changes',
+      filter,
+      (payload) => {
+        if (payload.eventType === 'INSERT') {
+          callback(payload.new as VitalSignsReading, 'INSERT')
+        } else if (payload.eventType === 'UPDATE') {
+          callback(payload.new as VitalSignsReading, 'UPDATE')
+        }
+      }
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(subscription)
+  }
+}
+
+/**
+ * Get SOS statistics for user
+ */
+export async function getSOSStatistics(
+  userId: string,
+  days?: number
+): Promise<{
+  totalSOS: number
+  resolved: number
+  active: number
+  byPriority: Record<SOSPriority, number>
+  byType: Record<VitalSignType, number>
+  responseTimeAvg: number
+}> {
+  const supabase = createClient()
+
+  const since = days
+    ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    : undefined
+
+  const { data: sosList } = await supabase
+    .from('vital_signs_sos')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('created_at', since?.toISOString())
+
+  const sos = sosList || []
+
+  const totalSOS = sos.length
+  const resolved = sos.filter(s => s.status === 'resolved').length
+  const active = sos.filter(s => s.status === 'active').length
+
+  const byPriority: Record<SOSPriority, number> = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+  }
+  const byType: Record<VitalSignType, number> = {
+    heart_rate: 0,
+    blood_pressure: 0,
+    oxygen_saturation: 0,
+    temperature: 0,
+    respiratory_rate: 0,
+    blood_glucose: 0,
+    heart_rhythm: 0,
+  }
+
+  let totalResponseTime = 0
+  let responseTimeCount = 0
+
+  for (const sosItem of sos) {
+    byPriority[sosItem.priority]++
+
+    for (const reading of sosItem.triggerReadings) {
+      byType[reading.type]++
+    }
+
+    // Calculate response time (simplified - in production use actual timestamps)
+    if (sosItem.resolvedAt) {
+      const resolvedTime = new Date(sosItem.resolvedAt).getTime()
+      const createdAt = new Date(sosItem.createdAt).getTime()
+      const responseTime = (resolvedTime - createdAt) / (1000 * 60) // minutes
+      totalResponseTime += responseTime
+      responseTimeCount++
+    }
+  }
+
+  return {
+    totalSOS,
+    resolved,
+    active,
+    byPriority,
+    byType,
+    responseTimeAvg: responseTimeCount > 0 ? Math.round(totalResponseTime / responseTimeCount) : 0,
+  }
+}
+
 export async function recordVitalReading(
   userId: string,
-  reading: Omit<VitalSignsReading, 'id' | 'userId' | 'timestamp' | 'status'>
-): Promise<{ reading: VitalSignsReading; sosTriggered: boolean }> {
+  reading: Omit<VitalSignsReading, 'id' | 'userId' | 'timestamp' | 'status'>,
+  options?: {
+    checkTrends?: boolean
+    autoTriggerSOS?: boolean
+    checkExtendedConditions?: boolean
+  }
+): Promise<{
+  reading: VitalSignsReading
+  sosTriggered: boolean
+  conditionsDetected: Array<{
+    condition: string
+    threshold: number
+    alertMessage: string
+    recommendedAction: string
+  }>
+}> {
   const supabase = createClient()
 
   const status = getVitalSignStatus(reading.type, reading.value)
-  
+
   const readingRecord: VitalSignsReading = {
     ...reading,
     id: `reading_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -586,12 +974,44 @@ export async function recordVitalReading(
     console.error('Error recording vital reading:', error)
   }
 
+  // Check extended conditions if enabled
+  const conditionsDetected: Array<{
+    condition: string
+    threshold: number
+    alertMessage: string
+    recommendedAction: string
+  }> = []
+
+  if (options?.checkExtendedConditions) {
+    const typeMap: Record<string, VitalSignType> = {
+      heart_rate: 'heart_rate',
+      blood_pressure: 'blood_pressure',
+      oxygen_saturation: 'oxygen_saturation',
+      temperature: 'temperature',
+    }
+
+    for (const [condition, config] of Object.entries(EXTENDED_MEDICAL_CONDITIONS)) {
+      const readingType = typeMap[condition]
+      if (!readingType) continue
+
+      const currentThreshold = VITAL_SIGN_THRESHOLDS[readingType][config.threshold < 90 ? 'critical' : 'low'].min
+      if (reading.value <= config.threshold) {
+        conditionsDetected.push({
+          condition,
+          threshold: config.threshold,
+          alertMessage: config.alertMessage,
+          recommendedAction: config.recommendedAction,
+        })
+      }
+    }
+  }
+
   // Check if this reading should trigger SOS
   let sosTriggered = false
-  
-  if (status === 'critical' || status === 'high') {
+
+  if (options?.autoTriggerSOS && (status === 'critical' || status === 'high')) {
     const activeSOS = await getActiveSOSForUser(userId)
-    
+
     if (!activeSOS) {
       await createVitalSignsSOS({
         userId,
@@ -603,12 +1023,12 @@ export async function recordVitalReading(
           metadata: reading.metadata,
         }],
       })
-      
+
       sosTriggered = true
     }
   }
 
-  return { reading: readingRecord, sosTriggered }
+  return { reading: readingRecord, sosTriggered, conditionsDetected }
 }
 
 export async function getUserVitalHistory(

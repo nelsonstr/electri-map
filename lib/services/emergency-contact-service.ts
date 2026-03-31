@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { z } from 'zod'
+import { SmsIntegrationService, type AlertMessageTemplate } from '../sms-integration-service'
 
 // ============================================================================
 // Types
@@ -92,8 +93,10 @@ export interface SOSAlert {
   }
   status: 'sent' | 'delivered' | 'acknowledged' | 'failed'
   sentAt: string
+  messageId?: string // SMS/WhatsApp message ID
   deliveredAt?: string
   acknowledgedAt?: string
+  errorMessage?: string // Error message if SMS delivery failed
 }
 
 /**
@@ -731,7 +734,9 @@ export async function respondToContactRequest(
 
 /**
  * Creates and sends SOS alerts to contacts
+ * Integrates with SMS/WhatsApp service for actual message delivery
  */
+
 export async function sendSOSAlerts(
   userId: string,
   options?: {
@@ -751,7 +756,17 @@ export async function sendSOSAlerts(
   const contacts = await getSOSContacts(userId)
   const supabase = createClient()
 
+  // Initialize SMS service (configures via environment variables)
+  const smsService = SmsIntegrationService.getInstance()
+  const smsConfig = {
+    priority: 'high',
+    location: options?.location
+      ? `${options.location.latitude.toFixed(3)}, ${options.location.longitude.toFixed(3)}`
+      : undefined,
+  }
+
   const alerts: SOSAlert[] = []
+  const smsResults: Array<{ phoneNumber: string; result: any }> = []
 
   for (const contact of contacts) {
     // Create alert record
@@ -774,8 +789,48 @@ export async function sendSOSAlerts(
       continue
     }
 
-    // TODO: Integrate with SMS/WhatsApp service to actually send the alert
-    // For now, just record it in the database
+    // Attempt to send SMS/WhatsApp notification
+    if (options?.message) {
+      const alertTemplate: AlertMessageTemplate = {
+        title: 'SOS EMERGENCY',
+        message: options.message,
+        severity: 'critical',
+        alertType: 'sos',
+      }
+
+      try {
+        const smsResult = await smsService.sendSOSNotification(
+          contact.phoneNumber,
+          alertTemplate,
+          smsConfig
+        )
+        smsResults.push({ phoneNumber: contact.phoneNumber, result: smsResult })
+
+        // Update alert status based on SMS result
+        if (smsResult.success) {
+          await supabase
+            .from('sos_alerts')
+            .update({
+              status: smsResult.status as SOSAlert['status'],
+              message_id: smsResult.messageId || null,
+              sent_at: smsResult.sentAt || new Date().toISOString(),
+            })
+            .eq('id', alertData.id)
+        }
+      } catch (sendError) {
+        console.error(`Failed to send SMS to ${contact.phoneNumber}:`, sendError)
+        // Update alert to failed status
+        await supabase
+          .from('sos_alerts')
+          .update({
+            status: 'failed',
+            error_message: (sendError as Error).message,
+          })
+          .eq('id', alertData.id)
+      }
+    }
+
+    const status = smsResults.find(r => r.phoneNumber === contact.phoneNumber)?.result?.status || alertData.status
 
     alerts.push({
       id: alertData.id,
@@ -786,10 +841,12 @@ export async function sendSOSAlerts(
       message: alertData.message || undefined,
       location: alertData.location || undefined,
       vitalSigns: alertData.vital_signs || undefined,
-      status: alertData.status,
+      status,
       sentAt: alertData.sent_at,
+      messageId: smsResults.find(r => r.phoneNumber === contact.phoneNumber)?.result?.messageId || alertData.message_id,
       deliveredAt: alertData.delivered_at || undefined,
       acknowledgedAt: alertData.acknowledged_at || undefined,
+      error_message: smsResults.find(r => r.phoneNumber === contact.phoneNumber)?.result?.error || alertData.error_message,
     })
   }
 
@@ -810,7 +867,7 @@ export async function getSOSAlerts(
 
   let query = supabase
     .from('sos_alerts')
-    .select('*')
+    .select('*, emergency_contacts(name, phone_number)')
     .eq('user_id', userId)
     .order('sent_at', { ascending: false })
 
@@ -829,20 +886,29 @@ export async function getSOSAlerts(
     return []
   }
 
-  return data.map(item => ({
-    id: item.id,
-    userId: item.user_id,
-    contactId: item.contact_id,
-    contactName: '', // Would need to join with contacts table
-    contactPhone: '', // Would need to join with contacts table
-    message: item.message || undefined,
-    location: item.location || undefined,
-    vitalSigns: item.vital_signs || undefined,
-    status: item.status,
-    sentAt: item.sent_at,
-    deliveredAt: item.delivered_at || undefined,
-    acknowledgedAt: item.acknowledged_at || undefined,
-  }))
+  return data.map(item => {
+    const contactInfo = item.emergency_contacts as {
+      name?: string
+      phone_number?: string
+    }
+
+    return {
+      id: item.id,
+      userId: item.user_id,
+      contactId: item.contact_id,
+      contactName: contactInfo.name || '',
+      contactPhone: contactInfo.phone_number || '',
+      message: item.message || undefined,
+      location: item.location || undefined,
+      vitalSigns: item.vital_signs || undefined,
+      status: item.status,
+      sentAt: item.sent_at,
+      messageId: item.message_id || undefined,
+      deliveredAt: item.delivered_at || undefined,
+      acknowledgedAt: item.acknowledged_at || undefined,
+      errorMessage: item.error_message || undefined,
+    }
+  })
 }
 
 /**

@@ -53,6 +53,7 @@ interface EscalationDashboardProps {
   onResolve?: (escalationId: string) => void;
   onDismiss?: (escalationId: string) => void;
   onAssign?: (escalationId: string, userId: string) => void;
+  onClear?: () => void;
 }
 
 const levelConfig: Record<number, { color: string; bgColor: string; label: string }> = {
@@ -80,7 +81,8 @@ export function EscalationDashboard({
   onRefresh,
   onResolve,
   onDismiss,
-  onAssign
+  onAssign,
+  onClear,
 }: EscalationDashboardProps) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
@@ -123,6 +125,37 @@ export function EscalationDashboard({
     toast({ title: 'Escalation Dismissed', description: 'The escalation has been dismissed.' });
   };
 
+  // Calculate SLA compliance from metrics
+  const slaMetricsOverview = useMemo(() => {
+    const totalItems = slaMetrics.reduce((sum, m) => sum + m.total_items, 0);
+    const totalWithin = slaMetrics.reduce((sum, m) => sum + m.within_sla, 0);
+    const overallCompliance = totalItems > 0 ? Math.round((totalWithin / totalItems) * 100) : 100;
+    const avgResponseTime = slaMetrics.length > 0
+      ? slaMetrics.reduce((sum, m) => sum + m.avg_response_time_minutes, 0) / slaMetrics.length
+      : 0;
+    const avgResolutionTime = slaMetrics.length > 0
+      ? slaMetrics.reduce((sum, m) => sum + m.avg_resolution_time_minutes, 0) / slaMetrics.length
+      : 0;
+
+    return {
+      overallCompliance,
+      totalItems,
+      totalWithin,
+      avgResponseTime: Math.round(avgResponseTime),
+      avgResolutionTime: Math.round(avgResolutionTime),
+      breachCount: totalItems - totalWithin,
+    };
+  }, [slaMetrics]);
+
+  // Add clear filter button
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setFilterStatus('all');
+    setFilterLevel('all');
+    setActiveTab('active');
+    if (onClear) onClear();
+  };
+
   return (
     <div className="w-full space-y-6">
       {/* Header */}
@@ -137,10 +170,84 @@ export function EscalationDashboard({
               <RefreshCw className="h-4 w-4" />
             </Button>
           )}
+          <Button variant="outline" size="icon" onClick={handleClearFilters} title="Clear filters">
+            <Filter className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Statistics Overview */}
+      {/* SLA Compliance Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold">{slaMetricsOverview.overallCompliance}%</p>
+                <p className="text-sm text-muted-foreground">Overall SLA Compliance</p>
+              </div>
+              <TrendingUp className={cn("h-8 w-8", slaMetricsOverview.overallCompliance >= 95 ? "text-green-500" : slaMetricsOverview.overallCompliance >= 80 ? "text-yellow-500" : "text-red-500")} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold">{slaMetricsOverview.totalItems}</p>
+                <p className="text-sm text-muted-foreground">Total Items</p>
+              </div>
+              <Timer className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-red-600">{slaMetricsOverview.breachCount}</p>
+                <p className="text-sm text-muted-foreground">SLA Breaches</p>
+              </div>
+              <AlertCircle className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Response Time Metrics */}
+      {slaMetrics.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Response Time Metrics</CardTitle>
+            <CardDescription>Average response and resolution times across all escalations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <span className="text-sm">Avg Response Time</span>
+                <div className="text-right">
+                  <p className="font-semibold text-lg">{slaMetricsOverview.avgResponseTime} min</p>
+                  <p className="text-xs text-muted-foreground">
+                    ({(slaMetricsOverview.avgResponseTime / 60).toFixed(1)} hr)
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <span className="text-sm">Avg Resolution Time</span>
+                <div className="text-right">
+                  <p className="font-semibold text-lg">{slaMetricsOverview.avgResolutionTime} min</p>
+                  <p className="text-xs text-muted-foreground">
+                    ({(slaMetricsOverview.avgResolutionTime / 60).toFixed(1)} hr)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Search and Filters */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className={cn("border-l-4", criticalCount > 0 ? "border-l-red-500" : "border-l-green-500")}>
           <CardContent className="pt-6">
@@ -422,58 +529,104 @@ export function EscalationDashboard({
 
         {/* SLA Metrics Tab */}
         <TabsContent value="sla" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {slaMetrics.map(metric => (
-              <Card key={metric.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {entityTypeLabels[metric.entity_type]}
-                  </CardTitle>
-                  <CardDescription>
-                    {metric.period} overview
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Compliance Rate</span>
-                    <span className={cn(
-                      "font-bold",
-                      metric.compliance_rate >= 95 ? "text-green-600" :
-                      metric.compliance_rate >= 85 ? "text-yellow-600" : "text-red-600"
-                    )}>
-                      {metric.compliance_rate}%
-                    </span>
+          <div className="space-y-4">
+            {/* Overall Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>SLA Compliance Summary</CardTitle>
+                <CardDescription>
+                  Overall performance metrics for all entity types
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">
+                      {slaMetricsOverview.overallCompliance}%
+                    </p>
+                    <p className="text-xs text-muted-foreground">Compliance</p>
                   </div>
-                  <Progress value={metric.compliance_rate} className="h-2" />
-                  
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold">{metric.total_items}</p>
-                      <p className="text-xs text-muted-foreground">Total</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-green-600">{metric.within_sla}</p>
-                      <p className="text-xs text-muted-foreground">Within SLA</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-red-600">{metric.breached}</p>
-                      <p className="text-xs text-muted-foreground">Breached</p>
-                    </div>
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">
+                      {slaMetricsOverview.totalItems}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Total Items</p>
                   </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">
+                      {slaMetricsOverview.totalWithin}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Within SLA</p>
+                  </div>
+                  <div className="p-3 bg-red-50 rounded-lg">
+                    <p className="text-2xl font-bold text-red-600">
+                      {slaMetricsOverview.breachCount}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Breached</p>
+                  </div>
+                  <div className="p-3 bg-yellow-50 rounded-lg">
+                    <p className="text-2xl font-bold text-yellow-600">
+                      {slaMetricsOverview.avgResponseTime} min
+                    </p>
+                    <p className="text-xs text-muted-foreground">Avg Response</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                  <div className="pt-4 border-t">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Avg Response</span>
-                      <span>{metric.avg_response_time_minutes} min</span>
-                    </div>
-                    <div className="flex justify-between text-sm mt-1">
-                      <span className="text-muted-foreground">Avg Resolution</span>
-                      <span>{metric.avg_resolution_time_minutes} min</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {/* Entity Type Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {slaMetrics.map((metric, index) => {
+                const typeLabel = entityTypeLabels[metric.entity_type] || metric.entity_type;
+                const complianceColor = metric.compliance_rate >= 95 ? 'green' :
+                                      metric.compliance_rate >= 85 ? 'yellow' : 'red';
+
+                return (
+                  <Card key={`${metric.entity_type}-${index}`}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{typeLabel}</CardTitle>
+                      <CardDescription>
+                        {metric.period} performance
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Compliance Rate</span>
+                        <span className={cn(
+                          "font-bold text-lg",
+                          complianceColor
+                        )}>
+                          {metric.compliance_rate}%
+                        </span>
+                      </div>
+                      <Progress value={metric.compliance_rate} className="h-2" />
+
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="p-2 bg-muted rounded">
+                          <p className="text-lg font-semibold">{metric.total_items}</p>
+                          <p className="text-xs text-muted-foreground">Total</p>
+                        </div>
+                        <div className="p-2 bg-green-50 rounded">
+                          <p className="text-lg font-semibold text-green-600">{metric.within_sla}</p>
+                          <p className="text-xs">On Target</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Avg Response</span>
+                          <span className="font-medium">{metric.avg_response_time_minutes} min</span>
+                        </div>
+                        <div className="flex justify-between text-sm mt-1">
+                          <span className="text-muted-foreground">Avg Resolution</span>
+                          <span className="font-medium">{metric.avg_resolution_time_minutes} min</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
       </Tabs>
