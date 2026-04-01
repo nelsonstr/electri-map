@@ -7,12 +7,13 @@ export type EscalationTriggerType =
   | 'manual'
   | 'sla_breach';
 
-export type EscalationStatus = 
+export type EscalationStatus =
   | 'pending'
   | 'triggered'
   | 'acknowledged'
   | 'resolved'
-  | 'cancelled';
+  | 'cancelled'
+  | 'active';
 
 export type EscalationLevel = 1 | 2 | 3 | 4 | 5;
 

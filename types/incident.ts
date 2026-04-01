@@ -222,6 +222,7 @@ export interface UpdateIncidentInput {
   affectedPopulation?: number;
   estimatedDamage?: string;
   notes?: string;
+  root_cause?: string;
 }
 
 export interface IncidentFilters {

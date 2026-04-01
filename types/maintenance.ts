@@ -6,6 +6,7 @@ export type MaintenanceType =
   | 'corrective'
   | 'emergency';
 
+export type maintenance_type = MaintenanceType;
 export type maintenanceType = MaintenanceType;
 
 export type MaintenanceScheduleStatus =

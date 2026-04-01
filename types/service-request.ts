@@ -63,7 +63,12 @@ export interface ServiceRequestFormData {
   media_urls?: string[];
   internal_notes?: string;
   custom_fields?: Record<string, unknown>;
-  communication?: string;
+  communication?: {
+    channel: string;
+    direction?: 'inbound' | 'outbound';
+    subject?: string;
+    content: string;
+  };
 }
 
 export interface ServiceRequest {

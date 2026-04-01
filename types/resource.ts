@@ -6,6 +6,7 @@ export type ResourceType =
   | 'vehicle'
   | 'material';
 
+export type resource_type = ResourceType;
 export type resourceType = ResourceType;
 
 export type ResourceStatus =
