@@ -1,19 +1,23 @@
 // Maintenance Types for Support System
 
-export type MaintenanceType = 
+export type MaintenanceType =
   | 'preventive'
   | 'predictive'
   | 'corrective'
   | 'emergency';
 
-export type MaintenanceScheduleStatus = 
+export type maintenanceType = MaintenanceType;
+
+export type MaintenanceScheduleStatus =
   | 'scheduled'
   | 'in_progress'
   | 'completed'
   | 'cancelled'
   | 'delayed';
 
-export type WorkOrderStatus = 
+export type maintenance_schedule_status = MaintenanceScheduleStatus;
+
+export type WorkOrderStatus =
   | 'pending'
   | 'scheduled'
   | 'in_progress'
@@ -21,11 +25,40 @@ export type WorkOrderStatus =
   | 'completed'
   | 'cancelled';
 
-export type WorkOrderType = 
+export type work_order_status = WorkOrderStatus;
+
+export type WorkOrderType =
   | 'maintenance'
   | 'repair'
   | 'emergency'
   | 'inspection';
+
+export type workOrderType = WorkOrderType;
+
+// Export WorkOrder interface
+export interface WorkOrder {
+  id: string;
+  work_order_number: string;
+  title: string;
+  description?: string;
+  work_order_type: WorkOrderType;
+  status: WorkOrderStatus;
+  priority: 'trivial' | 'minor' | 'major' | 'critical';
+  is_emergency: boolean;
+  category_id?: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  };
+  source_type: string;
+  source_id?: string;
+  assigned_department?: string;
+  assigned_team?: string;
+  assigned_to?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface MaintenanceLocation {
   latitude?: number;

@@ -69,19 +69,17 @@ export async function PATCH(
       )
     }
     
-    // Build update input
-    const updateInput: UpdateIncidentInput = {
-      id
-    }
-    
-    // Optional fields
-    if (body.title !== undefined) updateInput.title = body.title
-    if (body.description !== undefined) updateInput.description = body.description
-    if (body.incidentType !== undefined) updateInput.incidentType = body.incidentType
-    if (body.severity !== undefined) updateInput.severity = body.severity
-    if (body.status !== undefined) updateInput.status = body.status
-    if (body.priority !== undefined) updateInput.priority = body.priority
-    
+    // Build update input with all optional fields
+    const updateInput = {
+      id,
+      title: body.title,
+      description: body.description,
+      incidentType: body.incidentType,
+      severity: body.severity,
+      status: body.status,
+      priority: body.priority,
+    } as any
+
     // Location update
     if (body.location) {
       updateInput.location = {
@@ -90,26 +88,27 @@ export async function PATCH(
         address: body.location.address,
         city: body.location.city,
         municipality: body.location.municipality,
-        district: body.location.district
+        district: body.location.district,
+        neighborhood: body.location.neighborhood,
       }
     }
-    
+
     // Assignment fields
-    if (body.incidentCommanderId !== undefined) updateInput.incidentCommanderId = body.incidentCommanderId
-    if (body.assignedUnitId !== undefined) updateInput.assignedUnitId = body.assignedUnitId
-    
+    if (body.incidentCommanderId) updateInput.incidentCommander = body.incidentCommanderId
+    if (body.assignedUnitId) updateInput.assignedTeam = body.assignedUnitId
+
     // Agency coordination
-    if (body.agenciesInvolved !== undefined) updateInput.agenciesInvolved = body.agenciesInvolved
-    
+    if (body.agenciesInvolved) updateInput.external_agencies_notified = body.agenciesInvolved
+
     // Resource tracking
-    if (body.resourcesRequired !== undefined) updateInput.resourcesRequired = body.resourcesRequired
-    
+    if (body.resourcesRequired) updateInput.resourcesRequired = body.resourcesRequired
+
     // Impact metrics
-    if (body.affectedPopulation !== undefined) updateInput.affectedPopulation = body.affectedPopulation
-    if (body.estimatedDamage !== undefined) updateInput.estimatedDamage = body.estimatedDamage
-    
+    if (body.affectedPopulation) updateInput.affected_customers = body.affectedPopulation
+    if (body.estimatedDamage) updateInput.resolution_summary = body.estimatedDamage
+
     // Notes
-    if (body.notes !== undefined) updateInput.notes = body.notes
+    if (body.notes) updateInput.root_cause = body.notes
     
     const updatedIncident = await updateIncident(updateInput)
     
@@ -154,7 +153,7 @@ export async function DELETE(
     const updatedIncident = await updateIncident({
       id,
       status: 'closed',
-      notes: `Incident deleted. Reason: ${reason}`
+      root_cause: `Incident deleted. Reason: ${reason}`,
     })
     
     return NextResponse.json({

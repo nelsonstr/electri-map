@@ -1,6 +1,6 @@
 // Service Request Types for Support System
 
-export type ServiceRequestStatus = 
+export type ServiceRequestStatus =
   | 'new'
   | 'assigned'
   | 'in_progress'
@@ -11,13 +11,15 @@ export type ServiceRequestStatus =
   | 'cancelled'
   | 'closed';
 
-export type ServicePriority = 
+export type request_status = ServiceRequestStatus;
+
+export type ServicePriority =
   | 'trivial'
   | 'minor'
   | 'major'
   | 'critical';
 
-export type IntakeChannel = 
+export type IntakeChannel =
   | 'web'
   | 'mobile'
   | 'phone'
@@ -33,6 +35,9 @@ export interface ServiceRequestLocation {
   address?: string;
   neighborhood?: string;
   city?: string;
+  asset_id?: string;
+  asset_location_lat?: number;
+  asset_location_lng?: number;
 }
 
 export interface ServiceRequestFormData {
@@ -48,6 +53,17 @@ export interface ServiceRequestFormData {
   requester_phone?: string;
   is_anonymous?: boolean;
   media_files?: File[];
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  customer_id?: string;
+  asset_id?: string;
+  asset_location_lat?: number;
+  asset_location_lng?: number;
+  media_urls?: string[];
+  internal_notes?: string;
+  custom_fields?: Record<string, unknown>;
+  communication?: string;
 }
 
 export interface ServiceRequest {
@@ -107,6 +123,10 @@ export interface ServiceRequestListParams {
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
 }
+
+// Add lowercase aliases for API routes
+export type service_priority = ServicePriority;
+export type service_request_status = ServiceRequestStatus;
 
 export interface ServiceRequestStats {
   total_requests: number;

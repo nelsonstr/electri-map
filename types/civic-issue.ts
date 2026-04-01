@@ -1,6 +1,6 @@
 // Civic Issue Reporting Types
 
-export type IssueCategory = 
+export type IssueCategory =
   | 'telecommunications'
   | 'road_damage'
   | 'electrical'
@@ -14,9 +14,13 @@ export type IssueCategory =
   | 'environmental'
   | 'other';
 
+export type issueCategory = IssueCategory;
+
 export type IssuePriority = 'low' | 'medium' | 'high' | 'critical';
 
-export type IssueStatus = 
+export type issuePriority = IssuePriority;
+
+export type IssueStatus =
   | 'submitted'
   | 'acknowledged'
   | 'in_progress'
@@ -25,7 +29,11 @@ export type IssueStatus =
   | 'verified'
   | 'closed';
 
+export type issueStatus = IssueStatus;
+
 export type MediaType = 'photo' | 'video';
+
+export type mediaType = MediaType;
 
 export interface IssueLocation {
   latitude: number;

@@ -1,12 +1,28 @@
 // Incident Types for Support System
 
-export type IncidentSeverity = 
+// Incident severity types for API routes
+export type incident_severity =
   | 'low'
   | 'minor'
   | 'major'
   | 'critical';
 
-export type IncidentStatus = 
+export type IncidentSeverity = incident_severity;
+
+// Incident type for emergency incidents
+export type IncidentType =
+  | 'power_outage'
+  | 'service_request'
+  | 'maintenance'
+  | 'incident'
+  | 'safety_hazard'
+  | 'weather_alert'
+  | 'infrastructure_issue';
+
+export type incident_type = IncidentType;
+
+// Incident status types for API routes
+export type incident_status =
   | 'detected'
   | 'investigating'
   | 'triaging'
@@ -15,6 +31,8 @@ export type IncidentStatus =
   | 'closed'
   | 'false_alarm';
 
+export type IncidentStatus = incident_status;
+
 export interface IncidentLocation {
   latitude: number;
   longitude: number;
@@ -22,6 +40,13 @@ export interface IncidentLocation {
   address?: string;
   neighborhood?: string;
   city?: string;
+  municipality?: string;
+  district?: string;
+  priority?: 'trivial' | 'minor' | 'major' | 'critical';
+  category_id?: string;
+  asset_id?: string;
+  asset_location_lat?: number;
+  asset_location_lng?: number;
 }
 
 export interface AffectedArea {
@@ -51,6 +76,20 @@ export interface IncidentFormData {
   detected_at?: string;
   source?: string;
   initial_assessment?: string;
+  priority?: 'trivial' | 'minor' | 'major' | 'critical';
+  category_id?: string;
+  estimated_restoration?: string;
+  actual_restoration?: string;
+  root_cause?: string;
+  resolution_summary?: string;
+  internal_notes?: string;
+  public_updates?: any[];
+  media_urls?: any[];
+  reported_by?: string;
+  reporter_name?: string;
+  reporter_phone?: string;
+  reporter_email?: string;
+  auto_escalate?: boolean;
 }
 
 export interface Incident {
@@ -150,3 +189,56 @@ export type IncidentFilter = {
   date_to?: string;
   assigned_department?: string;
 };
+
+// Re-export IncidentType for use in other modules
+export { IncidentType };
+
+// Emergency incident input types
+export interface CreateIncidentInput {
+  title: string;
+  description: string;
+  incidentType: IncidentType;
+  severity: IncidentSeverity;
+  priority?: 'low' | 'normal' | 'high' | 'critical';
+  location: IncidentLocation;
+  reportingUserId?: string | null;
+  source?: string;
+  notes?: string;
+}
+
+export interface UpdateIncidentInput {
+  id: string;
+  title?: string;
+  description?: string;
+  incidentType?: IncidentType;
+  severity?: IncidentSeverity;
+  priority?: 'low' | 'normal' | 'high' | 'critical';
+  status?: IncidentStatus;
+  location?: IncidentLocation;
+  incidentCommander?: string;
+  assignedTeam?: string;
+  agenciesInvolved?: ExternalAgency[];
+  resourcesRequired?: string;
+  affectedPopulation?: number;
+  estimatedDamage?: string;
+  notes?: string;
+}
+
+export interface IncidentFilters {
+  status?: IncidentStatus[];
+  severity?: IncidentSeverity[];
+  incidentType?: IncidentType[];
+  activeOnly?: boolean;
+  agencyId?: string;
+  incidentCommanderId?: string;
+  limit?: number;
+  offset?: number;
+  dateFrom?: Date;
+  dateTo?: Date;
+  boundingBox?: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  };
+}

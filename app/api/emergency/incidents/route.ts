@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     // Incident type filter
     const incidentType = searchParams.get('type')
     if (incidentType) {
-      filters.incidentType = incidentType.split(',')
+      filters.incidentType = incidentType.split(',') as any[]
     }
     
     // Active only
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     const createInput: CreateIncidentInput = {
       title: body.title,
       description: body.description || '',
-      incidentType: body.incidentType,
+      incidentType: body.incidentType as IncidentType,
       severity: body.severity,
       priority: body.priority || 'normal',
       location: {

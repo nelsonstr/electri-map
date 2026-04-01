@@ -16,6 +16,13 @@ export type EscalationStatus =
 
 export type EscalationLevel = 1 | 2 | 3 | 4 | 5;
 
+// Add lowercase type aliases for API routes
+export type escalation_status = EscalationStatus;
+export type escalation_trigger_type = EscalationTriggerType;
+
+// Add 'active' status for API compatibility
+export type escalation_status_values = 'pending' | 'triggered' | 'acknowledged' | 'resolved' | 'cancelled' | 'active';
+
 export interface EscalationRuleFormData {
   name: string;
   description?: string;

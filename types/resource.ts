@@ -1,17 +1,21 @@
 // Resource Types for Support System
 
-export type ResourceType = 
+export type ResourceType =
   | 'personnel'
   | 'equipment'
   | 'vehicle'
   | 'material';
 
-export type ResourceStatus = 
+export type resourceType = ResourceType;
+
+export type ResourceStatus =
   | 'available'
   | 'in_use'
   | 'maintenance'
   | 'out_of_service'
   | 'reserved';
+
+export type resource_status = ResourceStatus;
 
 export interface ResourceLocation {
   latitude?: number;
@@ -24,6 +28,7 @@ export interface ResourceFormData {
   name: string;
   description?: string;
   resource_type: ResourceType;
+  status?: ResourceStatus;
   user_id?: string;
   skills?: string[];
   certifications?: string[];
